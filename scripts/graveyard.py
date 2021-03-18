@@ -1,3 +1,4 @@
+from sklearn.preprocessing import StandardScaler
 scaler = StandardScaler()
 train_features = scaler.fit_transform(train_features)
 
