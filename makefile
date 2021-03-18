@@ -1,0 +1,2 @@
+default:
+	./sain.py
