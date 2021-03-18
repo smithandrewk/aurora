@@ -2,3 +2,6 @@
 __pycache__
 *.png
 *.pdf
+control.xls
+deprivation.xls
+utils.py
