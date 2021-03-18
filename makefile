@@ -1,2 +1,2 @@
 default:
-	./sain.py
+	cowsay empty
