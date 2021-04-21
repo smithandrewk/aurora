@@ -1,9 +1,22 @@
 import pandas as pd 
 from pandas import DataFrame, read_csv
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import numpy as np
 from sklearn.metrics import confusion_matrix
 import seaborn as sns
+import tensorflow as tf
+from tensorflow import keras
+from IPython.display import clear_output
+from time import time
+import os.path
+from os import path
+import tensorflow as tf
+from tensorflow import keras
+from tensorflow.keras.callbacks import TensorBoard
+from time import time
+import sklearn
+from sklearn.model_selection import train_test_split
 
 def load_xls(filename):
     """
@@ -57,12 +70,112 @@ def preprocess(filename):
     """
     for col in df.loc[:, df.columns != 'Class']: # typecast each column to type float
         df[col] = df[col].astype(float)
-    df.to_csv("data/control_preprocessed.csv",index=False) # save dataframe in csv format
+    df.to_csv("data/"+filename+"_preprocessed.csv",index=False) # save dataframe in csv format
     return df
-def plot_cm(labels, predictions, p=0.5):
-  cm = confusion_matrix(labels, predictions > p)
-  plt.figure(figsize=(5,5))
-  sns.heatmap(cm, annot=True, fmt="d")
-  plt.title('Confusion matrix @{:.2f}'.format(p))
-  plt.ylabel('Actual label')
-  plt.xlabel('Predicted label')
+def plot_cm(labels, predictions,met,hln):
+    plt.figure()
+    cm = confusion_matrix(labels, predictions)
+    sns.heatmap(cm, annot=True, fmt="d")
+    plt.title('Confusion Matrix for Testing\n'+'loss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
+    plt.ylabel('Actual label')
+    plt.xlabel('Predicted label')
+def class_count(df):
+    p,s,w = np.bincount(df['Class'])
+    total = p + s + w
+    print('Examples:\n    Total: {}\n    P: {} ({:.2f}% of total)\n    S: {} ({:.2f}% of total)\n    W: {} ({:.2f}% of total)\n'.format(
+        total, p, 100 * p / total,s,100 * s / total,w,100 * w / total))
+    return p,s,w
+def get_compiled_model(n,INPUT_FEATURES,dropout=True):
+    """
+    Function to create model. This is a sequential model, meaning layers execute
+    one after the other. We have an input shape corresponding to the feature set,
+    one hidden layer with 10 neurons and a relu activation, then an output layer
+    with 3 neurons and a sigmoid activation function. We compute loss with
+    categorical crossentropy and optimize with adam, which I believe is something
+    about an adaptive learning rate. I do not know what the parameter from_logits
+    is about.
+    """
+    if(dropout):
+        model = tf.keras.Sequential([
+        keras.layers.Dense(n, activation='relu',input_shape=INPUT_FEATURES),
+        keras.layers.Dropout(0.5),
+        tf.keras.layers.Dense(3, activation='sigmoid')
+        ])
+    else:
+        model = tf.keras.Sequential([
+        keras.layers.Dense(n, activation='relu',input_shape=INPUT_FEATURES),
+        tf.keras.layers.Dense(3, activation='sigmoid')
+        ])
+    model.compile(optimizer=keras.optimizers.Adam(lr=1e-3),
+                loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+                metrics=[
+      keras.metrics.CategoricalAccuracy(name='categorical_accuracy'),
+      keras.metrics.Precision(name='precision'),
+      keras.metrics.Recall(name='recall'),
+      keras.metrics.AUC(name='auc'),
+])
+    return model
+class TrainingPlot(keras.callbacks.Callback):
+    
+    # This function is called when the training begins
+    def on_train_begin(self, logs={}):
+        # Initialize the lists for holding the logs, losses and accuracies
+        self.losses = []
+        self.acc = []
+        self.val_losses = []
+        self.val_acc = []
+        self.logs = []
+    
+    # This function is called at the end of each epoch
+    def on_epoch_end(self, epoch, logs={}):
+        
+        # Append the logs, losses and accuracies to the lists
+        self.logs.append(logs)
+        self.losses.append(logs.get('loss'))
+        self.acc.append(logs.get('categorical_accuracy'))
+        self.val_losses.append(logs.get('val_loss'))
+        self.val_acc.append(logs.get('val_categorical_accuracy'))
+        
+        # Before plotting ensure at least 2 epochs have passed
+        if len(self.losses) > 1:
+            
+            # Clear the previous plot
+            clear_output(wait=True)
+            N = np.arange(0, len(self.losses))
+            
+            # You can chose the style of your preference
+            # print(plt.style.available) to see the available options
+            plt.style.use("seaborn")
+            
+            # Plot train loss, train acc, val loss and val acc against epochs passed
+            plt.figure(figsize=(20,10))
+            plt.subplot(1,2,1)
+            plt.plot(N, self.losses, label = "train_loss")
+            plt.plot(N, self.val_losses, label = "val_loss")
+            plt.subplot(1,2,2)
+            plt.plot(N, self.acc, label = "train_acc")
+            plt.plot(N, self.val_acc, label = "val_acc")
+            plt.title("Training Loss and Accuracy [Epoch {}]".format(epoch))
+            plt.xlabel("Epoch #")
+            plt.ylabel("Loss/Accuracy")
+            plt.legend()
+            plt.show()
+def plot_metrics(history):
+    colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+    mpl.rcParams['figure.figsize'] = (12, 10)
+    metrics = ['loss', 'categorical_accuracy','precision','recall']
+    for n, metric in enumerate(metrics):
+        name = metric.replace("_"," ").capitalize()
+        plt.subplot(2,2,n+1)
+        plt.plot(history.epoch, history.history[metric], color=colors[0], label='Train')
+        plt.plot(history.epoch, history.history['val_'+metric],
+                 color=colors[1], label='Val')
+        plt.xlabel('Epoch')
+        plt.ylabel(name)
+        if metric == 'loss':
+            plt.ylim([0, plt.ylim()[1]])
+        elif metric == 'auc':
+            plt.ylim([0.8,1])
+        else:
+            plt.ylim([0,1])
+        plt.legend()
