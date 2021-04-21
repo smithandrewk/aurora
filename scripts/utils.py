@@ -9,6 +9,8 @@ import tensorflow as tf
 from tensorflow import keras
 from IPython.display import clear_output
 from time import time
+from time import strftime
+from tqdm import tqdm
 import os.path
 from os import path
 import tensorflow as tf
@@ -47,7 +49,6 @@ def preprocess(filename):
     new_cols[43]=new_cols[43][:5] # remove end of column name
     df.columns=new_cols # set dataframe column names to new column names
     df = df.drop([0]) # drop first row containing units [muV^2]
-    del df[df.columns[0]] # remove first column
     """
     There are some NaN values in the dataframe. I handle by filling them in with
     zeros. I think we might transition to another method such as mean.
@@ -72,11 +73,11 @@ def preprocess(filename):
         df[col] = df[col].astype(float)
     df.to_csv("data/"+filename+"_preprocessed.csv",index=False) # save dataframe in csv format
     return df
-def plot_cm(labels, predictions,met,hln):
+def plot_cm(labels, predictions,met,hln,file):
     plt.figure()
     cm = confusion_matrix(labels, predictions)
     sns.heatmap(cm, annot=True, fmt="d")
-    plt.title('Confusion Matrix for Testing\n'+'loss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
+    plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
 def class_count(df):
