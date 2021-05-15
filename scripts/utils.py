@@ -113,8 +113,8 @@ def get_compiled_model(n,INPUT_FEATURES,dropout=True):
       keras.metrics.CategoricalAccuracy(name='categorical_accuracy'),
       keras.metrics.Precision(name='precision'),
       keras.metrics.Recall(name='recall'),
-      keras.metrics.AUC(name='auc'),
-])
+      keras.metrics.AUC(name='auc')
+      ])
     return model
 class TrainingPlot(keras.callbacks.Callback):
     
