@@ -5,3 +5,6 @@ __pycache__
 figures
 data/*
 bkp
+test.csv
+train.csv
+val.csv

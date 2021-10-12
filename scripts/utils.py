@@ -5,7 +5,6 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
 import tensorflow as tf
 from tensorflow import keras
 import pandas as pd 
@@ -14,23 +13,17 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
 from sklearn.metrics import confusion_matrix
-import seaborn as sns
 import tensorflow as tf
 from tensorflow import keras
 from IPython.display import clear_output
-from time import time
 from time import strftime
 from tqdm import tqdm
 import os.path
 from os import path
 import tensorflow as tf
-from tensorflow import keras
 from tensorflow.keras.callbacks import TensorBoard
 from time import time
-import sklearn
-import os.path
-from os import path
-import tensorflow as tf
+
 from tensorflow import keras
 
 from tensorflow.keras.callbacks import TensorBoard
@@ -39,7 +32,6 @@ import sklearn
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from time import strftime
-from sklearn.model_selection import train_test_split
 def preprocess(filename):
     file = "data/renamed/"+filename # filename
     df = pd.read_excel(file) # load xls file into pandas dataframe

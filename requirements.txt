@@ -1,3 +1,4 @@
 xlrd
 tensorflow
 sklearn
+tqdm
