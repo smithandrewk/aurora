@@ -3,5 +3,5 @@ __pycache__
 *.png
 *.pdf
 figures
-data
+data/*
 bkp
