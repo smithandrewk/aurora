@@ -49,8 +49,12 @@ def window():
     return False
 def split_and_shuffle(df):
     # Use a utility from sklearn to split and shuffle our dataset.
+    p,s,w = class_count(df)
     train_df, test_df = train_test_split(df, test_size=0.2)
     train_df, val_df = train_test_split(train_df, test_size=0.2)
+    train_df.to_csv("train.csv",index=False)
+    test_df.to_csv("test.csv",index=False)
+    val_df.to_csv("val.csv",index=False)
 
     # Form np arrays of labels and features.
     train_labels = np.array(train_df.pop('Class'))
@@ -85,14 +89,14 @@ def split_and_shuffle(df):
 # df = pd.read_csv("data/"+target_filename+"_windowed.csv")
 
 # df = balance("window.csv")
-df = pd.read_csv("window_balanced.csv")
+df = pd.read_csv("data/window_balanced.csv")
 p,s,w = class_count(df)
 
 
 # df = pd.read_csv("data/"+target_filename+"_windowed_balanced.csv")
 
 train_features,train_labels,val_features,val_labels,test_features,test_labels,class_weight = split_and_shuffle(df)
-for i in range(20,500,20):
+for i in range(5):
     train_history,test_history,date,model = train(train_features=train_features,
                                     train_labels=train_labels,
                                     val_features=val_features,
@@ -101,10 +105,10 @@ for i in range(20,500,20):
                                     test_labels=test_labels,
                                     class_weight=class_weight,
                                     INPUT_FEATURES=(train_features.shape[-1],),
-                                    hln=i,
+                                    hln=200,
                                     EPOCHS=1000,
                                     weights=False)
 
-    # model.save('./model')
-    plot_metrics(train_history,date,hln=i)
+# model.save('./model')
+    plot_metrics(train_history,date,hln=200)
     

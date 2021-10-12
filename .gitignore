@@ -2,7 +2,6 @@
 __pycache__
 *.png
 *.pdf
-bkp/SleepDepNeuralNetwork.zip
 figures
 data
 bkp
