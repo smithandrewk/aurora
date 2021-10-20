@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas.core.indexes import base
 from tqdm import tqdm
 import os
 import numpy as np
@@ -8,7 +7,6 @@ from sklearn.metrics import confusion_matrix
 import tensorflow as tf
 from tensorflow import keras
 import pandas as pd 
-from pandas import DataFrame, read_csv
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
@@ -19,19 +17,13 @@ from IPython.display import clear_output
 from time import strftime
 from tqdm import tqdm
 import os.path
-from os import path
 import tensorflow as tf
-from tensorflow.keras.callbacks import TensorBoard
-from time import time
 from tensorflow.keras import layers
 from tensorflow import keras
-
-from tensorflow.keras.callbacks import TensorBoard
+import seaborn as sns
 from scripts.utils import *
-import sklearn
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
-from time import strftime
+
 def preprocess(filename):
     file = "data/renamed/"+filename # filename
     df = pd.read_excel(file) # load xls file into pandas dataframe
@@ -148,7 +140,7 @@ def class_count(df):
 def plot_cm(labels, predictions,met,hln,file):
     plt.figure()
     cm = confusion_matrix(labels, predictions)
-    sns.heatmap(cm, annot=True, fmt="d")
+    sns.heatmap(cm, annot=True, fmt="d",cbar=False)
     plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
