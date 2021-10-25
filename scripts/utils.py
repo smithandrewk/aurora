@@ -141,7 +141,7 @@ def plot_cm(labels, predictions,met,hln,file):
     plt.figure()
     cm = confusion_matrix(labels, predictions)
     sns.heatmap(cm, annot=True, fmt="d",cbar=False)
-    plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
+    # plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
 class TrainingPlot(keras.callbacks.Callback):
@@ -209,7 +209,7 @@ def plot_metrics(history,date,hln):
         else:
             plt.ylim([0,1])
         plt.legend()
-    plt.savefig("metrics.png",bbox_inches='tight',transparent=False)
+    # plt.savefig("metrics.png",bbox_inches='tight',transparent=False)
     # plt.savefig("figures/"+str(date[1])+"@"+str(date[0][:5].replace(":",""))+"_"+str(hln)+"neurons_training_metrics.png",bbox_inches='tight',transparent=False)
 def get_compiled_model(n,INPUT_FEATURES,dropout=True):
     """
