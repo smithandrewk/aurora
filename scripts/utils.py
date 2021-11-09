@@ -1,5 +1,4 @@
 import pandas as pd
-from pandas.core.indexes import base
 from tqdm import tqdm
 import os
 import numpy as np
@@ -8,7 +7,6 @@ from sklearn.metrics import confusion_matrix
 import tensorflow as tf
 from tensorflow import keras
 import pandas as pd 
-from pandas import DataFrame, read_csv
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import numpy as np
@@ -19,19 +17,13 @@ from IPython.display import clear_output
 from time import strftime
 from tqdm import tqdm
 import os.path
-from os import path
 import tensorflow as tf
-from tensorflow.keras.callbacks import TensorBoard
-from time import time
-
+from tensorflow.keras import layers
 from tensorflow import keras
-
-from tensorflow.keras.callbacks import TensorBoard
+import seaborn as sns
 from scripts.utils import *
-import sklearn
 from sklearn.model_selection import train_test_split
-from tqdm import tqdm
-from time import strftime
+
 def preprocess(filename):
     file = "data/renamed/"+filename # filename
     df = pd.read_excel(file) # load xls file into pandas dataframe
@@ -148,8 +140,8 @@ def class_count(df):
 def plot_cm(labels, predictions,met,hln,file):
     plt.figure()
     cm = confusion_matrix(labels, predictions)
-    sns.heatmap(cm, annot=True, fmt="d")
-    plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
+    sns.heatmap(cm, annot=True, fmt="d",cbar=False)
+    # plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
 class TrainingPlot(keras.callbacks.Callback):
@@ -217,7 +209,7 @@ def plot_metrics(history,date,hln):
         else:
             plt.ylim([0,1])
         plt.legend()
-    plt.savefig("metrics.png",bbox_inches='tight',transparent=False)
+    # plt.savefig("metrics.png",bbox_inches='tight',transparent=False)
     # plt.savefig("figures/"+str(date[1])+"@"+str(date[0][:5].replace(":",""))+"_"+str(hln)+"neurons_training_metrics.png",bbox_inches='tight',transparent=False)
 def get_compiled_model(n,INPUT_FEATURES,dropout=True):
     """
@@ -334,3 +326,43 @@ def split_and_shuffle(df):
     print('Weight for class 2: {:.2f}'.format(weight_for_w))
 
     return train_features,train_labels,val_features,val_labels,test_features,test_labels,class_weight
+def transformer_encoder(inputs, head_size, num_heads, ff_dim, dropout=0):
+    # Attention and Normalization
+    x = layers.MultiHeadAttention(
+        key_dim=head_size, num_heads=num_heads, dropout=dropout
+    )(inputs, inputs)
+    x = layers.Dropout(dropout)(x)
+    x = layers.LayerNormalization(epsilon=1e-6)(x)
+    res = x + inputs
+
+    # Feed Forward Part
+    x = layers.Dense(units=128,activation="relu")(res)
+    # x = layers.Conv1D(filters=ff_dim, kernel_size=1, activation="relu")(res)
+    x = layers.Dropout(dropout)(x)
+    x = layers.Dense(units=128,activation="relu")(res)
+
+    # x = layers.Conv1D(filters=inputs.shape[-1], kernel_size=1)(x)
+    x = layers.LayerNormalization(epsilon=1e-6)(x)
+    return x + res
+def build_model(
+    input_shape,
+    head_size,
+    num_heads,
+    ff_dim,
+    num_transformer_blocks,
+    mlp_units,
+    n_classes,
+    dropout=0,
+    mlp_dropout=0,
+):
+    inputs = keras.Input(shape=input_shape)
+    x = inputs
+    for _ in range(num_transformer_blocks):
+        x = transformer_encoder(x, head_size, num_heads, ff_dim, dropout)
+
+    x = layers.GlobalAveragePooling1D(data_format="channels_first")(x)
+    for dim in mlp_units:
+        x = layers.Dense(dim, activation="relu")(x)
+        x = layers.Dropout(mlp_dropout)(x)
+    outputs = layers.Dense(n_classes, activation="softmax")(x)
+    return keras.Model(inputs, outputs)
