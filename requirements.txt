@@ -1,0 +1,7 @@
+pandas
+matplotlib
+seaborn
+xlrd
+tensorflow
+sklearn
+tqdm
