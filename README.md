@@ -52,3 +52,5 @@ Final output scoring in zdb format are in
 3. Add scoring data to raw .zdb file using MATLAB script
 ## Installation
 ## Usage
+## Contributing
+[Making Changes to Project Aurora Pipeline on Git](https://andrewsmithnotion.notion.site/Making-Changes-to-Project-Aurora-Pipeline-on-Git-7fc6fbc74c33468cad0ed004fd6e4b5e)
