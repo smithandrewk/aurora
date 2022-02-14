@@ -12,9 +12,10 @@ clean: ## Remove Data Things
 	cowsay cleaning
 	rm -rf data/raw data/renamed data/mapping
 
-#added by Musa
+	
 renameZIP:	
 	./scripts/unzipAndRenameZipFile.py
+
 renameNoZIP:
 	./scripts/renameData.py
 
