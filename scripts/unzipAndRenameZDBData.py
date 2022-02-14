@@ -10,13 +10,15 @@ os.system('unzip -j data/UnscoredZDB.zip -x / -d ./data/rawZDB')
 
 mapping = mapping = open('data/mapping').read().splitlines()
 mapping = [name.replace('.xls', '') for name in mapping]
-for file in os.listdir("data/rawZDB"):
-    i=0
-    newName = ''
-    for name in mapping:
-        if name in file:
+
+f = open('data/ZDBmapping','w+')
+i=0
+for name in mapping:
+    for file in os.listdir("data/rawZDB"):
+        if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
             newName = str(i)+'.zdb'
-        i+=1
-    os.system("cp data/rawZDB/'"+file+"' data/renamedZDB/'"+newName+"'")
-
-
+            os.system("cp data/rawZDB/'"+file+"' data/renamedZDB/'"+newName+"'")
+            f.write(file+'\n')
+            break
+    i+=1
+f.close
