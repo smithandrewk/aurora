@@ -17,3 +17,14 @@ renameZIP:
 	./scripts/unzipAndRenameZipFile.py
 renameNoZIP:
 	./scripts/renameData.py
+
+#downloadmodels:
+#	mkdir -p ./model
+#	wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1MSAECbvmlsptmRDdR1EEqo3ijRZrf9gD' -O model/best_model.h5
+#	wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1GW09FZXP10H_2pJnVZH_UKsmLx-PMtpV' -O model/best_transformer.h5
+#	wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Sx7ZVgD7gyqfjZJnweEIdzr8h4-7HZfw' -O model/saved_model.pb
+#	wget --no-check-certificate 'https://docs.google.com/uc?export=download&id=1Sx7ZVgD7gyqfjZJnweEIdzr8h4-7HZfw' -O model/saved_model.pb
+
+downloadmodels:
+	mkdir -p model
+	xdg-open https://drive.google.com/drive/folders/1SwuAuVgyNirb-ebVKrU9RIzX6RFrhbdO?usp=sharing
