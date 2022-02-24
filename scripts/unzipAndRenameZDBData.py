@@ -8,7 +8,7 @@ os.system('mkdir data/renamedZDB')
 os.system('cp UnscoredZDB.zip data/UnscoredZDB.zip')
 os.system('unzip -j data/UnscoredZDB.zip -x / -d ./data/rawZDB')
 
-mapping = mapping = open('data/mapping').read().splitlines()
+mapping = open('data/mapping').read().splitlines()
 mapping = [name.replace('.xls', '') for name in mapping]
 
 f = open('data/ZDBmapping','w+')
