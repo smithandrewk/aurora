@@ -13,6 +13,7 @@ clean: ## Remove Data Things
 	rm -rf data/raw data/renamed data/mapping
 
 
+
 renameZIP:	
 	./scripts/unzipAndRenameZipFile.py
 
