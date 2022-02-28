@@ -19,7 +19,7 @@ Before starting, rename data archive
 
 And rename ZDB archive
 
-```UnscoredZDB```
+```UnscoredZDB.zip```
 
 <br />
 NOTE: Zdb files must be scored at least onces for process to be successful</br>
