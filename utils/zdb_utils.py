@@ -45,13 +45,13 @@ def ZDBConversion(csv, zdb):
     startid = cur.fetchall()[0][0]
 
     #get start time to crreate epochs
-    query = 'SELECT starts_at FROM scoring_marker WHERE id = '+str(startid)+"';"
+    query = 'SELECT starts_at FROM scoring_marker WHERE id = '+str(startid)+";"
     cur.execute(query)
     start_time = cur.fetchall()[0][0]
     stop_time = 0
 
     #delete first score before adding machine data
-    query = "DELETE FROM scoring_marker WHERE id = " + str(startid)+";"
+    query = "DELETE FROM scoring_marker;"
     cur.execute(query)
 
 
