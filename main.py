@@ -6,7 +6,6 @@ Pipeline for ...
 print(__doc__)
 from scripts.modules import *
 
-process_timestamps()
 initial_preprocessing()
 handle_anomalies()
 window()
