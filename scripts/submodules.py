@@ -61,3 +61,22 @@ def preprocess(dir,filename):
     filename = filename.replace(".xls","")
     df.to_csv(f'data/preprocessed/{filename}_preprocessed.csv',index=False) # save dataframe in csv format
     return df
+def window_data(dir,target_filename):
+    from tqdm import tqdm
+    from pandas import read_csv,DataFrame
+    from os import path,system
+    df = read_csv(f'{dir}/{target_filename}')
+    if ( not path.isdir('data/windowed')):
+        system('mkdir data/windowed')
+    filename = target_filename.replace(".csv",'')
+    new_target_filename = "data/windowed/"+filename+"_windowed.csv"
+    system('touch '+new_target_filename)
+
+    for i in tqdm(range(len(df)-4)):
+        win = df.iloc[i:i+5]
+        x = win.values.flatten()
+        X = DataFrame(x).T
+        if i==0:
+            X.to_csv(new_target_filename, mode='a', index=False)
+        else:
+            X.to_csv(new_target_filename, mode='a', index=False, header=False)

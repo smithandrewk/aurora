@@ -34,14 +34,14 @@ def handle_anomalies():
     print("Starting Handling Anomalies")
     import pandas as pd
     from os import listdir
-    unscored_list = []
+    # unscored_list = []
     for file in listdir("data/preprocessed"):
         df = pd.read_csv("data/preprocessed/"+file)
         print("======================================"+file)
-        if(df.columns[0]!="Class"):
-            print("NOT SCORED")
-            unscored_list.append("data/preprocessed/"+file)
-            continue
+        # if(df.columns[0]!="Class"):
+        #     print("NOT SCORED")
+        #     unscored_list.append("data/preprocessed/"+file)
+        #     continue
         if(df.columns[1]!="0-0.5"):
             print("ANOMALY")
             df.rename(columns={"EEG 1 (0-0.5 Hz, 0-0.5Hz , 10s) (Mean, 10s)":"0-0.5"},inplace=True)
@@ -61,7 +61,17 @@ def window():
         filename : name of file
     """
     print("Starting Windowing")
-
+    from scripts.submodules import window_data
+    from pandas import read_csv
+    from os import listdir
+    i = 0
+    dir = f'data/preprocessed'
+    for file in listdir(dir):
+        print("Iteration: " + str(i))
+        print(file)
+        # X = read_csv(i)
+        window_data(dir,file)
+        i += 1
     print("Finishing Windowing")
 def scale():
     """
