@@ -34,18 +34,18 @@ def ZDBConversion(csv, zdb):
     query = "DROP TABLE IF EXISTS temporary_scoring_marker;"
     cur.execute(query)
 
-    #get starting point for scoring
-    query = "SELECT id FROM scoring_marker WHERE type LIKE 'Sleep%';"
-    cur.execute(query)
-    startid = cur.fetchall()[0][0]
-
     #get keyid of scoring
     query = "SELECT MAX(id) FROM scoring_revision WHERE name='Machine Data'"
     cur.execute(query)
     keyid = cur.fetchall()[0][0]
 
+    #get starting point for scoring
+    query = "SELECT id FROM scoring_marker WHERE type LIKE 'Sleep%' AND key_id='"+str(keyid)+"';"
+    cur.execute(query)
+    startid = cur.fetchall()[0][0]
+
     #get start time to crreate epochs
-    query = 'SELECT starts_at FROM scoring_marker WHERE id = '+str(startid)+';'
+    query = 'SELECT starts_at FROM scoring_marker WHERE id = '+str(startid)+"';"
     cur.execute(query)
     start_time = cur.fetchall()[0][0]
     stop_time = 0
