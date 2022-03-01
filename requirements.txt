@@ -5,3 +5,4 @@ xlrd
 tensorflow
 sklearn
 tqdm
+ipykernel

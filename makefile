@@ -12,8 +12,17 @@ clean: ## Remove Data Things
 	cowsay cleaning
 	rm -rf data/raw data/renamed data/mapping
 
-#added by Musa
+
+
 renameZIP:	
 	./scripts/unzipAndRenameZipFile.py
+
 renameNoZIP:
 	./scripts/renameData.py
+
+downloadmodels:
+	mkdir -p model
+	xdg-open https://drive.google.com/drive/folders/1SwuAuVgyNirb-ebVKrU9RIzX6RFrhbdO?usp=sharing
+
+renameZDB:
+	./scripts/unzipAndRenameZDBData.py

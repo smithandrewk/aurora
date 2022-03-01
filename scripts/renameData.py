@@ -7,7 +7,7 @@ os.system('mkdir data')
 os.system('mkdir data/raw')
 os.system('mkdir data/renamed')
 
-os.system('mv ./Unscored/* ./data/raw')
+os.system('cp -r ./Unscored/* ./data/raw')
 
 i = 0
 f = open('data/mapping','w+')
