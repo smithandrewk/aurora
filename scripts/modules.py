@@ -8,20 +8,16 @@ def initial_preprocessing():
     print("Starting Preprocessing")
     import os
     import pandas as pd
-    from scripts.submodules import preprocess
+    from scripts.submodules import preprocess_csv
 
     i = 0
     dir = f'data/renamed'
     for file in os.listdir(dir):
         print("Iteration " + str(i))
 
-        # TODO: need more logic here. What if a file doesn't have a time stamp column?
-        #before preprocess remove time stamp column
-        # df = pd.read_csv('data/renamed/'+file)
-        # df = df.drop([df.columns[0]], axis=1)
-        # df.to_csv('data/renamed/'+file, index=False)
+        # TODO: need more logic here. What if a file doesn't have a time stamp column? <- Resolved, in preprocess submodule
         print(dir,file)
-        preprocess(dir,file)
+        preprocess_csv(dir,file)
         i += 1
     print("Finishing Preprocessing")
 def handle_anomalies():
