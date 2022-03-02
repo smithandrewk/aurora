@@ -10,3 +10,7 @@ test.csv
 train.csv
 val.csv
 logs
+X.csv
+best_model.h5
+cm.jpg
+recall.jpg
