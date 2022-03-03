@@ -26,3 +26,7 @@ downloadmodels:
 
 renameZDB:
 	./scripts/unzipAndRenameZDBData.py
+
+scoreData:
+	chmod +x main.py
+	./main.py

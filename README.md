@@ -21,14 +21,27 @@ And rename ZDB archive
 ```UnscoredZDB.zip```
 
 <br />
-NOTE: Zdb files must be scored at least onces for process to be successful</br>
+NOTE:  zdb code has not been completely tested</br>
+<br />
+
+Prepare data for scoring by typing the following in the command line
+
+```make renameZIP```
+
+and, if ZBD files are available,
+
+```make renameZDB```
 
 <br />
 
 ## Scoring
-Follow steps in
-```main.ipynb```
-to score data
+To score data, type the command
+
+```make scoreData```
+
+or run the script
+
+```main.py```
 
 <br />
 
