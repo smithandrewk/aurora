@@ -218,13 +218,42 @@ def remap_names():
         os.system(f"cp data/expanded_renamed_rf/'{file}' data/final_rf/'{newName}'")
         i+=1
     print("Finishing Remap Names")
+def zdb_preprocess():
+    """
+    zdb_preprocess preprocesses ZDBs
+    """
+    print("Starting ZDB preprocessing")
+    import os
+    from scripts.submodules import preprocess_zdb
+    dir = 'data/renamedZDB'
+    if not os.isdir(dir):
+        print("No ZDB files")
+        return
+    for file in os.listdir(dir):
+        preprocess_zdb(dir, file)
+    print("Finishing ZDB preprocessing")
+
 def zdb_conversion():
     """
-    scale scales.
-
-    @params
-        filename : name of file
+    zdb_conversion imports csv into ZDB format.
     """
-    print("Starting Scaling")
+    print("Starting ZDB Conversion")
+    import os
+    from scripts.submodules import ZDBconversion
 
-    print("Finishing Scaling")
+    dir_zdb = 'data/preprocessedZDB'
+    dir_ann = 'data/expanded_renamed_ann'
+    dir_rf = 'data/expanded_renamed_rf'
+
+    if not os.isdir(dir_zdb):
+        print("No ZDB files")
+        return
+    for csv in os.listdir(dir_ann):
+        name = csv.replace('.csv', '')
+        zdb = f'{name}.zdb'
+        ZDBconversion(dir_ann, dir_zdb, csv, zdb, 'ann')
+    for csv in os.listdir(dir_rf):
+        name = csv.replace('.csv', '')
+        zdb = f'{name}.zdb'
+        ZDBconversion(dir_ann, dir_zdb, csv, zdb, 'rf')
+    print("Finishing ZDB Conversion")
