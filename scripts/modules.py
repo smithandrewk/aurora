@@ -7,15 +7,12 @@ def initial_preprocessing():
     """
     print("Starting Preprocessing")
     import os
-    import pandas as pd
     from scripts.submodules import preprocess_csv
 
     i = 0
     dir = f'data/renamed'
     for file in os.listdir(dir):
         print("Iteration " + str(i))
-
-        # TODO: need more logic here. What if a file doesn't have a time stamp column? <- Resolved, in preprocess submodule
         print(dir,file)
         preprocess_csv(dir,file)
         i += 1
@@ -58,7 +55,6 @@ def window():
     """
     print("Starting Windowing")
     from scripts.submodules import window_data
-    from pandas import read_csv
     from os import listdir
     i = 0
     dir = f'data/preprocessed'
@@ -77,7 +73,24 @@ def scale():
         filename : name of file
     """
     print("Starting Scaling")
-
+    import pandas as pd
+    import os
+    i = 0
+    dir = 'data/windowed'
+    for file in os.listdir(dir):
+        filename = f'{dir}/{file}'
+        X = pd.read_csv(filename)
+        from sklearn.preprocessing import MinMaxScaler
+        scaler = MinMaxScaler()
+        print("Iteration: " + str(i))
+        X = scaler.fit_transform(X)
+        if ( not os.path.isdir('data/windowed_scaled')):
+            os.system('mkdir data/windowed_scaled')
+        file = file.replace("_preprocessed_windowed.csv", "")
+        filename = "data/windowed_scaled/"+file+"_windowed_scaled.csv"
+        pd.DataFrame(X).to_csv(filename, index=False)
+        print(filename)
+        i += 1
     print("Finishing Scaling")
 def score_ann():
     """
