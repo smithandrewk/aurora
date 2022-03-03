@@ -273,7 +273,7 @@ def preprocess_zdb(dir, file):
 
     filename = f'{dir}/{file}'
     new_dir = 'data/preprocessedZDB'
-    if not os.isdir(new_dir):
+    if not os.path.isdir(new_dir):
         os.system(f'mkdir {new_dir}')
     os.system(f"cp '{filename}' {new_dir}/'{file}'")
     filename = f"{new_dir}/{file}"
@@ -397,7 +397,7 @@ def preprocess_zdb(dir, file):
     conn.commit()
     conn.close()
 
-def ZDBConversion(dir_csv, dir_zdb, csv, zdb, mode):
+def conversion_zdb(dir_csv, dir_zdb, csv, zdb, mode):
     import pandas as pd
     import sqlite3
     from sqlite3 import Error

@@ -226,7 +226,7 @@ def zdb_preprocess():
     import os
     from scripts.submodules import preprocess_zdb
     dir = 'data/renamedZDB'
-    if not os.isdir(dir):
+    if not os.path.isdir(dir):
         print("No ZDB files")
         return
     for file in os.listdir(dir):
@@ -239,23 +239,23 @@ def zdb_conversion():
     """
     print("Starting ZDB Conversion")
     import os
-    from scripts.submodules import ZDBconversion
+    from scripts.submodules import conversion_zdb
 
     dir_zdb = 'data/preprocessedZDB'
     dir_ann = 'data/expanded_renamed_ann'
     dir_rf = 'data/expanded_renamed_rf'
 
-    if not os.isdir(dir_zdb):
+    if not os.path.isdir(dir_zdb):
         print("No ZDB files")
         return
     for csv in os.listdir(dir_ann):
         name = csv.replace('.csv', '')
         zdb = f'{name}.zdb'
-        ZDBconversion(dir_ann, dir_zdb, csv, zdb, 'ann')
+        conversion_zdb(dir_ann, dir_zdb, csv, zdb, 'ann')
     for csv in os.listdir(dir_rf):
         name = csv.replace('.csv', '')
         zdb = f'{name}.zdb'
-        ZDBconversion(dir_ann, dir_zdb, csv, zdb, 'rf')
+        conversion_zdb(dir_ann, dir_zdb, csv, zdb, 'rf')
     print("Finishing ZDB Conversion")
 def zdb_remap():
     """
