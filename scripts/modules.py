@@ -193,14 +193,31 @@ def rename_scores():
     print("Finishing Rename Scores")
 def remap_names():
     """
-    scale scales.
+    remap_names remaps names to original names
 
     @params
         filename : name of file
     """
-    print("Starting Scaling")
-
-    print("Finishing Scaling")
+    print("Starting Remap Names")
+    import os
+    mapping = open('data/mapping').read().splitlines()
+    if not os.path.isdir('data/final_ann'):
+        os.system('mkdir data/final_ann')
+    if not os.path.isdir('data/final_rf'):
+        os.system('mkdir data/final_rf')
+    i=0
+    for file in os.listdir('data/expanded_renamed_ann'):
+        index_str = file.replace('.csv', '')
+        newName = mapping[int(index_str)].replace('.xls', '-ann.csv')
+        os.system(f"cp data/expanded_renamed_ann/'{file}' data/final_ann/'{newName}'")
+        i+=1
+    i=0
+    for file in os.listdir('data/expanded_renamed_rf'):
+        index_str = file.replace('.csv', '')
+        newName = mapping[int(index_str)].replace('.xls', '-rf.csv')
+        os.system(f"cp data/expanded_renamed_rf/'{file}' data/final_rf/'{newName}'")
+        i+=1
+    print("Finishing Remap Names")
 def zdb_conversion():
     """
     scale scales.
