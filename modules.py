@@ -59,10 +59,10 @@ def split_and_shuffle(filename):
     from numpy import array
     # Use a utility from sklearn to split and shuffle our dataset.
     train_df, test_df = train_test_split(df, test_size=0.2)
-    train_df, val_df = train_test_split(train_df, test_size=0.2)
+    # train_df, val_df = train_test_split(train_df, test_size=0.2)
     train_df.to_csv("train.csv",index=False)
     test_df.to_csv("test.csv",index=False)
-    val_df.to_csv("val.csv",index=False)
+    # val_df.to_csv("val.csv",index=False)
 
     # Form np arrays of labels and features.
     # train_labels = array(train_df.pop('Class'))
@@ -109,7 +109,7 @@ def load_data_and_train_model():
     y_val = np.array(y_val)
     baseline_history = train_model(x_train,y_train,x_val,y_val)
     return baseline_history
-def load_data_and_test_model(baseline_history):
+def load_data_and_test_model():
     from submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
@@ -125,7 +125,7 @@ def load_data_and_test_model(baseline_history):
     x_test = scaler.fit_transform(x_test)
 
     baseline_results,test_predictions_baseline = test_model(x_test,y_test)
-    plot_metrics(baseline_history)
+    # plot_metrics(baseline_history)
     plot_cm(one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,512,"All Scored Files")
     # import matplotlib
     # matplotlib.use("pgf")

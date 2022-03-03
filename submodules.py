@@ -135,7 +135,7 @@ def train_model(x_train,y_train,x_val,y_val):
     from tensorflow import keras
     hln = 1024
     BATCH_SIZE=64
-    EPOCHS=50
+    EPOCHS=200
     model = tf.keras.Sequential([
         keras.layers.Dense(hln, activation='relu',input_shape=(x_train.shape[-1],)),
         keras.layers.Dropout(0.5),
@@ -150,12 +150,6 @@ def train_model(x_train,y_train,x_val,y_val):
         keras.metrics.AUC(name='auc')
     ])
 
-    early_stopping = tf.keras.callbacks.EarlyStopping(
-        monitor='categorical_accuracy',
-        verbose=1,
-        patience=100,
-        mode='max',
-        restore_best_weights=True)
     from time import time
     start = time()
     baseline_history = model.fit(
@@ -170,7 +164,7 @@ def train_model(x_train,y_train,x_val,y_val):
         keras.callbacks.ReduceLROnPlateau(
             monitor="val_loss", factor=0.5, patience=20, min_lr=0.0001
         ),
-        keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1),])
+        keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1,mode='min',restore_best_weights=True),])
     stop = time()-start
     # TODO save baseline history for training
     return baseline_history
@@ -192,13 +186,10 @@ def test_model(x_test,y_test):
     # from scripts.utils import *
     # plt.rcParams["figure.facecolor"] = 'w'
     # plot_metrics(baseline_history,"",hln)
-    # train_predictions_baseline = model.predict(x_train, batch_size=BATCH_SIZE)
     import tensorflow as tf
     test_predictions_baseline = model.predict(x_test, batch_size=64)
     baseline_results = model.evaluate(x_test, tf.one_hot(y_test,depth=3),
                                         batch_size=64, verbose=0)
-    # print(baseline_results[1])
-    # plot_cm(tf.one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,hln,"All Scored Files")
 
     return baseline_results,test_predictions_baseline
 def plot_metrics(baseline_history):
@@ -241,6 +232,6 @@ def plot_cm(labels, predictions,met,hln,file):
     plt.figure()
     cm = confusion_matrix(labels, predictions)
     sns.heatmap(cm, annot=True, fmt="d",cbar=False)
-    # plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
+    plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
