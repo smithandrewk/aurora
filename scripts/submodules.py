@@ -410,7 +410,6 @@ def ZDBConversion(dir_csv, dir_zdb, csv, zdb, mode):
     
     csv_filename = f'{dir_csv}/{csv}'
     zdb_filename = f'{dir_zdb}/{zdb}'
-    new_dir = f'data/ZDB_{mode}'
     os.system(f"cp '{zdb_filename}' '{new_dir}/{zdb}'")
     filename = f'{new_dir}/{zdb}'
 

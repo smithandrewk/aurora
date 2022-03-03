@@ -257,3 +257,24 @@ def zdb_conversion():
         zdb = f'{name}.zdb'
         ZDBconversion(dir_ann, dir_zdb, csv, zdb, 'rf')
     print("Finishing ZDB Conversion")
+def zdb_remap():
+    """
+    zdb_remap remaps zdb names
+    """
+    print("Starting ZDB remap names")
+    import os
+    dir_ann = "data/ZDB_ann"
+    dir_rf = "data/ZDB_rf"
+    if not os.path.isdir(dir_ann) or not os.path.isdir(dir_rf):
+        print("No ZDB files")
+        return
+    os.system('mkdir data/ZDB_final_ann')
+    os.system('mkdir data/ZDB_final_rf')
+    mapping = open('data/ZDBmapping').read().splitlines()
+
+    for zdb in os.listdir(dir_ann):
+        index = int(zdb.replace('.zdb', ''))
+        os.system(f'cp {dir_ann}/"{zdb}" data/ZDB_final_ann/"{mapping[index]}"')
+    for zdb in os.listdir(dir_rf):
+        index = int(zdb.replace('.zdb', ''))
+        os.system(f'cp {dir_rf}/"{zdb}" data/ZDB_final_rf/"{mapping[index]}"')
