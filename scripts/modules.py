@@ -92,36 +92,105 @@ def scale():
         print(filename)
         i += 1
     print("Finishing Scaling")
-def score_ann():
+def score_ann(model):
     """
-    scale scales.
+    score_ann scores ANN.
 
     @params
-        filename : name of file
+        model : name of model
     """
-    print("Starting Scaling")
+    print("Started Scoring ANN")
+    from scripts.submodules import score_data_ann
+    from os import listdir
 
-    print("Finishing Scaling")
-def score_rf():
+    dir = 'data/windowed_scaled'
+    i=0
+    for file in listdir(dir):
+        print("Iteration: " + str(i))
+        score_data_ann(dir, file, model)
+        i += 1
+
+    print("Finishing Scoring ANN")
+def score_rf(model):
     """
-    scale scales.
+    score_rf scores RF.
 
     @params
-        filename : name of file
+        model : name of model
     """
-    print("Starting Scaling")
+    print("Starting Scoring RF")
+    from scripts.submodules import score_data_rf
+    from os import listdir
 
-    print("Finishing Scaling")
+    dir = 'data/windowed'
+    i=0
+    for file in listdir(dir):
+        print("Iteration: " + str(i))
+        score_data_rf(dir, file, model)
+        i+=1
+
+    print("Finishing Scoring RF")
 def expand_predictions():
     """
-    scale scales.
+    expand_prediction expands predictions.
 
     @params
         filename : name of file
     """
-    print("Starting Scaling")
+    print("Starting Expand Predictions")
+    from scripts.submodules import expand_predictions_ann, expand_predictions_rf
+    from os import listdir
 
-    print("Finishing Scaling")
+    dir_ann = 'data/predictions_ann'
+    i=0
+    print("Expanding ANN predictions")
+    for file in listdir(dir_ann):
+        print("Iteration: " + str(i))
+        expand_predictions_ann(dir_ann, file)
+        i+=1
+    dir_rf = 'data/predictions_rf'
+    print("Expanding RF predictions")
+    i=0
+    for file in listdir(dir_rf):
+        print("Iteration: " + str(i))
+        expand_predictions_rf(dir_rf, file)
+        i+=1
+
+    print("Finishing Expand Predictions")
+def rename_scores():
+    """
+    rename_scores renames scores (0,1,2 --> P,S,W)
+    """
+    print("Starting Rename Scores")
+    import os
+    import pandas as pd
+    from pandas import read_csv
+    rename_dict = {0: 'P', 1: 'S', 2: 'W'}
+    # rename_dict = {0: 'Sleep-Paradoxical', 1: 'Sleep-SWS', 2: 'Sleep-Wake'}  #doesnt work with matlabcode
+    if ( not os.path.isdir('data/expanded_renamed_rf')):
+        os.system('mkdir data/expanded_renamed_rf')
+    if ( not os.path.isdir('data/expanded_renamed_ann')):
+        os.system('mkdir data/expanded_renamed_ann')
+    
+    dir_ann = 'data/expanded_predictions_ann'
+    for file in os.listdir(dir_ann):
+        df = read_csv(f'{dir_ann}/{file}')
+        y = df['0']
+        new_y = []
+        for i in y:
+            new_y.append(rename_dict[i])
+        pd.DataFrame(new_y).to_csv("data/expanded_renamed_ann/"+file,index=False)
+    
+    dir_rf = 'data/expanded_predictions_rf'
+    for file in os.listdir(dir_rf):
+        df = read_csv(f'{dir_rf}/{file}')
+        y = df['0']
+        new_y = []
+        for i in y:
+            new_y.append(rename_dict[i])
+        pd.DataFrame(new_y).to_csv("data/expanded_renamed_rf/"+file,index=False)
+    
+    print("Finishing Rename Scores")
 def remap_names():
     """
     scale scales.
