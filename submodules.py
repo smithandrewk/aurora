@@ -130,12 +130,11 @@ def balance(dir,filename):
     filename = filename.replace(".csv","")
     df.to_csv("data/balanced/"+filename+"_balanced.csv",index=False)
     return df
-def train_model(x_train,y_train,x_val,y_val):
+def train_model(x_train,y_train,x_val,y_val,hln=256):
     import tensorflow as tf
     from tensorflow import keras
-    hln = 1024
     BATCH_SIZE=64
-    EPOCHS=200
+    EPOCHS=400
     model = tf.keras.Sequential([
         keras.layers.Dense(hln, activation='relu',input_shape=(x_train.shape[-1],)),
         keras.layers.Dropout(0.5),
