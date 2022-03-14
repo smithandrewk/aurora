@@ -6,11 +6,11 @@ Pipeline for ...
 print(__doc__)
 from scripts.modules import *
 
-initial_preprocessing()
-handle_anomalies()
-window()
-scale()
-score_ann('mice_256hln_ann_85.8_accuracy/best_model.h5')
+# initial_preprocessing()
+# handle_anomalies()
+# window()
+# scale()
+score_ann('mice_512hln_ann_96.4_accuracy/best_model.h5')
 score_rf('rf_model')
 expand_predictions()
 rename_scores()
