@@ -30,3 +30,10 @@ renameZDB:
 scoreData:
 	chmod +x main.py
 	./main.py
+
+archiveScores:
+	cp -r data/final_ann .
+	cp -r data/final_rf .
+	zip -r Scored.zip final_ann/ final_rf/
+	cp Scored.zip data/Scored.zip
+	rm -r final_ann final_rf
