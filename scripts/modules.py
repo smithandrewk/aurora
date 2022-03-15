@@ -1,4 +1,4 @@
-from submodules import plot_metrics, train_model
+from scripts.submodules import plot_metrics, train_model
 
 
 def rename_data_in_raw():
@@ -14,19 +14,19 @@ def rename_data_in_raw():
             system(command)
 def preprocess_renamed_files():
     from os import listdir
-    from submodules import preprocess
+    from scripts.submodules import preprocess
     dir = f'data/renamed'
     for file in listdir(dir):
         preprocess(dir,file)
 def fix_anomalies_in_preprocessed_files():
     from os import listdir
-    from submodules import fix_anomalies
+    from scripts.submodules import fix_anomalies
     dir = f'data/preprocessed'
     for file in listdir(dir):
         fix_anomalies(dir,file)
 def window_preprocessed_files():
     from os import listdir,system,path
-    from submodules import window
+    from scripts.submodules import window
     if ( not path.isdir('data/windowed')):
         system('mkdir data/windowed')
     dir = f'data/preprocessed'
@@ -34,7 +34,7 @@ def window_preprocessed_files():
         window(dir,file)
 def balance_windowed_files():
     from os import path,system,listdir
-    from submodules import balance
+    from scripts.submodules import balance
     dir = f'data/windowed'
     if (not path.isdir('data/balanced')):
         system(f'mkdir data/balanced')
@@ -90,7 +90,7 @@ def split_and_shuffle(filename):
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
 def load_data_and_train_model():
-    from submodules import train_model
+    from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
     train_df = pd.read_csv("train.csv")
@@ -111,7 +111,7 @@ def load_data_and_train_model():
     baseline_history = train_model(x_train,y_train,x_val,y_val,hln=hln)
     return hln,baseline_history
 def load_data_and_test_model(hln):
-    from submodules import test_model,plot_cm
+    from scripts.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
     import matplotlib.pyplot as plt

@@ -110,7 +110,7 @@ def window(dir,filename):
     return df
 def balance(dir,filename):
     from pandas import read_csv,concat
-    from utils import class_count
+    from scripts.utils import class_count
     df = read_csv(f'{dir}/{filename}')
     X = [p,s,w] = class_count(df)
     min_val = min(X)
