@@ -3,3 +3,6 @@ __pycache__
 env
 model/*
 data/*
+Unscored.zip
+UnscoredZDB.zip
+Scored*.zip
