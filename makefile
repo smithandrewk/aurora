@@ -29,7 +29,8 @@ renameZDB:
 
 scoreData:
 	chmod +x main.py
-	./main.py
+	touch data/pipeline.log
+	./main.py >> data/pipeline.log
 
 archiveScores:
 	cp -r data/final_ann .
