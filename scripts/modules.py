@@ -40,29 +40,31 @@ def balance_windowed_files():
         system(f'mkdir data/balanced')
     for file in listdir(dir):
         balance(dir,file)
-def concatenate_balanced_files():
+def concatenate_balanced_files(time):
     import pandas as pd
     from os import listdir
     from tqdm import tqdm
-
+    filename = f'sessions/data/{time}/X.csv'
     for i,file in tqdm(enumerate(listdir("data/balanced"))):
         df = pd.read_csv("data/balanced/"+file)
         if(i==0):
             ## First, add header
-            df.to_csv('X.csv', mode='w', header=True,index=False)
+            df.to_csv(filename, mode='w', header=True,index=False)
             continue
-        df.to_csv('X.csv', mode='a', header=False,index=False)
-def split_and_shuffle(filename):
+        df.to_csv(filename, mode='a', header=False,index=False)
+def split_and_shuffle(filename, time):
     from pandas import read_csv
-    df = read_csv(filename)
+    from submodules import get_time_dir
+    dir = f'sessions/data/{time}'
+    df = read_csv(f'{dir}/{filename}')
     from sklearn.model_selection import train_test_split
     from numpy import array
     # Use a utility from sklearn to split and shuffle our dataset.
     train_df, test_df = train_test_split(df, test_size=0.2)
     train_df, val_df = train_test_split(train_df, test_size=0.2)
-    train_df.to_csv("train.csv",index=False)
-    test_df.to_csv("test.csv",index=False)
-    val_df.to_csv("val.csv",index=False)
+    train_df.to_csv(f"{dir}/train.csv",index=False)
+    test_df.to_csv(f"{dir}/test.csv",index=False)
+    val_df.to_csv(f"{dir}/val.csv",index=False)
 
     # Form np arrays of labels and features.
     # train_labels = array(train_df.pop('Class'))
@@ -89,12 +91,13 @@ def split_and_shuffle(filename):
     # print('Weight for class 0: {:.2f}'.format(weight_for_p))
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
-def load_data_and_train_model():
+def load_data_and_train_model(time):
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
-    train_df = pd.read_csv("train.csv")
-    val_df = pd.read_csv("val.csv")
+    data_dir = f'sessions/data/{time}'
+    train_df = pd.read_csv(f"{data_dir}/train.csv")
+    val_df = pd.read_csv(f"{data_dir}/val.csv")
     y_train = train_df.pop('Class')
     x_train = train_df
     y_val = val_df.pop('Class')
@@ -141,3 +144,9 @@ def load_data_and_test_model(hln):
     plt.savefig("cm.jpg")
     return baseline_results
 
+def get_time_dir():
+    from datetime import datetime
+    import os
+    now = datetime.now()
+    date_str = now.strftime("%m.%d.%Y_%H:%m")
+    return date_str
