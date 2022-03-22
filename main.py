@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from scripts.modules import *
-get_time_dir()
+create_time_dir()
 rename_data_in_raw()
 preprocess_renamed_files()
 fix_anomalies_in_preprocessed_files()

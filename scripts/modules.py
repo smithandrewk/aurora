@@ -145,13 +145,19 @@ def load_data_and_test_model(hln):
     plt.savefig(f"{model_dir}/cm.jpg")
     return baseline_results
 
-def get_time_dir():
+def create_time_dir():
     from datetime import datetime
+    import os
     now = datetime.now()
-    date_str = now.strftime("%m.%d.%Y_%H:%m")
+    date_str = now.strftime("%m.%d.%Y_%H:%M")
+    print(now)
+    print(date_str)
     global TIME_DIR 
+    print(TIME_DIR)
     TIME_DIR = date_str
-    return date_str
+    print(TIME_DIR)
+    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
+    os.system(f'mkdir -p sessions/models/{TIME_DIR}')
 
 # def test():
 #     from scripts.submodules import sub_test
