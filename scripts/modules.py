@@ -1,5 +1,5 @@
 from scripts.submodules import plot_metrics, train_model
-
+TIME_DIR = ""
 
 def rename_data_in_raw():
     print(f'Renaming data in raw')
@@ -40,11 +40,11 @@ def balance_windowed_files():
         system(f'mkdir data/balanced')
     for file in listdir(dir):
         balance(dir,file)
-def concatenate_balanced_files(time):
+def concatenate_balanced_files():
     import pandas as pd
     from os import listdir
     from tqdm import tqdm
-    filename = f'sessions/data/{time}/X.csv'
+    filename = f'sessions/data/{TIME_DIR}/X.csv'
     for i,file in tqdm(enumerate(listdir("data/balanced"))):
         df = pd.read_csv("data/balanced/"+file)
         if(i==0):
@@ -52,10 +52,9 @@ def concatenate_balanced_files(time):
             df.to_csv(filename, mode='w', header=True,index=False)
             continue
         df.to_csv(filename, mode='a', header=False,index=False)
-def split_and_shuffle(filename, time):
+def split_and_shuffle(filename):
     from pandas import read_csv
-    from submodules import get_time_dir
-    dir = f'sessions/data/{time}'
+    dir = f'sessions/data/{TIME_DIR}'
     df = read_csv(f'{dir}/{filename}')
     from sklearn.model_selection import train_test_split
     from numpy import array
@@ -91,11 +90,11 @@ def split_and_shuffle(filename, time):
     # print('Weight for class 0: {:.2f}'.format(weight_for_p))
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
-def load_data_and_train_model(time):
+def load_data_and_train_model():
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
-    data_dir = f'sessions/data/{time}'
+    data_dir = f'sessions/data/{TIME_DIR}'
     train_df = pd.read_csv(f"{data_dir}/train.csv")
     val_df = pd.read_csv(f"{data_dir}/val.csv")
     y_train = train_df.pop('Class')
@@ -119,7 +118,9 @@ def load_data_and_test_model(hln):
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
-    test_df = pd.read_csv("test.csv")
+    data_dir = f'sessions/data/{TIME_DIR}'
+    model_dir = f'sessions/models/{TIME_DIR}'
+    test_df = pd.read_csv(f"{data_dir}/test.csv")
     y_test = test_df.pop('Class')
     x_test = test_df
     x_test = np.array(x_test)
@@ -141,12 +142,17 @@ def load_data_and_test_model(hln):
     #     'pgf.rcfonts': False
     # })
     plt.show()
-    plt.savefig("cm.jpg")
+    plt.savefig(f"{model_dir}/cm.jpg")
     return baseline_results
 
 def get_time_dir():
     from datetime import datetime
-    import os
     now = datetime.now()
     date_str = now.strftime("%m.%d.%Y_%H:%m")
+    global TIME_DIR 
+    TIME_DIR = date_str
     return date_str
+
+# def test():
+#     from scripts.submodules import sub_test
+#     sub_test()
