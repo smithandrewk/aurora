@@ -93,15 +93,22 @@ def split_and_shuffle(dir):
     # print('Weight for class 0: {:.2f}'.format(weight_for_p))
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
-def load_data_and_train_model(dir=None):
+def load_data_and_train_model(dir=None, split_shuffle=True):
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
-    if dir == None:
+    import os
+    if dir == None: # use X.csv from this session - must have run first part of main.py
         split_and_shuffle(f'sessions/data/{TIME_DIR}')
         data_dir = f'sessions/data/{TIME_DIR}'
     else:
-        data_dir = f'sessions/data/{dir}'
+        if split_shuffle:   # use only X.csv from previous session, split and shuffle to get new training data
+            os.system(f'mkdir -p sessions/data/{TIME_DIR}')
+            os.system(f'cp sessions/data/{dir}/X.csv sessions/data/{TIME_DIR}/X.csv')
+            split_and_shuffle(f'sessions/data/{TIME_DIR}')
+            data_dir = f'sessions/data/{TIME_DIR}'
+        else:   # use X.csv, test.csv, train.csv, and val.csv from previous session
+            data_dir = f'sessions/data/{dir}'
     train_df = pd.read_csv(f"{data_dir}/train.csv")
     val_df = pd.read_csv(f"{data_dir}/val.csv")
     y_train = train_df.pop('Class')
@@ -134,13 +141,17 @@ def load_data_and_test_model(hln, dir=None):
     test_df = pd.read_csv(f"{data_dir}/test.csv")
     y_test = test_df.pop('Class')
     x_test = test_df
-    x_test = np.array(x_test)
-    y_test = np.array(y_test)
+
     from sklearn.preprocessing import MinMaxScaler
     scaler = MinMaxScaler()
     x_test = scaler.fit_transform(x_test)
 
-    baseline_results,test_predictions_baseline = test_model(x_test,y_test, data_dir)
+    x_test = np.array(x_test)
+    y_test = np.array(y_test)
+    
+    # x_test = scaler.fit_transform(x_test)
+
+    baseline_results,test_predictions_baseline = test_model(x_test,y_test)
     # plot_metrics(baseline_history)
     plot_cm(one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,hln,"All Scored Files")
     # import matplotlib

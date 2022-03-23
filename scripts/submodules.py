@@ -170,24 +170,14 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
     stop = time()-start
     # TODO save baseline history for training
     return baseline_history
-def test_model(x_test,y_test, data_dir):
+def test_model(x_test,y_test):
     from keras.models import load_model
     from scripts.modules import TIME_DIR
     # data_dir = f'sessions/data/{TIME_DIR}'
     model_dir = f"sessions/models/{TIME_DIR}"
     model = load_model(f"{model_dir}/best_model.h5")
-    import pandas as pd
-    test_df = pd.read_csv(f"{data_dir}/test.csv")
-    y_test = test_df.pop('Class')
-    x_test = test_df
     from sklearn.preprocessing import MinMaxScaler
 
-    scaler = MinMaxScaler()
-
-    x_test = scaler.fit_transform(x_test)
-    import numpy as np
-    x_test = np.array(x_test)
-    y_test = np.array(y_test)
     # from scripts.utils import *
     # plt.rcParams["figure.facecolor"] = 'w'
     # plot_metrics(baseline_history,"",hln)

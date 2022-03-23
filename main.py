@@ -11,6 +11,13 @@ create_time_dir()
 # concatenate_balanced_files()
 
 ## Run these to train new model
-# To skip split and shuffle, provide directory to functions to read data (eg. "03.23.2022_10:54") from instead
-hln,baseline_history = load_data_and_train_model('03.23.2022_10:54') 
+# Options:
+    # 1) give nothing to load_data_and_train_model  ->  read all training data from this session's data
+    # 2) give directory (eg. "03.23.2022_10:54") to load_data_and_train_model  ->  read all training data from that directory
+    # 3) give directory to load_data_and_train_model and set split_shuffle = True ->  read X.csv from that directory and split and shuffle with that X.csv
+    # for Option 2 only, give directory to load_data_and_test_model as well
+# for the future, make simpler by making split_and_shuffle(dir) to do option 3?
+# hln,baseline_history = load_data_and_train_model('03.23.2022_10:54', split_shuffle = True)
+hln,baseline_history = load_data_and_train_model('03.23.2022_10:54', split_shuffle = True)
+
 baseline_results = load_data_and_test_model(hln, '03.23.2022_10:54')
