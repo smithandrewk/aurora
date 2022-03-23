@@ -170,10 +170,10 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
     stop = time()-start
     # TODO save baseline history for training
     return baseline_history
-def test_model(x_test,y_test):
+def test_model(x_test,y_test, data_dir):
     from keras.models import load_model
     from scripts.modules import TIME_DIR
-    data_dir = f'sessions/data/{TIME_DIR}'
+    # data_dir = f'sessions/data/{TIME_DIR}'
     model_dir = f"sessions/models/{TIME_DIR}"
     model = load_model(f"{model_dir}/best_model.h5")
     import pandas as pd

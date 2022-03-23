@@ -1,3 +1,4 @@
+from posixpath import split
 from scripts.submodules import plot_metrics, train_model
 TIME_DIR = ""
 
@@ -42,8 +43,10 @@ def balance_windowed_files():
         balance(dir,file)
 def concatenate_balanced_files():
     import pandas as pd
+    import os
     from os import listdir
     from tqdm import tqdm
+    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
     filename = f'sessions/data/{TIME_DIR}/X.csv'
     for i,file in tqdm(enumerate(listdir("data/balanced"))):
         df = pd.read_csv("data/balanced/"+file)
@@ -52,10 +55,10 @@ def concatenate_balanced_files():
             df.to_csv(filename, mode='w', header=True,index=False)
             continue
         df.to_csv(filename, mode='a', header=False,index=False)
-def split_and_shuffle(filename):
+def split_and_shuffle(dir):
     from pandas import read_csv
-    dir = f'sessions/data/{TIME_DIR}'
-    df = read_csv(f'{dir}/{filename}')
+    # dir = f'sessions/data/{TIME_DIR}'
+    df = read_csv(f'{dir}/X.csv')
     from sklearn.model_selection import train_test_split
     from numpy import array
     # Use a utility from sklearn to split and shuffle our dataset.
@@ -90,11 +93,15 @@ def split_and_shuffle(filename):
     # print('Weight for class 0: {:.2f}'.format(weight_for_p))
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
-def load_data_and_train_model():
+def load_data_and_train_model(dir=None):
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
-    data_dir = f'sessions/data/{TIME_DIR}'
+    if dir == None:
+        split_and_shuffle(f'sessions/data/{TIME_DIR}')
+        data_dir = f'sessions/data/{TIME_DIR}'
+    else:
+        data_dir = f'sessions/data/{dir}'
     train_df = pd.read_csv(f"{data_dir}/train.csv")
     val_df = pd.read_csv(f"{data_dir}/val.csv")
     y_train = train_df.pop('Class')
@@ -110,15 +117,19 @@ def load_data_and_train_model():
     x_val = np.array(x_val)
     y_val = np.array(y_val)
     hln = 512
+    print("Training model from data in: " + data_dir)
     baseline_history = train_model(x_train,y_train,x_val,y_val,hln=hln)
     return hln,baseline_history
-def load_data_and_test_model(hln):
+def load_data_and_test_model(hln, dir=None):
     from scripts.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
-    data_dir = f'sessions/data/{TIME_DIR}'
+    if dir == None:
+        data_dir = f'sessions/data/{TIME_DIR}'
+    else:
+        data_dir = f'sessions/data/{dir}'
     model_dir = f'sessions/models/{TIME_DIR}'
     test_df = pd.read_csv(f"{data_dir}/test.csv")
     y_test = test_df.pop('Class')
@@ -129,7 +140,7 @@ def load_data_and_test_model(hln):
     scaler = MinMaxScaler()
     x_test = scaler.fit_transform(x_test)
 
-    baseline_results,test_predictions_baseline = test_model(x_test,y_test)
+    baseline_results,test_predictions_baseline = test_model(x_test,y_test, data_dir)
     # plot_metrics(baseline_history)
     plot_cm(one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,hln,"All Scored Files")
     # import matplotlib
@@ -150,15 +161,8 @@ def create_time_dir():
     import os
     now = datetime.now()
     date_str = now.strftime("%m.%d.%Y_%H:%M")
-    # print(now)
-    # print(date_str)
     global TIME_DIR 
-    # print(TIME_DIR)
     TIME_DIR = date_str
     print(TIME_DIR)
-    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
+    # os.system(f'mkdir -p sessions/data/{TIME_DIR}')
     os.system(f'mkdir -p sessions/models/{TIME_DIR}')
-
-# def test():
-#     from scripts.submodules import sub_test
-#     sub_test()
