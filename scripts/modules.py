@@ -150,10 +150,10 @@ def create_time_dir():
     import os
     now = datetime.now()
     date_str = now.strftime("%m.%d.%Y_%H:%M")
-    print(now)
-    print(date_str)
+    # print(now)
+    # print(date_str)
     global TIME_DIR 
-    print(TIME_DIR)
+    # print(TIME_DIR)
     TIME_DIR = date_str
     print(TIME_DIR)
     os.system(f'mkdir -p sessions/data/{TIME_DIR}')
