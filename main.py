@@ -5,6 +5,10 @@ Pipeline for ...
 """
 print(__doc__)
 from scripts.modules import *
+import argparse
+
+parser = argparse.ArgumentParser(description='Pipeline to Score Data')
+parser.add_argument('integers', )
 
 initial_preprocessing()
 handle_anomalies()
