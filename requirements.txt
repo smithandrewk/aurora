@@ -1,0 +1,9 @@
+pandas
+matplotlib
+seaborn
+xlrd
+tensorflow
+sklearn
+tqdm
+ipykernel
+seaborn

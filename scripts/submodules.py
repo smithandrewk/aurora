@@ -149,6 +149,9 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
         keras.metrics.AUC(name='auc')
     ])
 
+    from scripts.modules import TIME_DIR
+    model_dir = f"sessions/models/{TIME_DIR}"
+
     from time import time
     start = time()
     baseline_history = model.fit(
@@ -158,7 +161,7 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
         epochs=EPOCHS,
         validation_data=(x_val, tf.one_hot(y_val, depth=3)),
         callbacks=[keras.callbacks.ModelCheckpoint(
-            "best_model.h5", save_best_only=True, monitor="val_loss",verbose=1
+            f"{model_dir}/best_model.h5", save_best_only=True, monitor="val_loss",verbose=1
         ),
         keras.callbacks.ReduceLROnPlateau(
             monitor="val_loss", factor=0.5, patience=20, min_lr=0.0001
@@ -169,19 +172,12 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
     return baseline_history
 def test_model(x_test,y_test):
     from keras.models import load_model
-    model = load_model("best_model.h5")
-    import pandas as pd
-    test_df = pd.read_csv("test.csv")
-    y_test = test_df.pop('Class')
-    x_test = test_df
+    from scripts.modules import TIME_DIR
+    # data_dir = f'sessions/data/{TIME_DIR}'
+    model_dir = f"sessions/models/{TIME_DIR}"
+    model = load_model(f"{model_dir}/best_model.h5")
     from sklearn.preprocessing import MinMaxScaler
 
-    scaler = MinMaxScaler()
-
-    x_test = scaler.fit_transform(x_test)
-    import numpy as np
-    x_test = np.array(x_test)
-    y_test = np.array(y_test)
     # from scripts.utils import *
     # plt.rcParams["figure.facecolor"] = 'w'
     # plot_metrics(baseline_history,"",hln)
@@ -222,7 +218,11 @@ def plot_metrics(baseline_history):
     #     'text.usetex': True,
     #     'pgf.rcfonts': False
     # })
+    from scripts.modules import TIME_DIR
+    model_dir = f"sessions/models/{TIME_DIR}"
+    plt.show()
     plt.savefig(metric+".jpg")
+    plt.savefig(f"{model_dir}/{metric}.jpg")
 def plot_cm(labels, predictions,met,hln,file):
     import matplotlib.pyplot as plt
     from sklearn.metrics import confusion_matrix
@@ -234,3 +234,10 @@ def plot_cm(labels, predictions,met,hln,file):
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
     plt.savefig('cm.jpg',bbox_inches='tight')
+
+
+# def sub_test():
+#     from scripts.modules import TIME_DIR
+#     print(TIME_DIR)
+
+
