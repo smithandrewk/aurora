@@ -55,18 +55,24 @@ def concatenate_balanced_files():
             df.to_csv(filename, mode='w', header=True,index=False)
             continue
         df.to_csv(filename, mode='a', header=False,index=False)
-def split_and_shuffle(dir):
+def split_and_shuffle(dir=None):
     from pandas import read_csv
-    # dir = f'sessions/data/{TIME_DIR}'
-    df = read_csv(f'{dir}/X.csv')
+    import os
+    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
+    data_dir = f'sessions/data/{TIME_DIR}'
+    if dir != None:
+        os.system(f'cp sessions/data/{dir}/X.csv sessions/data/{TIME_DIR}/X.csv')
+    data_dir = f'sessions/data/{TIME_DIR}'
+    df = read_csv(f'{data_dir}/X.csv')
     from sklearn.model_selection import train_test_split
     from numpy import array
+    
     # Use a utility from sklearn to split and shuffle our dataset.
     train_df, test_df = train_test_split(df, test_size=0.2)
     train_df, val_df = train_test_split(train_df, test_size=0.2)
-    train_df.to_csv(f"{dir}/train.csv",index=False)
-    test_df.to_csv(f"{dir}/test.csv",index=False)
-    val_df.to_csv(f"{dir}/val.csv",index=False)
+    train_df.to_csv(f"{data_dir}/train.csv",index=False)
+    test_df.to_csv(f"{data_dir}/test.csv",index=False)
+    val_df.to_csv(f"{data_dir}/val.csv",index=False)
 
     # Form np arrays of labels and features.
     # train_labels = array(train_df.pop('Class'))
@@ -93,22 +99,14 @@ def split_and_shuffle(dir):
     # print('Weight for class 0: {:.2f}'.format(weight_for_p))
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
-def load_data_and_train_model(dir=None, split_shuffle=True):
+def load_data_and_train_model(dir=None):
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
-    import os
-    if dir == None: # use X.csv from this session - must have run first part of main.py
-        split_and_shuffle(f'sessions/data/{TIME_DIR}')
-        data_dir = f'sessions/data/{TIME_DIR}'
+    if dir == None:
+        data_dir = f'sessions/data/{TIME_DIR}' # use test.csv, train.csv, and val.csv from this session
     else:
-        if split_shuffle:   # use only X.csv from previous session, split and shuffle to get new training data
-            os.system(f'mkdir -p sessions/data/{TIME_DIR}')
-            os.system(f'cp sessions/data/{dir}/X.csv sessions/data/{TIME_DIR}/X.csv')
-            split_and_shuffle(f'sessions/data/{TIME_DIR}')
-            data_dir = f'sessions/data/{TIME_DIR}'
-        else:   # use X.csv, test.csv, train.csv, and val.csv from previous session
-            data_dir = f'sessions/data/{dir}'
+        data_dir = f'sessions/data/{dir}' # use test.csv, train.csv, and val.csv from previous session
     train_df = pd.read_csv(f"{data_dir}/train.csv")
     val_df = pd.read_csv(f"{data_dir}/val.csv")
     y_train = train_df.pop('Class')
