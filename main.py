@@ -8,13 +8,14 @@ from scripts.modules import *
 import argparse
 
 parser = argparse.ArgumentParser(description='Pipeline to Score Data')
-parser.add_argument('integers', )
+parser.add_argument('--ann_model', type=str, required=True)
+args = parser.parse_args()
 
 initial_preprocessing()
 handle_anomalies()
 window()
 scale()
-score_ann('mice_512hln_ann_96.4_accuracy/best_model.h5')
+score_ann(args.ann_model)
 score_rf('rf_model')
 expand_predictions()
 rename_scores()
