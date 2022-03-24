@@ -55,13 +55,8 @@ def concatenate_balanced_files():
             df.to_csv(filename, mode='w', header=True,index=False)
             continue
         df.to_csv(filename, mode='a', header=False,index=False)
-def split_and_shuffle(dir=None):
+def split_and_shuffle():
     from pandas import read_csv
-    import os
-    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
-    data_dir = f'sessions/data/{TIME_DIR}'
-    if dir != None:
-        os.system(f'cp sessions/data/{dir}/X.csv sessions/data/{TIME_DIR}/X.csv')
     data_dir = f'sessions/data/{TIME_DIR}'
     df = read_csv(f'{data_dir}/X.csv')
     from sklearn.model_selection import train_test_split
@@ -104,6 +99,7 @@ def load_data_and_train_model(dir=None):
     import pandas as pd
     import numpy as np
     if dir == None:
+        split_and_shuffle()
         data_dir = f'sessions/data/{TIME_DIR}' # use test.csv, train.csv, and val.csv from this session
     else:
         data_dir = f'sessions/data/{dir}' # use test.csv, train.csv, and val.csv from previous session
