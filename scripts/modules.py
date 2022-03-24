@@ -1,3 +1,18 @@
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+def print_yellow(str):
+    print(f'{bcolors.WARNING}{str}{bcolors.ENDC}')
+def print_green(str):
+    print(f'{bcolors.OKGREEN}{str}{bcolors.ENDC}')
+
 def initial_preprocessing():
     """
     initial_preprocessing does.
@@ -5,18 +20,18 @@ def initial_preprocessing():
     @params
         filename : name of file
     """
-    print("Starting Preprocessing")
+    print_yellow('Starting Preprocessing')
     import os
     from scripts.submodules import preprocess_csv
 
     i = 0
     dir = f'data/renamed'
     for file in os.listdir(dir):
-        print("Iteration " + str(i))
-        print(dir,file)
+        print_yellow("Iteration " + str(i))
+        print_yellow(dir+" "+file)
         preprocess_csv(dir,file)
         i += 1
-    print("Finishing Preprocessing")
+    print_green("Finishing Preprocessing")
 def handle_anomalies():
     """
     handle_anomalies handles anomalies.
@@ -24,17 +39,17 @@ def handle_anomalies():
     @params
         filename : name of file
     """
-    print("Starting Handling Anomalies")
+    print_yellow("Starting Handling Anomalies")
     import pandas as pd
     from os import listdir
     for file in listdir("data/preprocessed"):
         df = pd.read_csv("data/preprocessed/"+file)
-        print("======================================"+file)
+        print_yellow("======================================"+file)
         if(df.columns[0]!="Class"):
-            print("NOT SCORED")
+            print_yellow("NOT SCORED")
             continue
         if(df.columns[1]!="0-0.5"):
-            print("ANOMALY")
+            print(f"{bcolors.FAIL}ANOMALY{bcolors.ENDC}")
             df.rename(columns={"EEG 1 (0-0.5 Hz, 0-0.5Hz , 10s) (Mean, 10s)":"0-0.5"},inplace=True)
         EEG_2 = df["EEG 2"]
         Activity = df["Activity"]
@@ -43,7 +58,7 @@ def handle_anomalies():
         X.insert(X.shape[1],"Activity",Activity)
         X.to_csv("data/preprocessed/"+file,index=False)
 
-    print("Finishing Handling Anomalies")
+    print_green("Finishing Handling Anomalies")
 def window():
     """
     window windows.
@@ -51,18 +66,18 @@ def window():
     @params
         filename : name of file
     """
-    print("Starting Windowing")
+    print_yellow("Starting Windowing")
     from scripts.submodules import window_data
     from os import listdir
     i = 0
     dir = f'data/preprocessed'
     for file in listdir(dir):
-        print("Iteration: " + str(i))
-        print(file)
+        print_yellow("Iteration: " + str(i))
+        print_yellow(file)
         # X = read_csv(i)
         window_data(dir,file)
         i += 1
-    print("Finishing Windowing")
+    print_green("Finishing Windowing")
 def scale():
     """
     scale scales.
@@ -70,7 +85,7 @@ def scale():
     @params
         filename : name of file
     """
-    print("Starting Scaling")
+    print_yellow("Starting Scaling")
     import pandas as pd
     import os
     i = 0
@@ -80,16 +95,16 @@ def scale():
         X = pd.read_csv(filename)
         from sklearn.preprocessing import MinMaxScaler
         scaler = MinMaxScaler()
-        print("Iteration: " + str(i))
+        print_yellow("Iteration: " + str(i))
         X = scaler.fit_transform(X)
         if ( not os.path.isdir('data/windowed_scaled')):
             os.system('mkdir data/windowed_scaled')
         file = file.replace("_preprocessed_windowed.csv", "")
         filename = "data/windowed_scaled/"+file+"_windowed_scaled.csv"
         pd.DataFrame(X).to_csv(filename, index=False)
-        print(filename)
+        print_yellow(filename)
         i += 1
-    print("Finishing Scaling")
+    print_green("Finishing Scaling")
 def score_ann(model):
     """
     score_ann scores ANN.
@@ -97,18 +112,18 @@ def score_ann(model):
     @params
         model : name of model
     """
-    print("Started Scoring ANN")
+    print_yellow("Started Scoring ANN")
     from scripts.submodules import score_data_ann
     from os import listdir
 
     dir = 'data/windowed_scaled'
     i=0
     for file in listdir(dir):
-        print("Iteration: " + str(i))
+        print_yellow("Iteration: " + str(i))
         score_data_ann(dir, file, model)
         i += 1
 
-    print("Finishing Scoring ANN")
+    print_green("Finishing Scoring ANN")
 def score_rf(model):
     """
     score_rf scores RF.
@@ -116,18 +131,18 @@ def score_rf(model):
     @params
         model : name of model
     """
-    print("Starting Scoring RF")
+    print_yellow("Starting Scoring RF")
     from scripts.submodules import score_data_rf
     from os import listdir
 
     dir = 'data/windowed'
     i=0
     for file in listdir(dir):
-        print("Iteration: " + str(i))
+        print_yellow("Iteration: " + str(i))
         score_data_rf(dir, file, model)
         i+=1
 
-    print("Finishing Scoring RF")
+    print_green("Finishing Scoring RF")
 def expand_predictions():
     """
     expand_prediction expands predictions.
@@ -135,31 +150,31 @@ def expand_predictions():
     @params
         filename : name of file
     """
-    print("Starting Expand Predictions")
+    print_yellow("Starting Expand Predictions")
     from scripts.submodules import expand_predictions_ann, expand_predictions_rf
     from os import listdir
 
     dir_ann = 'data/predictions_ann'
     i=0
-    print("Expanding ANN predictions")
+    print_yellow("Expanding ANN predictions")
     for file in listdir(dir_ann):
         print("Iteration: " + str(i))
         expand_predictions_ann(dir_ann, file)
         i+=1
     dir_rf = 'data/predictions_rf'
-    print("Expanding RF predictions")
+    print_yellow("Expanding RF predictions")
     i=0
     for file in listdir(dir_rf):
-        print("Iteration: " + str(i))
+        print_yellow("Iteration: " + str(i))
         expand_predictions_rf(dir_rf, file)
         i+=1
 
-    print("Finishing Expand Predictions")
+    print_green("Finishing Expand Predictions")
 def rename_scores():
     """
     rename_scores renames scores (0,1,2 --> P,S,W)
     """
-    print("Starting Rename Scores")
+    print_yellow("Starting Rename Scores")
     import os
     import pandas as pd
     from pandas import read_csv
@@ -188,7 +203,7 @@ def rename_scores():
             new_y.append(rename_dict[i])
         pd.DataFrame(new_y).to_csv("data/expanded_renamed_rf/"+file,index=False)
     
-    print("Finishing Rename Scores")
+    print_green("Finishing Rename Scores")
 def remap_names():
     """
     remap_names remaps names to original names
@@ -196,7 +211,7 @@ def remap_names():
     @params
         filename : name of file
     """
-    print("Starting Remap Names")
+    print_yellow("Starting Remap Names")
     import os
     mapping = open('data/mapping').read().splitlines()
     if not os.path.isdir('data/final_ann'):
@@ -215,12 +230,12 @@ def remap_names():
         newName = mapping[int(index_str)].replace('.xls', '-rf.csv')
         os.system(f"cp data/expanded_renamed_rf/'{file}' data/final_rf/'{newName}'")
         i+=1
-    print("Finishing Remap Names")
+    print_green("Finishing Remap Names")
 def zdb_preprocess():
     """
     zdb_preprocess preprocesses ZDBs
     """
-    print("Starting ZDB preprocessing")
+    print_yellow("Starting ZDB preprocessing")
     import os
     from scripts.submodules import preprocess_zdb
     dir = 'data/renamedZDB'
@@ -229,13 +244,13 @@ def zdb_preprocess():
         return
     for file in os.listdir(dir):
         preprocess_zdb(dir, file)
-    print("Finishing ZDB preprocessing")
+    print_green("Finishing ZDB preprocessing")
 
 def zdb_conversion():
     """
     zdb_conversion imports csv into ZDB format.
     """
-    print("Starting ZDB Conversion")
+    print_yellow("Starting ZDB Conversion")
     import os
     from scripts.submodules import conversion_zdb
 
@@ -254,12 +269,12 @@ def zdb_conversion():
         name = csv.replace('.csv', '')
         zdb = f'{name}.zdb'
         conversion_zdb(dir_ann, dir_zdb, csv, zdb, 'rf')
-    print("Finishing ZDB Conversion")
+    print_green("Finishing ZDB Conversion")
 def zdb_remap():
     """
     zdb_remap remaps zdb names
     """
-    print("Starting ZDB remap names")
+    print_yellow("Starting ZDB remap names")
     import os
     dir_ann = "data/ZDB_ann"
     dir_rf = "data/ZDB_rf"
@@ -276,3 +291,4 @@ def zdb_remap():
     for zdb in os.listdir(dir_rf):
         index = int(zdb.replace('.zdb', ''))
         os.system(f'cp {dir_rf}/"{zdb}" data/ZDB_final_rf/"{mapping[index]}"')
+    print_green("Finished ZDB remapping")
