@@ -222,7 +222,6 @@ def plot_metrics(baseline_history):
     #     'text.usetex': True,
     #     'pgf.rcfonts': False
     # })
-    plt.show()
     plt.savefig(metric+".jpg")
 def plot_cm(labels, predictions,met,hln,file):
     import matplotlib.pyplot as plt
@@ -234,3 +233,4 @@ def plot_cm(labels, predictions,met,hln,file):
     plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
+    plt.savefig('cm.jpg',bbox_inches='tight')

@@ -24,6 +24,22 @@ def fix_anomalies_in_preprocessed_files():
     dir = f'data/preprocessed'
     for file in listdir(dir):
         fix_anomalies(dir,file)
+def select_features():
+    from os import listdir
+    from pandas import read_csv,DataFrame
+    dir = f'data/preprocessed'
+    for file in listdir(dir):
+        print(dir,file)
+        df = read_csv(f'{dir}/{file}')
+        Y = DataFrame()
+        if(df.columns[0]!="Class"):
+            print(f'Not scored, skipping')
+            continue
+        # Remove Unwanted Features
+        # df = df[['Class','EEG 2']]
+        # df = df[['Class','EEG 2','Activity']]
+        df = df.drop(columns=['EEG 2','Activity'])
+        df.to_csv(f'{dir}/{file}',index=False)
 def window_preprocessed_files():
     from os import listdir,system,path
     from scripts.submodules import window
@@ -110,7 +126,7 @@ def load_data_and_train_model():
     hln = 512
     baseline_history = train_model(x_train,y_train,x_val,y_val,hln=hln)
     return hln,baseline_history
-def load_data_and_test_model(hln):
+def load_data_and_test_model(hln,baseline_history):
     from scripts.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
@@ -126,7 +142,7 @@ def load_data_and_test_model(hln):
     x_test = scaler.fit_transform(x_test)
 
     baseline_results,test_predictions_baseline = test_model(x_test,y_test)
-    # plot_metrics(baseline_history)
+    plot_metrics(baseline_history)
     plot_cm(one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,hln,"All Scored Files")
     # import matplotlib
     # matplotlib.use("pgf")
@@ -137,7 +153,6 @@ def load_data_and_test_model(hln):
     #     'text.usetex': True,
     #     'pgf.rcfonts': False
     # })
-    plt.show()
-    plt.savefig("cm.jpg")
+    # plt.show()
     return baseline_results
 
