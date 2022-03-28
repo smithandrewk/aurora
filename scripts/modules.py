@@ -58,6 +58,8 @@ def select_features():
         # df = df[['Class','EEG 2','Activity']]
         df = df.drop(columns=['EEG 2','Activity'])
         df.to_csv(f'{dir}/{file}',index=False)
+def skip_features():
+    print()
 def window_preprocessed_files():
     from os import listdir,system,path
     from scripts.submodules import window
