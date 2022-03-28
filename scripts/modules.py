@@ -85,6 +85,9 @@ def split_and_shuffle():
     test_df.to_csv(f"{data_dir}/test.csv",index=False)
     val_df.to_csv(f"{data_dir}/val.csv",index=False)
 
+    import os   #copy mapping to have record of files used
+    os.system(f'cp data/mapping {data_dir}/data_files.txt')
+
     # Form np arrays of labels and features.
     # train_labels = array(train_df.pop('Class'))
     # p_train_labels = train_labels == 0
@@ -188,3 +191,32 @@ def create_time_dir():
     print(TIME_DIR)
     # os.system(f'mkdir -p sessions/data/{TIME_DIR}')
     os.system(f'mkdir -p sessions/models/{TIME_DIR}')
+
+
+def create_and_check_args(parser):
+    import os
+    import argparse
+    parser.add_argument('--new-data', required=False, action='store_true', dest='new_data',
+                        help='Process and split_and_shuffle new data located in "data/raw" (default: False)')
+    parser.add_argument('--data-dir', metavar='MM.DD.YYYY_hh:mm', type=str, required=False, nargs='?', const=None, default=None, dest='data_dir',
+                        help='If no new data, provide a directory located in "sessions/data/" to read data from (default: None)')
+    parser.add_argument('--select-features', metavar='Feature', required=False, type=str, nargs='*', dest='select_features',
+                        help="""Specify which features to use while training new model
+                        [choices: "0-0.5", "0.5-1", ... , "19.5-20", "EEG2", "Activity"] (default: None) """)
+    args = parser.parse_args()
+
+    
+    if (not args.new_data) and (args.data_dir is None):
+        print('If no new data, must provide data directory\nrun ./main.py -h to see help')
+        exit(1)
+    if (args.data_dir is not None) and (not os.path.isdir(f'sessions/data/{args.data_dir}')):
+        print(f'sessions/data/{args.data_dir} does not exists\nrun ./main.py -h to see help')
+        exit(1)
+    if args.new_data and not os.path.isdir('data/raw'):
+        print('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
+        exit(1)
+    if args.new_data:
+        print(f'Starting preprocessing with data in data/raw/')
+    else:
+        print(f'Training and testing with data in sessions/data/{args.data_dir}')
+    return args
