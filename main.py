@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 from scripts.modules import *
 import os
-import argparse
 
-parser = argparse.ArgumentParser(description='Pipeline to Train ANN Models')
-args = create_and_check_args(parser)
+args = create_and_check_args()
 print(args)
 
 # create_time_dir()

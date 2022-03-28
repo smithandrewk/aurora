@@ -2,6 +2,23 @@ from posixpath import split
 from scripts.submodules import plot_metrics, train_model
 TIME_DIR = ""
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+def print_yellow(str):
+    print(f'{bcolors.WARNING}{str}{bcolors.ENDC}')
+def print_green(str):
+    print(f'{bcolors.OKGREEN}{str}{bcolors.ENDC}')
+def print_red(str):
+    print(f'{bcolors.FAIL}{str}{bcolors.ENDC}')
+
 def rename_data_in_raw():
     print(f'Renaming data in raw')
     from os import listdir,system
@@ -193,30 +210,43 @@ def create_time_dir():
     os.system(f'mkdir -p sessions/models/{TIME_DIR}')
 
 
-def create_and_check_args(parser):
+def create_and_check_args():
     import os
     import argparse
+    parser = argparse.ArgumentParser(description='Pipeline to Train ANN Models')
+
     parser.add_argument('--new-data', required=False, action='store_true', dest='new_data',
                         help='Process and split_and_shuffle new data located in "data/raw" (default: False)')
     parser.add_argument('--data-dir', metavar='MM.DD.YYYY_hh:mm', type=str, required=False, nargs='?', const=None, default=None, dest='data_dir',
                         help='If no new data, provide a directory located in "sessions/data/" to read data from (default: None)')
     parser.add_argument('--select-features', metavar='Feature', required=False, type=str, nargs='*', dest='select_features',
-                        help="""Specify which features to use while training new model
+                        help=f"""Specify which features to {bcolors.BOLD}use{bcolors.ENDC} while training new model
                         [choices: "0-0.5", "0.5-1", ... , "19.5-20", "EEG2", "Activity"] (default: None) """)
+    parser.add_argument('--skip-features', metavar='Feature', required=False, type=str, nargs='*', dest='skip_features',
+                    help=f"""Specify which features to {bcolors.BOLD}skip{bcolors.ENDC} while training new model
+                    [choices: "0-0.5", "0.5-1", ... , "19.5-20", "EEG2", "Activity"] (default: None) """)
     args = parser.parse_args()
 
-    
-    if (not args.new_data) and (args.data_dir is None):
-        print('If no new data, must provide data directory\nrun ./main.py -h to see help')
+
+    if (not args.new_data) and (not args.data_dir):
+        print_red('If no new data, must provide data directory\nrun ./main.py -h to see help')
         exit(1)
-    if (args.data_dir is not None) and (not os.path.isdir(f'sessions/data/{args.data_dir}')):
-        print(f'sessions/data/{args.data_dir} does not exists\nrun ./main.py -h to see help')
-        exit(1)
-    if args.new_data and not os.path.isdir('data/raw'):
-        print('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
+    if (args.data_dir) and (not os.path.isdir(f'sessions/data/{args.data_dir}')):
+        print_red(f'sessions/data/{args.data_dir} does not exists\nrun ./main.py -h to see help')
         exit(1)
     if args.new_data:
-        print(f'Starting preprocessing with data in data/raw/')
+        if not os.path.isdir('data/raw'):
+            print_red('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
+            exit(1)
+        if args.data_dir:
+            print_red("Cannot have options --new-data and --data-dir selected simultaneously\nrun ./main.py -h to see help")
+            exit(1)
+    if args.select_features and args.skip_features:
+        print_red("Cannot have options --skip-features and --select-features selected simultaneously\nrun ./main.py -h to see help")
+        exit(1)
+    
+    if args.new_data:
+        print_yellow(f'Starting preprocessing with data in data/raw/')
     else:
-        print(f'Training and testing with data in sessions/data/{args.data_dir}')
+        print_yellow(f'Training and testing with data in sessions/data/{args.data_dir}')
     return args
