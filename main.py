@@ -11,6 +11,10 @@ if args.new_data:
     rename_data_in_raw()
     preprocess_renamed_files()
     fix_anomalies_in_preprocessed_files()
+    if args.skip_features:
+        skip_features(args.skip_features)
+    elif args.select_features:
+        select_features(args.select_features)
     window_preprocessed_files()
     balance_windowed_files()
     concatenate_balanced_files()

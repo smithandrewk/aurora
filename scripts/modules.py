@@ -20,17 +20,19 @@ def print_red(str):
     print(f'{bcolors.FAIL}{str}{bcolors.ENDC}')
 
 def rename_data_in_raw():
-    print(f'Renaming data in raw')
+    print_yellow(f'Renaming data in raw')
     from os import listdir,system
     with open('data/mapping','w+') as f:
         system(f'mkdir data/renamed')
         for i,file in enumerate(listdir("data/raw")):
             f.write(f'{i},{file}\n')
             command = f'cp \"data/raw/{file}\" data/renamed/{str(i)}.xls'
-            print(i,file)
-            print(command)
+            print_yellow(i+" "+file)
+            print_yellow(command)
             system(command)
+    print_yellow(f'Finished renaming data in raw')
 def preprocess_renamed_files():
+    print_yellow(f'Renaming data in raw')
     from os import listdir
     from scripts.submodules import preprocess
     dir = f'data/renamed'
@@ -42,24 +44,38 @@ def fix_anomalies_in_preprocessed_files():
     dir = f'data/preprocessed'
     for file in listdir(dir):
         fix_anomalies(dir,file)
-def select_features():
+def select_features(select):
+    print_yellow('Starting select features')
     from os import listdir
     from pandas import read_csv,DataFrame
     dir = f'data/preprocessed'
+    temp = ['Class']
+    select = temp + select
     for file in listdir(dir):
-        print(dir,file)
+        print_yellow(dir+" "+file)
         df = read_csv(f'{dir}/{file}')
         Y = DataFrame()
         if(df.columns[0]!="Class"):
-            print(f'Not scored, skipping')
+            print_red(f'Not scored, skipping')
             continue
-        # Remove Unwanted Features
-        # df = df[['Class','EEG 2']]
-        # df = df[['Class','EEG 2','Activity']]
-        df = df.drop(columns=['EEG 2','Activity'])
+        # Select features
+        df = df[select]
         df.to_csv(f'{dir}/{file}',index=False)
-def skip_features():
-    print()
+    print_green('Finished select features')
+def skip_features(skip):
+    print_yellow('Starting skipping features')
+    from os import listdir
+    from pandas import read_csv
+    dir = 'data/preprocessed'
+    for file in listdir(dir):
+        print_yellow(dir+" "+file)
+        df = read_csv(f'{dir}/{file}')
+        if(df.columns[0]!="Class"):
+            print_red(f'Not scored, skipping')
+            continue
+        df = df.drop(columns=skip)
+        df.to_csv(f'{dir}/{file}',index=False)
+    print_green('Finished skipping features')
 def window_preprocessed_files():
     from os import listdir,system,path
     from scripts.submodules import window
