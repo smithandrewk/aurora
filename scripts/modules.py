@@ -27,7 +27,7 @@ def rename_data_in_raw():
         for i,file in enumerate(listdir("data/raw")):
             f.write(f'{i},{file}\n')
             command = f'cp \"data/raw/{file}\" data/renamed/{str(i)}.xls'
-            print_yellow(i+" "+file)
+            print_yellow(f"{i} file")
             print_yellow(command)
             system(command)
     print_green(f'Finished renaming data in raw')
@@ -67,11 +67,12 @@ def select_features(select):
     print_green('Finished select features')
 def skip_features(skip):
     print_yellow('Starting skipping features')
+    print_yellow(skip)
     from os import listdir
     from pandas import read_csv
     dir = 'data/preprocessed'
     for file in listdir(dir):
-        print_yellow(dir+" "+file)
+        print_yellow(dir+"/"+file)
         df = read_csv(f'{dir}/{file}')
         if(df.columns[0]!="Class"):
             print_red(f'Not scored, skipping')

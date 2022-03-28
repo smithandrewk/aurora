@@ -28,3 +28,25 @@ mkdir data/raw
 ```
 python3 main.py
 ```
+
+### Options for main.py:
+- See help
+```
+./main.py --help
+```
+- Create a new data set from data in `data/raw`
+```
+./main.py --new-dir
+```
+- Use data set from previous session
+```
+./main.py --data-dir [MM.DD.YYYY_hh:mm]
+```
+- skip certain features
+```
+./main.py --skip-features [Feature] [Feature] ...
+```
+- select certain features
+```
+./main.py --select-features [Feature] [Feature] ...
+```

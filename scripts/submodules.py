@@ -62,7 +62,7 @@ def preprocess(dir,filename):
     df.to_csv("data/preprocessed/"+filename+"_preprocessed.csv",index=False) # save dataframe in csv format
     return df
 def fix_anomalies(dir,file):
-    from modules import print_yellow, print_red 
+    from scripts.modules import print_yellow, print_red 
     import pandas as pd
     df = pd.read_csv(f'{dir}/{file}')
     print_yellow("======================================"+file)
