@@ -62,11 +62,12 @@ def preprocess(dir,filename):
     df.to_csv("data/preprocessed/"+filename+"_preprocessed.csv",index=False) # save dataframe in csv format
     return df
 def fix_anomalies(dir,file):
+    from modules import print_yellow, print_red 
     import pandas as pd
     df = pd.read_csv(f'{dir}/{file}')
-    print("======================================"+file)
+    print_yellow("======================================"+file)
     if(df.columns[0]!="Class"):
-        print("NOT SCORED")
+        print_red("NOT SCORED")
         return
     if(df.columns[1]!="0-0.5"):
         df.rename(columns={"EEG 1 (0-0.5 Hz, 0-0.5Hz , 10s) (Mean, 10s)":"0-0.5"},inplace=True)

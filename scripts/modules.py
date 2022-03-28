@@ -30,20 +30,23 @@ def rename_data_in_raw():
             print_yellow(i+" "+file)
             print_yellow(command)
             system(command)
-    print_yellow(f'Finished renaming data in raw')
+    print_green(f'Finished renaming data in raw')
 def preprocess_renamed_files():
-    print_yellow(f'Renaming data in raw')
+    print_yellow(f'Started preprocessing data')
     from os import listdir
     from scripts.submodules import preprocess
     dir = f'data/renamed'
     for file in listdir(dir):
         preprocess(dir,file)
+    print_green(f'Finished preprocessing data')
 def fix_anomalies_in_preprocessed_files():
+    print_yellow(f'Started fixing anomalies data')
     from os import listdir
     from scripts.submodules import fix_anomalies
     dir = f'data/preprocessed'
     for file in listdir(dir):
         fix_anomalies(dir,file)
+    print_green(f'Finished fixing anomalies data')
 def select_features(select):
     print_yellow('Starting select features')
     from os import listdir
@@ -77,6 +80,7 @@ def skip_features(skip):
         df.to_csv(f'{dir}/{file}',index=False)
     print_green('Finished skipping features')
 def window_preprocessed_files():
+    print_yellow('Starting windowing')
     from os import listdir,system,path
     from scripts.submodules import window
     if ( not path.isdir('data/windowed')):
@@ -84,7 +88,9 @@ def window_preprocessed_files():
     dir = f'data/preprocessed'
     for file in listdir(dir):
         window(dir,file)
+    print_green('Finished windowing')
 def balance_windowed_files():
+    print_yellow('Starting balancing')
     from os import path,system,listdir
     from scripts.submodules import balance
     dir = f'data/windowed'
@@ -92,7 +98,9 @@ def balance_windowed_files():
         system(f'mkdir data/balanced')
     for file in listdir(dir):
         balance(dir,file)
+    print_green('Finished balancing')
 def concatenate_balanced_files():
+    print_yellow('Starting Concatenating files')
     import pandas as pd
     import os
     from os import listdir
@@ -106,7 +114,9 @@ def concatenate_balanced_files():
             df.to_csv(filename, mode='w', header=True,index=False)
             continue
         df.to_csv(filename, mode='a', header=False,index=False)
+    print_green('Finished Concatenating files')
 def split_and_shuffle():
+    print_yellow('Starting split and shuffle')
     from pandas import read_csv
     data_dir = f'sessions/data/{TIME_DIR}'
     df = read_csv(f'{data_dir}/X.csv')
@@ -148,7 +158,9 @@ def split_and_shuffle():
     # print('Weight for class 0: {:.2f}'.format(weight_for_p))
     # print('Weight for class 1: {:.2f}'.format(weight_for_s))
     # print('Weight for class 2: {:.2f}'.format(weight_for_w))
+    print_green('Finished split and shuffle')
 def load_data_and_train_model(dir=None):
+    print_yellow('Starting training model')
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
@@ -157,6 +169,7 @@ def load_data_and_train_model(dir=None):
         data_dir = f'sessions/data/{TIME_DIR}' # use test.csv, train.csv, and val.csv from this session
     else:
         data_dir = f'sessions/data/{dir}' # use test.csv, train.csv, and val.csv from previous session
+    print_yellow(f'Using data in {data_dir}')
     train_df = pd.read_csv(f"{data_dir}/train.csv")
     val_df = pd.read_csv(f"{data_dir}/val.csv")
     y_train = train_df.pop('Class')
@@ -174,9 +187,11 @@ def load_data_and_train_model(dir=None):
     hln = 512
     print("Training model from data in: " + data_dir)
     baseline_history = train_model(x_train,y_train,x_val,y_val,hln=hln)
+    print_green('Finished training model')
     return hln,baseline_history
 
 def load_data_and_test_model(hln, baseline_history,dir=None):
+    print_yellow('Starting testing model')
     from scripts.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
@@ -215,6 +230,7 @@ def load_data_and_test_model(hln, baseline_history,dir=None):
     plt.show()
     plt.savefig(f"{model_dir}/cm.jpg")
     return baseline_results
+    print_green('Finished testing model')
 
 def create_time_dir():
     from datetime import datetime
