@@ -12,6 +12,7 @@ create_time_dir()
 
 ## Run these to train new model
 # Pass directory name (eg. '03.24.2022_12:40') to load_data_and_train_model() and load_data_and_test_model() to use data from a previous session
-hln,baseline_history = load_data_and_train_model('03.24.2022_12:40')   
-baseline_results = load_data_and_test_model(hln,baseline_history,'03.24.2022_12:40')
+data_dir = f'03.24.2022_15:33'
+hln = load_data_and_train_model(data_dir,hln=512)
+baseline_results = load_data_and_test_model(hln,data_dir)
 
