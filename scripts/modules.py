@@ -73,7 +73,8 @@ def concatenate_balanced_files():
         df.to_csv(filename, mode='a', header=False,index=False)
 def split_and_shuffle():
     from pandas import read_csv
-    data_dir = f'sessions/data/{TIME_DIR}'
+    # data_dir = f'sessions/data/{TIME_DIR}'
+    data_dir = f'sessions/data/03.24.2022_15:33'
     df = read_csv(f'{data_dir}/X.csv')
     from sklearn.model_selection import train_test_split
     from numpy import array
@@ -85,32 +86,7 @@ def split_and_shuffle():
     test_df.to_csv(f"{data_dir}/test.csv",index=False)
     val_df.to_csv(f"{data_dir}/val.csv",index=False)
 
-    # Form np arrays of labels and features.
-    # train_labels = array(train_df.pop('Class'))
-    # p_train_labels = train_labels == 0
-    # s_train_labels = train_labels == 1
-    # w_train_labels = train_labels == 2
-
-    # val_labels = array(val_df.pop('Class'))
-    # test_labels = array(test_df.pop('Class'))
-
-    # train_features = array(train_df)
-    # val_features = array(val_df)
-    # test_features = array(test_df)
-    # total = p + s + w
-    # Scaling by total/2 helps keep the loss to a similar magnitude.
-    # The sum of the weights of all examples stays the same.
-    # weight_for_p = (1 / p)*(total)/2.0 
-    # weight_for_w = (1 / w)*(total)/2.0
-    # weight_for_s = (1 / s)*(total)/2.0
-
-
-    # class_weight = {0: weight_for_p, 1: weight_for_s, 2: weight_for_w}
-
-    # print('Weight for class 0: {:.2f}'.format(weight_for_p))
-    # print('Weight for class 1: {:.2f}'.format(weight_for_s))
-    # print('Weight for class 2: {:.2f}'.format(weight_for_w))
-def load_data_and_train_model(dir=None):
+def load_data_and_train_model(dir=None,hln=512):
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
@@ -133,17 +109,19 @@ def load_data_and_train_model(dir=None):
     y_train = np.array(y_train)
     x_val = np.array(x_val)
     y_val = np.array(y_val)
-    hln = 512
     print("Training model from data in: " + data_dir)
     baseline_history = train_model(x_train,y_train,x_val,y_val,hln=hln)
-    return hln,baseline_history
+    plot_metrics(baseline_history)
+    return hln
 
-def load_data_and_test_model(hln, baseline_history,dir=None):
+def load_data_and_test_model(hln,dir=None):
     from scripts.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
+    from sklearn.preprocessing import MinMaxScaler
+
     if dir == None:
         data_dir = f'sessions/data/{TIME_DIR}'
     else:
@@ -153,29 +131,15 @@ def load_data_and_test_model(hln, baseline_history,dir=None):
     y_test = test_df.pop('Class')
     x_test = test_df
 
-    from sklearn.preprocessing import MinMaxScaler
     scaler = MinMaxScaler()
     x_test = scaler.fit_transform(x_test)
 
     x_test = np.array(x_test)
     y_test = np.array(y_test)
     
-    # x_test = scaler.fit_transform(x_test)
 
     baseline_results,test_predictions_baseline = test_model(x_test,y_test)
-    plot_metrics(baseline_history)
-    plot_cm(one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,hln,"All Scored Files")
-    # import matplotlib
-    # matplotlib.use("pgf")
-    # plt.style.use("style.txt")
-    # matplotlib.rcParams.update({
-    #     "pgf.texsystem": "xelatex",
-    #     'font.family': 'serif',
-    #     'text.usetex': True,
-    #     'pgf.rcfonts': False
-    # })
-    plt.show()
-    plt.savefig(f"{model_dir}/cm.jpg")
+    plot_cm(one_hot(y_test,depth=3).numpy().argmax(axis=1),test_predictions_baseline.argmax(axis=1),baseline_results,hln,"All Scored Files",save=True,model_dir=model_dir)
     return baseline_results
 
 def create_time_dir():
