@@ -27,7 +27,7 @@ def rename_data_in_raw():
         for i,file in enumerate(listdir("data/raw")):
             f.write(f'{i},{file}\n')
             command = f'cp \"data/raw/{file}\" data/renamed/{str(i)}.xls'
-            print_yellow(f"{i} file")
+            print_yellow(f"{i} {file}")
             print_yellow(command)
             system(command)
     print_green(f'Finished renaming data in raw')
@@ -37,6 +37,7 @@ def preprocess_renamed_files():
     from scripts.submodules import preprocess
     dir = f'data/renamed'
     for file in listdir(dir):
+        print_yellow(file)
         preprocess(dir,file)
     print_green(f'Finished preprocessing data')
 def fix_anomalies_in_preprocessed_files():
@@ -88,6 +89,7 @@ def window_preprocessed_files():
         system('mkdir data/windowed')
     dir = f'data/preprocessed'
     for file in listdir(dir):
+        print_yellow(file)
         window(dir,file)
     print_green('Finished windowing')
 def balance_windowed_files():
@@ -98,6 +100,7 @@ def balance_windowed_files():
     if (not path.isdir('data/balanced')):
         system(f'mkdir data/balanced')
     for file in listdir(dir):
+        print_yellow(file)
         balance(dir,file)
     print_green('Finished balancing')
 def concatenate_balanced_files():
@@ -109,6 +112,7 @@ def concatenate_balanced_files():
     os.system(f'mkdir -p sessions/data/{TIME_DIR}')
     filename = f'sessions/data/{TIME_DIR}/X.csv'
     for i,file in tqdm(enumerate(listdir("data/balanced"))):
+        print_yellow(file)
         df = pd.read_csv("data/balanced/"+file)
         if(i==0):
             ## First, add header
@@ -240,7 +244,7 @@ def create_time_dir():
     date_str = now.strftime("%m.%d.%Y_%H:%M")
     global TIME_DIR 
     TIME_DIR = date_str
-    print(TIME_DIR)
+    print_yellow("Session: "+TIME_DIR)
     # os.system(f'mkdir -p sessions/data/{TIME_DIR}')
     os.system(f'mkdir -p sessions/models/{TIME_DIR}')
 
