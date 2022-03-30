@@ -15,10 +15,9 @@ clean: ## Remove Data Things
 
 
 renameZIP:	
-	./scripts/unzipAndRenameZipFile.py
-
-renameNoZIP:
-	./scripts/renameData.py
+	mkdir -p data/raw
+	cp Unscored.zip data/Unscored.zip
+	unzip -j data/Unscored.zip -d ./data/raw
 
 downloadmodels:
 	mkdir -p model

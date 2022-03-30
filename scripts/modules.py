@@ -13,6 +13,21 @@ def print_yellow(str):
 def print_green(str):
     print(f'{bcolors.OKGREEN}{str}{bcolors.ENDC}')
 
+def rename_data_in_raw():
+    import os
+    print_yellow("Starting renaming data in raw")
+    os.system('mkdir -p data/renamed')
+    f = open('data/mapping','w+')
+    for i, file in enumerate(os.listdir("data/raw")):
+        original_name = file
+        file = file.replace(" ", "\ ")
+        new_name = str(i)  + ".csv"
+        cmd = f"ssconvert data/raw/{file} data/renamed/{new_name}"
+        os.system(cmd)
+        print_yellow(f"Iteration {i}: Converting {original_name}")
+        f.write(original_name+'\n')
+    f.close()
+    print_green("Finished Renaming")
 def initial_preprocessing():
     """
     initial_preprocessing does.
@@ -292,3 +307,10 @@ def zdb_remap():
         index = int(zdb.replace('.zdb', ''))
         os.system(f'cp {dir_rf}/"{zdb}" data/ZDB_final_rf/"{mapping[index]}"')
     print_green("Finished ZDB remapping")
+
+def create_and_check_args():
+    import argparse
+    parser = argparse.ArgumentParser(description='Pipeline to Score Data')
+    parser.add_argument('--ann-model', type=str, required=True, dest='ann_model')
+    args = parser.parse_args()
+    return args

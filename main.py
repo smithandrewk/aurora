@@ -7,10 +7,9 @@ print(__doc__)
 from scripts.modules import *
 import argparse
 
-parser = argparse.ArgumentParser(description='Pipeline to Score Data')
-parser.add_argument('--ann_model', type=str, required=True)
-args = parser.parse_args()
+args = create_and_check_args()
 
+rename_data_in_raw()
 initial_preprocessing()
 handle_anomalies()
 window()
