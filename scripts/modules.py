@@ -266,9 +266,13 @@ def create_and_check_args():
     if (not args.new_data) and (not args.data_dir):
         print_red('If no new data, must provide data directory\nrun ./main.py -h to see help')
         exit(1)
-    if (args.data_dir) and (not os.path.isdir(f'sessions/data/{args.data_dir}')):
-        print_red(f'sessions/data/{args.data_dir} does not exists\nrun ./main.py -h to see help')
-        exit(1)
+    if (args.data_dir):
+        if not os.path.isdir(f'sessions/data/{args.data_dir}'):
+            print_red(f'sessions/data/{args.data_dir} does not exist\nrun ./main.py -h to see help')
+            exit(1)
+        if args.select_features or args.skip_features:
+            print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
+            exit(1)
     if args.new_data:
         if not os.path.isdir('data/raw'):
             print_red('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
@@ -279,7 +283,6 @@ def create_and_check_args():
     if args.select_features and args.skip_features:
         print_red("Cannot have options --skip-features and --select-features selected simultaneously\nrun ./main.py -h to see help")
         exit(1)
-    
     if args.new_data:
         print_yellow(f'Starting preprocessing with data in data/raw/')
     else:
