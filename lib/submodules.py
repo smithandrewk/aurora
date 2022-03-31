@@ -110,7 +110,7 @@ def window(dir,filename):
     return df
 def balance(dir,filename):
     from pandas import read_csv,concat
-    from scripts.utils import class_count
+    from lib.utils import class_count
     df = read_csv(f'{dir}/{filename}')
     X = [p,s,w] = class_count(df)
     min_val = min(X)
@@ -149,7 +149,7 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
         keras.metrics.AUC(name='auc')
     ])
 
-    from scripts.modules import TIME_DIR
+    from lib.modules import TIME_DIR
     model_dir = f"sessions/models/{TIME_DIR}"
 
     from time import time
@@ -171,7 +171,7 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
     return baseline_history
 def test_model(x_test,y_test):
     from keras.models import load_model
-    from scripts.modules import TIME_DIR
+    from lib.modules import TIME_DIR
     # data_dir = f'sessions/data/{TIME_DIR}'
     model_dir = f"sessions/models/{TIME_DIR}"
     model = load_model(f"{model_dir}/best_model.h5")
@@ -209,7 +209,7 @@ def plot_metrics(baseline_history):
     else:
         plt.ylim([0,1])
     plt.legend()
-    from scripts.modules import TIME_DIR
+    from lib.modules import TIME_DIR
     model_dir = f"sessions/models/{TIME_DIR}"
     plt.savefig(f"{model_dir}/{metric}.jpg",bbox_inches='tight',dpi=200)
 def plot_cm(labels, predictions,met,hln,file,save=True,model_dir='.'):

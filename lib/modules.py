@@ -1,5 +1,5 @@
 from posixpath import split
-from scripts.submodules import plot_metrics, train_model
+from lib.submodules import plot_metrics, train_model
 TIME_DIR = ""
 
 def rename_data_in_raw():
@@ -15,13 +15,13 @@ def rename_data_in_raw():
             system(command)
 def preprocess_renamed_files():
     from os import listdir
-    from scripts.submodules import preprocess
+    from lib.submodules import preprocess
     dir = f'data/renamed'
     for file in listdir(dir):
         preprocess(dir,file)
 def fix_anomalies_in_preprocessed_files():
     from os import listdir
-    from scripts.submodules import fix_anomalies
+    from lib.submodules import fix_anomalies
     dir = f'data/preprocessed'
     for file in listdir(dir):
         fix_anomalies(dir,file)
@@ -43,7 +43,7 @@ def select_features():
         df.to_csv(f'{dir}/{file}',index=False)
 def window_preprocessed_files():
     from os import listdir,system,path
-    from scripts.submodules import window
+    from lib.submodules import window
     if ( not path.isdir('data/windowed')):
         system('mkdir data/windowed')
     dir = f'data/preprocessed'
@@ -51,7 +51,7 @@ def window_preprocessed_files():
         window(dir,file)
 def balance_windowed_files():
     from os import path,system,listdir
-    from scripts.submodules import balance
+    from lib.submodules import balance
     dir = f'data/windowed'
     if (not path.isdir('data/balanced')):
         system(f'mkdir data/balanced')
@@ -87,7 +87,7 @@ def split_and_shuffle():
     val_df.to_csv(f"{data_dir}/val.csv",index=False)
 
 def load_data_and_train_model(dir=None,hln=512):
-    from scripts.submodules import train_model
+    from lib.submodules import train_model
     import pandas as pd
     import numpy as np
     if dir == None:
@@ -115,7 +115,7 @@ def load_data_and_train_model(dir=None,hln=512):
     return hln
 
 def load_data_and_test_model(hln,dir=None):
-    from scripts.submodules import test_model,plot_cm
+    from lib.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
     import matplotlib.pyplot as plt
