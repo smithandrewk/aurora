@@ -151,6 +151,13 @@ def split_and_shuffle(dir=None):
     os.system(f'cp {data_dir}/val.csv data/val.csv')
     os.system(f'cp {data_dir}/test.csv data/test.csv')
 
+    # If split_and_shuffle was performed on data from another directory, update args.data_dir to train with new data
+    if data_dir:
+        return TIME_DIR
+    else:
+        return dir
+
+
     # Form np arrays of labels and features.
     # train_labels = array(train_df.pop('Class'))
     # p_train_labels = train_labels == 0

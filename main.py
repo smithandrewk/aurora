@@ -19,7 +19,8 @@ if args.new_data:
     concatenate_balanced_files()
 
 if args.do_split_shuffle:
-    split_and_shuffle(args.data_dir)     #call split shuffle with data/X.csv (latest)
+    args.data_dir = split_and_shuffle(args.data_dir)     #call split shuffle with data/X.csv (latest)
+    print(args.data_dir)
 
 ## Run these to train new model
 if args.do_train:
