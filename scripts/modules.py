@@ -109,8 +109,7 @@ def concatenate_balanced_files():
     import os
     from os import listdir
     from tqdm import tqdm
-    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
-    filename = f'sessions/data/{TIME_DIR}/X.csv'
+    filename = f'data/X.csv'
     for i,file in tqdm(enumerate(listdir("data/balanced"))):
         print_yellow(file)
         df = pd.read_csv("data/balanced/"+file)
@@ -119,10 +118,21 @@ def concatenate_balanced_files():
             df.to_csv(filename, mode='w', header=True,index=False)
             continue
         df.to_csv(filename, mode='a', header=False,index=False)
+    # new_filename = f'sessions/data/{TIME_DIR}/X.csv'
+    # os.system(f'mkdir -p sessions/data/{TIME_DIR}')
+    # os.system(f'cp {filename} {new_filename}')
     print_green('Finished Concatenating files')
-def split_and_shuffle():
+def split_and_shuffle(dir=None):
     print_yellow('Starting split and shuffle')
     from pandas import read_csv
+    import os
+
+    os.system(f'mkdir -p sessions/data/{TIME_DIR}')
+    if dir:
+        os.system(f'cp sessions/data/{dir}/X.csv sessions/data/{TIME_DIR}/X.csv')      
+    else:
+        os.system(f'cp data/X.csv sessions/data/{TIME_DIR}/X.csv')      
+
     data_dir = f'sessions/data/{TIME_DIR}'
     df = read_csv(f'{data_dir}/X.csv')
     from sklearn.model_selection import train_test_split
@@ -135,8 +145,10 @@ def split_and_shuffle():
     test_df.to_csv(f"{data_dir}/test.csv",index=False)
     val_df.to_csv(f"{data_dir}/val.csv",index=False)
 
-    import os   #copy mapping to have record of files used
     os.system(f'cp data/mapping {data_dir}/data_files.txt')
+    os.system(f'cp {data_dir}/train.csv data/train.csv')
+    os.system(f'cp {data_dir}/val.csv data/val.csv')
+    os.system(f'cp {data_dir}/test.csv data/test.csv')
 
     # Form np arrays of labels and features.
     # train_labels = array(train_df.pop('Class'))
@@ -169,9 +181,10 @@ def load_data_and_train_model(dir=None):
     from scripts.submodules import train_model
     import pandas as pd
     import numpy as np
+    import os
+    os.system(f'mkdir -p sessions/models/{TIME_DIR}')
     if dir == None:
-        split_and_shuffle()
-        data_dir = f'sessions/data/{TIME_DIR}' # use test.csv, train.csv, and val.csv from this session
+        data_dir = f'data'     # use test.csv, train.csv, and val.csv from this session
     else:
         data_dir = f'sessions/data/{dir}' # use test.csv, train.csv, and val.csv from previous session
     print_yellow(f'Using data in {data_dir}')
@@ -190,7 +203,6 @@ def load_data_and_train_model(dir=None):
     x_val = np.array(x_val)
     y_val = np.array(y_val)
     hln = 512
-    print("Training model from data in: " + data_dir)
     baseline_history = train_model(x_train,y_train,x_val,y_val,hln=hln)
     print_green('Finished training model')
     return hln,baseline_history
@@ -203,7 +215,7 @@ def load_data_and_test_model(hln, baseline_history,dir=None):
     import matplotlib.pyplot as plt
     import pandas as pd
     if dir == None:
-        data_dir = f'sessions/data/{TIME_DIR}'
+        data_dir = f'data'
     else:
         data_dir = f'sessions/data/{dir}'
     model_dir = f'sessions/models/{TIME_DIR}'
@@ -245,8 +257,6 @@ def create_time_dir():
     global TIME_DIR 
     TIME_DIR = date_str
     print_yellow("Session: "+TIME_DIR)
-    # os.system(f'mkdir -p sessions/data/{TIME_DIR}')
-    os.system(f'mkdir -p sessions/models/{TIME_DIR}')
 
 
 def create_and_check_args():
@@ -255,7 +265,7 @@ def create_and_check_args():
     parser = argparse.ArgumentParser(description='Pipeline to Train ANN Models')
 
     parser.add_argument('--new-data', required=False, action='store_true', dest='new_data',
-                        help='Process and split_and_shuffle new data located in "data/raw" (default: False)')
+                        help='Process new data located in "data/raw" (default: True)')
     parser.add_argument('--data-dir', metavar='MM.DD.YYYY_hh:mm', type=str, required=False, nargs='?', const=None, default=None, dest='data_dir',
                         help='If no new data, provide a directory located in "sessions/data/" to read data from (default: None)')
     parser.add_argument('--select-features', metavar='Feature', required=False, type=str, nargs='*', dest='select_features',
@@ -264,28 +274,63 @@ def create_and_check_args():
     parser.add_argument('--skip-features', metavar='Feature', required=False, type=str, nargs='*', dest='skip_features',
                     help=f"""Specify which features to {bcolors.BOLD}skip{bcolors.ENDC} while training new model
                     [choices: "0-0.5", "0.5-1", ... , "19.5-20", "EEG2", "Activity"] (default: None) """)
+    parser.add_argument('--split-and-shuffle', required=False, action='store_true', dest='do_split_shuffle', default=False,
+                        help='Split and shuffle data')
+    parser.add_argument('--train-model', required=False, action='store_true', dest='do_train', default=False,
+                        help='Train model from data')
     args = parser.parse_args()
 
 
-    if (not args.new_data) and (not args.data_dir):
-        print_red('If no new data, must provide data directory\nrun ./main.py -h to see help')
+    # if (not args.new_data) and (not args.data_dir):
+    #     print_red('If no new data, must provide data directory\nrun ./main.py -h to see help')
+    #     exit(1)
+    # if (args.data_dir):
+    #     if not os.path.isdir(f'sessions/data/{args.data_dir}'):
+    #         print_red(f'sessions/data/{args.data_dir} does not exist\nrun ./main.py -h to see help')
+    #         exit(1)
+    #     if args.select_features or args.skip_features:
+    #         print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
+    #         exit(1)
+    # if args.new_data:
+    #     if not os.path.isdir('data/raw'):
+    #         print_red('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
+    #         exit(1)
+    #     if args.data_dir:
+    #         print_red("Cannot have options --new-data and --data-dir selected simultaneously\nrun ./main.py -h to see help")
+    #         exit(1)
+    # if args.select_features and args.skip_features:
+    #     print_red("Cannot have options --skip-features and --select-features selected simultaneously\nrun ./main.py -h to see help")
+    #     exit(1)
+    ## Check args
+    if not args.new_data and not args.do_split_shuffle and not args.do_train:
+        print_red("Must have at least one option selected\nrun ./main.py -h to see help")
         exit(1)
-    if (args.data_dir):
-        if not os.path.isdir(f'sessions/data/{args.data_dir}'):
-            print_red(f'sessions/data/{args.data_dir} does not exist\nrun ./main.py -h to see help')
-            exit(1)
-        if args.select_features or args.skip_features:
-            print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
-            exit(1)
     if args.new_data:
+        if args.do_train and not args.do_split_shuffle:
+            print_red("Must specify --split-and-shuffle if using new data to train model\nrun ./main.py -h to see help")
+            exit(1)
         if not os.path.isdir('data/raw'):
             print_red('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
             exit(1)
         if args.data_dir:
             print_red("Cannot have options --new-data and --data-dir selected simultaneously\nrun ./main.py -h to see help")
             exit(1)
+    if args.data_dir:
+        if not os.path.isdir(f'sessions/data/{args.data_dir}'):
+            print_red(f'sessions/data/{args.data_dir} does not exist\nrun ./main.py -h to see help')
+            exit(1)
+    if not args.new_data and not args.data_dir:
+        if args.do_split_shuffle and not os.path.exists('data/X.csv'):
+            print_red('data/X.csv does not exist, must specify --data-dir or process new data\nrun ./main.py -h to see help')
+            exit(1)
+        if args.do_train and (not os.path.exists('data/test.csv') or not os.path.exists('data/train.csv') or not os.path.exists('data/val.csv')): 
+            print_red('Necessary data/*.csv files do not exist, must specify --split-and-shuffle to generate them\nrun ./main.py -h to see help')
+            exit(1)
     if args.select_features and args.skip_features:
         print_red("Cannot have options --skip-features and --select-features selected simultaneously\nrun ./main.py -h to see help")
+        exit(1)
+    if not args.new_data and (args.select_features or args.skip_features):
+        print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
         exit(1)
     if args.new_data:
         print_yellow(f'Starting preprocessing with data in data/raw/')
