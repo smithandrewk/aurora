@@ -146,6 +146,7 @@ def split_and_shuffle(dir=None):
     val_df.to_csv(f"{data_dir}/val.csv",index=False)
 
     os.system(f'cp data/mapping {data_dir}/data_files.txt')
+    os.system(f'cp {data_dir}/X.csv data/X.csv')
     os.system(f'cp {data_dir}/train.csv data/train.csv')
     os.system(f'cp {data_dir}/val.csv data/val.csv')
     os.system(f'cp {data_dir}/test.csv data/test.csv')
@@ -265,7 +266,7 @@ def create_and_check_args():
     parser = argparse.ArgumentParser(description='Pipeline to Train ANN Models')
 
     parser.add_argument('--new-data', required=False, action='store_true', dest='new_data',
-                        help='Process new data located in "data/raw" (default: True)')
+                        help='Process new data located in "data/raw" (default: False)')
     parser.add_argument('--data-dir', metavar='MM.DD.YYYY_hh:mm', type=str, required=False, nargs='?', const=None, default=None, dest='data_dir',
                         help='If no new data, provide a directory located in "sessions/data/" to read data from (default: None)')
     parser.add_argument('--select-features', metavar='Feature', required=False, type=str, nargs='*', dest='select_features',
@@ -279,29 +280,6 @@ def create_and_check_args():
     parser.add_argument('--train-model', required=False, action='store_true', dest='do_train', default=False,
                         help='Train model from data')
     args = parser.parse_args()
-
-
-    # if (not args.new_data) and (not args.data_dir):
-    #     print_red('If no new data, must provide data directory\nrun ./main.py -h to see help')
-    #     exit(1)
-    # if (args.data_dir):
-    #     if not os.path.isdir(f'sessions/data/{args.data_dir}'):
-    #         print_red(f'sessions/data/{args.data_dir} does not exist\nrun ./main.py -h to see help')
-    #         exit(1)
-    #     if args.select_features or args.skip_features:
-    #         print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
-    #         exit(1)
-    # if args.new_data:
-    #     if not os.path.isdir('data/raw'):
-    #         print_red('Specified --new-data but no new data. Must add raw data to "data/raw"\nrun ./main.py -h to see help')
-    #         exit(1)
-    #     if args.data_dir:
-    #         print_red("Cannot have options --new-data and --data-dir selected simultaneously\nrun ./main.py -h to see help")
-    #         exit(1)
-    # if args.select_features and args.skip_features:
-    #     print_red("Cannot have options --skip-features and --select-features selected simultaneously\nrun ./main.py -h to see help")
-    #     exit(1)
-    ## Check args
     if not args.new_data and not args.do_split_shuffle and not args.do_train:
         print_red("Must have at least one option selected\nrun ./main.py -h to see help")
         exit(1)
