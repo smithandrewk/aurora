@@ -62,3 +62,9 @@ select certain features
 ```
 ./main.py --select-features [Feature] [Feature] ...
 ```
+Upload data to google drive - must provide rclone directory name or skip upload
+```
+./main.py --rclone-dir [rclone-drive-local-name] 
+or
+./main.py --skip-upload
+```

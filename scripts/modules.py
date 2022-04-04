@@ -254,9 +254,15 @@ def load_data_and_test_model(hln, baseline_history,dir=None):
     # })
     plt.show()
     plt.savefig(f"{model_dir}/cm.jpg")
-    return baseline_results
     print_green('Finished testing model')
+    return baseline_results
 
+def upload_data(dir):
+    import os
+    # os.system(f'mkdir -p sessions/models/{TIME_DIR} && touch sessions/models/{TIME_DIR}/test && touch sessions/models/{TIME_DIR}/test2')
+    print_yellow('Starting Upload to Google Drive')
+    os.system(f'rclone copy sessions/models/{TIME_DIR} {dir}:AuroraProject/sessions/{TIME_DIR}/')
+    print_green('Finished Upload to Google Drive')
 def create_time_dir():
     from datetime import datetime
     import os
@@ -274,7 +280,7 @@ def create_and_check_args():
 
     parser.add_argument('--new-data', required=False, action='store_true', dest='new_data',
                         help='Process new data located in "data/raw" (default: False)')
-    parser.add_argument('--data-dir', metavar='MM.DD.YYYY_hh:mm', type=str, required=False, nargs='?', const=None, default=None, dest='data_dir',
+    parser.add_argument('--data-dir', metavar='[MM.DD.YYYY_hh:mm]', type=str, required=False, nargs='?', const=None, default=None, dest='data_dir',
                         help='If no new data, provide a directory located in "sessions/data/" to read data from (default: None)')
     parser.add_argument('--select-features', metavar='Feature', required=False, type=str, nargs='*', dest='select_features',
                         help=f"""Specify which features to {bcolors.BOLD}use{bcolors.ENDC} while training new model
@@ -283,9 +289,13 @@ def create_and_check_args():
                     help=f"""Specify which features to {bcolors.BOLD}skip{bcolors.ENDC} while training new model
                     [choices: "0-0.5", "0.5-1", ... , "19.5-20", "EEG2", "Activity"] (default: None) """)
     parser.add_argument('--split-and-shuffle', required=False, action='store_true', dest='do_split_shuffle', default=False,
-                        help='Split and shuffle data')
+                        help='Split and shuffle data (default: False)')
     parser.add_argument('--train-model', required=False, action='store_true', dest='do_train', default=False,
-                        help='Train model from data')
+                        help='Train model from data (default: False)')
+    parser.add_argument('--skip-upload', required=False, action='store_true', dest='skip_upload', default=False,
+                        help='Skip uploading data to google drive (default: False)')
+    parser.add_argument('--rclone-dir', required=False, metavar='[rclone drive local name]', type=str, default = None, dest='rclone_dir', nargs='?', const=None, 
+                        help='Provide the name of your local rclone Google Drive directory containing the AuroraProject directory')
     args = parser.parse_args()
     if not args.new_data and not args.do_split_shuffle and not args.do_train:
         print_red("Must have at least one option selected\nrun ./main.py -h to see help")
@@ -309,13 +319,16 @@ def create_and_check_args():
             print_red('data/X.csv does not exist, must specify --data-dir or process new data\nrun ./main.py -h to see help')
             exit(1)
         if args.do_train and (not os.path.exists('data/test.csv') or not os.path.exists('data/train.csv') or not os.path.exists('data/val.csv')): 
-            print_red('Necessary data/*.csv files do not exist, must specify --split-and-shuffle to generate them\nrun ./main.py -h to see help')
+            print_red('Necessary data/*.csv files do not exist, must specify --split-and-shuffle to generate them or specify data directory to read data from (--data-dir)\nrun ./main.py -h to see help')
             exit(1)
     if args.select_features and args.skip_features:
         print_red("Cannot have options --skip-features and --select-features selected simultaneously\nrun ./main.py -h to see help")
         exit(1)
     if not args.new_data and (args.select_features or args.skip_features):
         print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
+        exit(1)
+    if not args.skip_upload and not args.rclone_dir:
+        print_red('If not skipping upload to google drive, must specify --rclone-dir to provide rclone Google Drive local name\nrun ./main.py -h to see help')
         exit(1)
     if args.new_data:
         print_yellow(f'Starting preprocessing with data in data/raw/')
