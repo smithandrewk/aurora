@@ -310,7 +310,12 @@ def zdb_remap():
 
 def create_and_check_args():
     import argparse
+    import os
     parser = argparse.ArgumentParser(description='Pipeline to Score Data')
-    parser.add_argument('--ann-model', type=str, required=True, dest='ann_model')
+    parser.add_argument('--ann-model', type=str, required=True, dest='ann_model', metavar='[path-to-model]',
+                        help=f'Enter path to ANN model within {bcolors.BOLD}model{bcolors.ENDC} directory')
     args = parser.parse_args()
+    if not os.path.exists('model/'+args.ann_model):
+        print(f"{bcolors.FAIL}Invalid path to ANN model{bcolors.ENDC}")
+        exit(1)
     return args
