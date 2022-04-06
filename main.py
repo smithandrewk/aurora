@@ -26,7 +26,5 @@ if args.do_split_shuffle:
 if args.do_train:
     hln,baseline_history = load_data_and_train_model(args.data_dir)   
     baseline_results = load_data_and_test_model(hln, baseline_history, args.data_dir)
-
-if not args.skip_upload:
-    if args.do_train:
+    if not args.skip_upload:
         upload_data(args.rclone_dir)

@@ -1,4 +1,5 @@
 from posixpath import split
+from subprocess import CalledProcessError
 from scripts.submodules import plot_metrics, train_model
 TIME_DIR = ""
 
@@ -258,14 +259,25 @@ def load_data_and_test_model(hln, baseline_history,dir=None):
     return baseline_results
 
 def upload_data(dir):
+    """
+    dir: name of rclone config (eg. 'drive')
+    """
     import os
+    import subprocess
     print_yellow('Starting Upload to Google Drive')
-    os.system(f'rclone copy sessions/models/{TIME_DIR} {dir}:AuroraProject/sessions/{TIME_DIR}/ --drive-shared-with-me')
+    args=['rclone', 'copy', f'sessions/models/{TIME_DIR}', f'{dir}:AuroraProject/sessions/{TIME_DIR}/' , '--drive-shared-with-me']
+    try:
+        subprocess.run(args, check=True)
+    except CalledProcessError:
+        print_red("Failed Upload to Google Drive")
+        return
+    # os.system(f'rclone copy sessions/models/{TIME_DIR} {dir}:AuroraProject/sessions/{TIME_DIR}/ --drive-shared-with-me')
     print_green('Finished Upload to Google Drive')
 
 def create_time_dir():
     from datetime import datetime
     import os
+    import subprocess
     now = datetime.now()
     date_str = now.strftime("%m.%d.%Y_%H:%M")
     global TIME_DIR 
@@ -274,8 +286,13 @@ def create_time_dir():
 
 
 def create_and_check_args():
+    """
+    Returns command line arguments in namespace 'args'
+    """
     import os
     import argparse
+    import subprocess
+
     parser = argparse.ArgumentParser(description='Pipeline to Train ANN Models')
 
     parser.add_argument('--new-data', required=False, action='store_true', dest='new_data',
@@ -327,9 +344,15 @@ def create_and_check_args():
     if not args.new_data and (args.select_features or args.skip_features):
         print_red('Must use new data (--new-data) to skip or select features\nrun ./main.py -h to see help')
         exit(1)
-    if not args.skip_upload and not args.rclone_dir and args.do_train:
-        print_red('If not skipping upload to google drive, must specify --rclone-dir to provide rclone Google Drive local name\nrun ./main.py -h to see help')
-        exit(1)
+    if not args.skip_upload and args.do_train:
+        if not args.rclone_dir:
+            print_red('If not skipping upload to google drive, must specify --rclone-dir to provide rclone Google Drive local name\nrun ./main.py -h to see help')
+            exit(1)
+        try:
+            subprocess.run(["rclone", "lsd", f"{args.rclone_dir}:AuroraProject", "--drive-shared-with-me"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
+        except CalledProcessError:
+            print_red(f"{args.rclone_dir} is not a valid rclone config name or it does not contain 'AuroraProject' directory\nrun ./main.py -h to see help")
+            exit(1)
     if args.new_data:
         print_yellow(f'Starting preprocessing with data in data/raw/')
     else:
