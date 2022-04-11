@@ -9,11 +9,11 @@ import argparse
 
 args = create_and_check_args()
 
-# rename_data_in_raw()
-# initial_preprocessing()
-# handle_anomalies()
-# window()
-# scale()
+rename_data_in_raw()
+initial_preprocessing()
+handle_anomalies()
+window()
+scale()
 score_ann(args.ann_model)
 score_rf('rf_model')
 expand_predictions()
