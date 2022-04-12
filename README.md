@@ -28,3 +28,43 @@ mkdir data/raw
 ```
 python3 main.py
 ```
+
+### Options for main.py:
+Notes: 
+- Can run new-dir, split-and-shuffle, and train-model together to do all
+- If `--split-and-shuffle` and `--train-model` are specified with `--data-dir`, model will be trained on new data created after split and shuffle
+
+See help
+```
+./main.py --help
+```
+Create a new data set from data in `data/raw`
+```
+./main.py --new-dir
+```
+Split and shuffle data
+```
+./main.py --split-and-shuffle
+```
+Train model
+```
+./main.py --train-model
+```
+Use data set from previous session for split and shuffle or for training model
+```
+./main.py --data-dir [MM.DD.YYYY_hh:mm]
+```
+skip certain features
+```
+./main.py --skip-features [Feature] [Feature] ...
+```
+select certain features
+```
+./main.py --select-features [Feature] [Feature] ...
+```
+Upload data to google drive - must provide rclone directory name or skip upload
+```
+./main.py --rclone-dir [rclone-drive-local-name] 
+or
+./main.py --skip-upload
+```
