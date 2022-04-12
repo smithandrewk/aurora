@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
-from scripts.modules import *
-import os
+from lib.modules import *
 
 args = create_and_check_args()
 create_time_dir()

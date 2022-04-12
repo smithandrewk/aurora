@@ -111,7 +111,7 @@ def window(dir,filename):
     return df
 def balance(dir,filename):
     from pandas import read_csv,concat
-    from scripts.utils import class_count
+    from lib.utils import class_count
     df = read_csv(f'{dir}/{filename}')
     X = [p,s,w] = class_count(df)
     min_val = min(X)
@@ -135,7 +135,7 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
     import tensorflow as tf
     from tensorflow import keras
     BATCH_SIZE=64
-    EPOCHS=400
+    EPOCHS=512
     model = tf.keras.Sequential([
         keras.layers.Dense(hln, activation='relu',input_shape=(x_train.shape[-1],)),
         keras.layers.Dropout(0.5),
@@ -150,7 +150,7 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
         keras.metrics.AUC(name='auc')
     ])
 
-    from scripts.modules import TIME_DIR
+    from lib.modules import TIME_DIR
     model_dir = f"sessions/models/{TIME_DIR}"
 
     from time import time
@@ -169,11 +169,10 @@ def train_model(x_train,y_train,x_val,y_val,hln=256):
         ),
         keras.callbacks.EarlyStopping(monitor="val_loss", patience=50, verbose=1,mode='min',restore_best_weights=True),])
     stop = time()-start
-    # TODO save baseline history for training
     return baseline_history
 def test_model(x_test,y_test):
     from keras.models import load_model
-    from scripts.modules import TIME_DIR
+    from lib.modules import TIME_DIR
     # data_dir = f'sessions/data/{TIME_DIR}'
     model_dir = f"sessions/models/{TIME_DIR}"
     model = load_model(f"{model_dir}/best_model.h5")
@@ -203,6 +202,7 @@ def plot_metrics(baseline_history):
                 color=colors[1], label='Val')
     plt.xlabel('Epoch')
     plt.ylabel(name)
+    plt.title(metric)
     if metric == 'loss':
         plt.ylim([0, plt.ylim()[1]])
     elif metric == 'auc':
@@ -210,21 +210,10 @@ def plot_metrics(baseline_history):
     else:
         plt.ylim([0,1])
     plt.legend()
-    import matplotlib
-    # matplotlib.use("pgf")
-    # plt.style.use("utils/style.txt")
-    # matplotlib.rcParams.update({
-    #     "pgf.texsystem": "xelatex",
-    #     'font.family': 'serif',
-    #     'text.usetex': True,
-    #     'pgf.rcfonts': False
-    # })
-    from scripts.modules import TIME_DIR
+    from lib.modules import TIME_DIR
     model_dir = f"sessions/models/{TIME_DIR}"
-    plt.show()
-    plt.savefig(metric+".jpg")
-    plt.savefig(f"{model_dir}/{metric}.jpg")
-def plot_cm(labels, predictions,met,hln,file):
+    plt.savefig(f"{model_dir}/{metric}.jpg",bbox_inches='tight',dpi=200)
+def plot_cm(labels, predictions,met,hln,file,save=True,model_dir='.'):
     import matplotlib.pyplot as plt
     from sklearn.metrics import confusion_matrix
     import seaborn as sns
@@ -234,7 +223,8 @@ def plot_cm(labels, predictions,met,hln,file):
     plt.title('Confusion Matrix for '+file+'\nloss: '+str(met[0])+'\nacc: '+str(met[1])+'\nhidden layer: '+str(hln))
     plt.ylabel('Actual label')
     plt.xlabel('Predicted label')
-    plt.savefig('cm.jpg',bbox_inches='tight')
+    if(save):
+        plt.savefig(f"{model_dir}/cm.jpg",bbox_inches='tight',dpi=200)
 
 
 # def sub_test():

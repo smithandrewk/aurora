@@ -1,6 +1,6 @@
 from posixpath import split
 from subprocess import CalledProcessError
-from scripts.submodules import plot_metrics, train_model
+from lib.submodules import plot_metrics, train_model
 TIME_DIR = ""
 
 class bcolors:
@@ -35,7 +35,7 @@ def rename_data_in_raw():
 def preprocess_renamed_files():
     print_yellow(f'Started preprocessing data')
     from os import listdir
-    from scripts.submodules import preprocess
+    from lib.submodules import preprocess
     dir = f'data/renamed'
     for file in listdir(dir):
         print_yellow(file)
@@ -44,7 +44,7 @@ def preprocess_renamed_files():
 def fix_anomalies_in_preprocessed_files():
     print_yellow(f'Started fixing anomalies data')
     from os import listdir
-    from scripts.submodules import fix_anomalies
+    from lib.submodules import fix_anomalies
     dir = f'data/preprocessed'
     for file in listdir(dir):
         fix_anomalies(dir,file)
@@ -85,7 +85,7 @@ def skip_features(skip):
 def window_preprocessed_files():
     print_yellow('Starting windowing')
     from os import listdir,system,path
-    from scripts.submodules import window
+    from lib.submodules import window
     if ( not path.isdir('data/windowed')):
         system('mkdir data/windowed')
     dir = f'data/preprocessed'
@@ -96,7 +96,7 @@ def window_preprocessed_files():
 def balance_windowed_files():
     print_yellow('Starting balancing')
     from os import path,system,listdir
-    from scripts.submodules import balance
+    from lib.submodules import balance
     dir = f'data/windowed'
     if (not path.isdir('data/balanced')):
         system(f'mkdir data/balanced')
@@ -187,7 +187,7 @@ def split_and_shuffle(dir=None):
     print_green('Finished split and shuffle')
 def load_data_and_train_model(dir=None):
     print_yellow('Starting training model')
-    from scripts.submodules import train_model
+    from lib.submodules import train_model
     import pandas as pd
     import numpy as np
     import os
@@ -218,11 +218,13 @@ def load_data_and_train_model(dir=None):
 
 def load_data_and_test_model(hln, baseline_history,dir=None):
     print_yellow('Starting testing model')
-    from scripts.submodules import test_model,plot_cm
+    from lib.submodules import test_model,plot_cm
     from tensorflow import one_hot
     import numpy as np
     import matplotlib.pyplot as plt
     import pandas as pd
+    from sklearn.preprocessing import MinMaxScaler
+
     if dir == None:
         data_dir = f'data'
     else:
@@ -232,14 +234,12 @@ def load_data_and_test_model(hln, baseline_history,dir=None):
     y_test = test_df.pop('Class')
     x_test = test_df
 
-    from sklearn.preprocessing import MinMaxScaler
     scaler = MinMaxScaler()
     x_test = scaler.fit_transform(x_test)
 
     x_test = np.array(x_test)
     y_test = np.array(y_test)
     
-    # x_test = scaler.fit_transform(x_test)
 
     baseline_results,test_predictions_baseline = test_model(x_test,y_test)
     plot_metrics(baseline_history)
