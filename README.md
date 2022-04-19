@@ -35,13 +35,12 @@ and, if ZBD files are available,
 <br />
 
 ## Scoring
-To score data, type the command
-
-```make scoreData```
-
-or run the script
+To score data, run the script
 
 ```main.py```
+
+Must specify ANN model with:
+```--ann-model [model in model dir]```
 
 <br />
 
@@ -52,6 +51,8 @@ Final output scorings are in
 ```data/final_ann```
 
 ```data/final_rf```
+
+Run `make archiveScores` to zip scored data in `Scored.zip`
 
 Final output scoring in zdb format are in
 
