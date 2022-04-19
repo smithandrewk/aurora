@@ -4,8 +4,7 @@
 Pipeline for ...
 """
 print(__doc__)
-from scripts.modules import *
-import argparse
+from lib.modules import *
 
 args = create_and_check_args()
 

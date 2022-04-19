@@ -37,7 +37,7 @@ def initial_preprocessing():
     """
     print_yellow('Starting Preprocessing')
     import os
-    from scripts.submodules import preprocess_csv
+    from lib.submodules import preprocess_csv
 
     i = 0
     dir = f'data/renamed'
@@ -82,7 +82,7 @@ def window():
         filename : name of file
     """
     print_yellow("Starting Windowing")
-    from scripts.submodules import window_data
+    from lib.submodules import window_data
     from os import listdir
     i = 0
     dir = f'data/preprocessed'
@@ -128,7 +128,7 @@ def score_ann(model):
         model : name of model
     """
     print_yellow("Started Scoring ANN")
-    from scripts.submodules import score_data_ann
+    from lib.submodules import score_data_ann
     from os import listdir
 
     dir = 'data/windowed_scaled'
@@ -147,7 +147,7 @@ def score_rf(model):
         model : name of model
     """
     print_yellow("Starting Scoring RF")
-    from scripts.submodules import score_data_rf
+    from lib.submodules import score_data_rf
     from os import listdir
 
     dir = 'data/windowed'
@@ -166,7 +166,7 @@ def expand_predictions():
         filename : name of file
     """
     print_yellow("Starting Expand Predictions")
-    from scripts.submodules import expand_predictions_ann, expand_predictions_rf
+    from lib.submodules import expand_predictions_ann, expand_predictions_rf
     from os import listdir
 
     dir_ann = 'data/predictions_ann'
@@ -252,7 +252,7 @@ def zdb_preprocess():
     """
     print_yellow("Starting ZDB preprocessing")
     import os
-    from scripts.submodules import preprocess_zdb
+    from lib.submodules import preprocess_zdb
     dir = 'data/renamedZDB'
     if not os.path.isdir(dir):
         print("No ZDB files")
@@ -267,7 +267,7 @@ def zdb_conversion():
     """
     print_yellow("Starting ZDB Conversion")
     import os
-    from scripts.submodules import conversion_zdb
+    from lib.submodules import conversion_zdb
 
     dir_zdb = 'data/preprocessedZDB'
     dir_ann = 'data/expanded_renamed_ann'
