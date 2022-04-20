@@ -2,6 +2,20 @@
 {% block body %}
     <h1>Upload a Zip File to Score data</h1>
     <form name="file_form" id="file_form" action="/process-file" method=post enctype="multipart/form-data">
+        <label for="ann_model">Choose an ANN model</label><br>
+        <select name="ann_model" id="ann_model" required>
+            <option disabled selected value="">ANN model</option>
+            {% for model in ann_models %}
+                <option value="{{ ann_models[model] }}">{{ model }}</option>                
+            {% endfor %}
+        </select><br>
+        <label for="rf_model">Choose an RF model</label><br>
+        <select name="rf_model" id="rf_model" required>
+            <option disabled selected value="">RF model</option>
+            {% for model in rf_models %}
+                <option value="{{ rf_models[model] }}">{{ model }}</option>                
+            {% endfor %}
+        </select><br>
         <label for="file_input">Select a file:</label><br>
         <input name= "{{ input_name }}" id="file_input" type="file" required multiple><br>
         <input type="submit" value="Upload">
