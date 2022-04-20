@@ -7,6 +7,7 @@ import os
 UPLOAD_FOLDER = "Upload"
 DOWNLOAD_FOLDER = "Download"
 INPUT_NAME = "file_in"
+ALLOWED_EXTENSIONS = ['.zip']
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -25,18 +26,24 @@ def process_file():
             return redirect('/fail-input')
         if file:
             filename = secure_filename(file.filename)
+            if not valid_extension(filename):
+                return redirect('/fail-input')
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
             process_file(filename)
-            return redirect(f"download-file/{filename}")
+            return redirect(f"download-button/{filename}")
     return redirect('/')
 
-@app.route("/download-file/<filename>")
+@app.route("/download-button/<filename>")
 def download_file(filename):
-    return send_from_directory(DOWNLOAD_FOLDER, 'scored_'+filename)
+    return render_template("download-button.html", filename=filename)
 
+@app.route("/download-zip/<filename>")
+def download_zip(filename):
+    return send_from_directory(DOWNLOAD_FOLDER, 'scored_'+filename)
+    
 @app.route("/fail-input")
-def fail():
-    return ("fail")
+def fail_input():
+    return render_template('failure.html')
 
 def process_file(filename):
     import subprocess
@@ -48,3 +55,9 @@ def process_file(filename):
     subprocess.run(['make', 'archiveScores'])
     args = ['cp', 'Scored.zip', os.path.join(DOWNLOAD_FOLDER, f'scored_{filename}')]
     subprocess.run(args)
+
+def valid_extension(filename):
+    for extension in ALLOWED_EXTENSIONS:
+        if filename.find(extension):
+            return True 
+    return False
