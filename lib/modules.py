@@ -312,10 +312,17 @@ def create_and_check_args():
     import argparse
     import os
     parser = argparse.ArgumentParser(description='Pipeline to Score Data')
-    parser.add_argument('--ann-model', type=str, required=True, dest='ann_model', metavar='[path-to-model]',
+    parser.add_argument('--ann-model', type=str, required=True, dest='ann_model', metavar='[path-to-ann-model]',
                         help=f'Enter path to ANN model within {bcolors.BOLD}model{bcolors.ENDC} directory')
+    parser.add_argument('--rf-model', type=str, required=True, dest='rf_model', metavar='[path-to-rf-model]',
+                        help=f'Enter path to RF model within {bcolors.BOLD}model{bcolors.ENDC} directory')
     args = parser.parse_args()
     if not os.path.exists('model/'+args.ann_model):
         print(f"{bcolors.FAIL}Invalid path to ANN model{bcolors.ENDC}")
         exit(1)
+    if not os.path.exists('model/'+args.rf_model):
+        print(f"{bcolors.FAIL}Invalid path to RF model{bcolors.ENDC}")
+        exit(1)
+    print_yellow(f'Using ANN model: model/{args.ann_model}')
+    print_yellow(f'Using RF model: model/{args.rf_model}')
     return args
