@@ -16,8 +16,14 @@
                 <option value="{{ rf_models[model] }}">{{ model }}</option>                
             {% endfor %}
         </select><br>
+        <label for="file type">Choose upload Type</label><br>
+        <select name="iszip" id="file type" required>
+            <option disabled selected value="">Upload Type</option>
+            <option value="1">Zip Archive</option>
+            <option value="0">Individual File</option>
+        </select><br>
         <label for="file_input">Select a file:</label><br>
-        <input name= "{{ input_name }}" id="file_input" type="file" required multiple><br>
+        <input name= "{{ input_name }}" id="file_input" type="file" required><br>
         <input type="submit" value="Upload">
     </form>
 {% endblock body %}
