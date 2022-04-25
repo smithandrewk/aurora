@@ -1,9 +1,11 @@
 from subprocess import CalledProcessError
-import flask
-from flask import Flask, redirect, render_template, request, url_for, send_from_directory
+from flask import Flask, redirect, render_template, request, send_from_directory, session
 from werkzeug.utils import secure_filename
+from flask_login import LoginManager
 from lib.utils import *
+import lib.AppUser
 import os
+import secrets
 
 UPLOAD_FOLDER = "Upload"
 DOWNLOAD_FOLDER = "Download"
@@ -14,6 +16,16 @@ RF_MODELS = {'Rat Model':'rf_model'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = secrets.token_hex()
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+user = lib.AppUser
+
+@login_manager.user_loader
+def load_user(user_id):
+    return user.get(user_id)
 
 @app.route("/")
 def index():
@@ -93,3 +105,6 @@ def testing(filename, ann_model, rf_model):
     new_fn = f'processed_{filename}'
     os.system(f'cp {UPLOAD_FOLDER}/{filename} {DOWNLOAD_FOLDER}/{new_fn}')
     return new_fn
+
+if __name__=='__main__':
+    app.run(debug='True')
