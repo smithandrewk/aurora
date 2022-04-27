@@ -48,7 +48,7 @@ def process_file():
                 return redirect(f'/fail-input/Invalid File Extension - Allowed extensions are: {list(ALLOWED_EXTENSIONS.values())}')
             filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            new_filename = process_file(filename, iszip, ann_model, rf_model)
+            new_filename = score_data(filename, iszip, ann_model, rf_model)
             if not new_filename:
                 return redirect('/fail-input/Scoring Files')
             return redirect(f"download-button/{new_filename}")
@@ -66,7 +66,7 @@ def download_zip(filename):
 def fail_input(msg):
     return render_template('failure.html', msg=msg)
 
-def process_file(filename, iszip, ann_model, rf_model):
+def score_data(filename, iszip, ann_model, rf_model):
     
     # return testing(filename, ann_model, rf_model)
     

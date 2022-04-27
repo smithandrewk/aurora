@@ -6,3 +6,5 @@ tensorflow
 sklearn
 tqdm
 ipykernel
+flask
+flask_login
