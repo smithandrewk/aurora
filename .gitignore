@@ -1,8 +1,8 @@
 rf_model
 __pycache__
 env
-model/*
-data/*
+model
+data
 Unscored.zip
 UnscoredZDB.zip
 Scored*.zip
@@ -10,5 +10,5 @@ sessions
 backup
 categorical_accuracy.jpg
 cm.jpg
-Download/*
-Upload/*
+Download
+Upload
