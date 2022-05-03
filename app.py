@@ -1,10 +1,14 @@
 from subprocess import CalledProcessError
-from flask import Flask, redirect, render_template, request, send_from_directory, session
-from werkzeug.utils import secure_filename
-from flask_login import LoginManager
-from lib.utils import *
 import os
 import secrets
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
+from werkzeug.utils import secure_filename
+from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import login_user, LoginManager, login_required, logout_user, current_user
+from lib.utils import *
+from lib.webmodels import *
+from lib.webforms import *
 
 UPLOAD_FOLDER = "Upload"
 DOWNLOAD_FOLDER = "Download"
@@ -17,9 +21,75 @@ app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = secrets.token_hex()
 
-@app.route("/")
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Data.db'
+db = SQLAlchemy(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.view ='login'
+
+
+@app.errorhandler(401)
+def custom_401(error):
+    flash('Login Required')
+    return redirect(url_for('login'))
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = Users.query.filter_by(email=form.email.data).first()
+        if user:
+            if user.verify_password(form.password.data):
+                login_user(user)
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Invalid Password')
+        else:
+            flash('Invlid Email Address')
+    return render_template('login.html', form=form)
+
+@app.route('/add_user', methods=['GET', 'POST'])
+def add_user():
+    print('post')
+    form = SignupForm()
+    if form.validate_on_submit():
+        print('valid')
+        user = Users.query.filter_by(email=form.email.data).first()     #query database - get all users with submitted email address - should be none
+        if user is None:    # user does not already exist
+            print('none user')
+            user = Users(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data, password=form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            print('commit')
+        form.first_name.data = ''
+        form.last_name.data = ''
+        form.email.data = ''
+        form.password = ''
+        print('before flash')
+        flash('User created Successfully. ')
+        return redirect(url_for('login'))
+    return render_template('add-user.html', form=form)
+
+@app.route('logout')
+def logout():
+    logout_user()
+    flash('Logged out Successfully')
+    return redirect(url_for('loging'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
+
+@app.route("/score_data")
+@login_required
 def index():
-    return render_template("index.html", input_name = INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
+    return render_template("upload-files.html", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
 @app.route("/process-file", methods=["POST"])
 def process_file():

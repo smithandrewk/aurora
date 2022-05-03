@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="shadow p-3 mb-5 bg-body rounded">   
+        <form method='POST'>
+            {{ form.hidden_tag() }}
+
+            {{ form.first_name.label(class="form-label") }}
+            {{ form.first_name(class="form-control") }}
+            <br>
+
+            {{ form.last_name.label(class="form-label") }}
+            {{ form.last_name(class="form-control") }}
+            <br>
+
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control") }}
+            <br>
+
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+            <br>
+
+            {{ form.password_confirm.label(class="form-label") }}
+            {{ form.password_confirm(class="form-control") }}
+            <br>
+
+            {{ form.submit(class="btn btn-secondary") }}
+        </form>
+    </div> 
+{% endblock body %}

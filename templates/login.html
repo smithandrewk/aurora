@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h1>Aurora</h1>  
+    <div class="shadow p-3 mb-5 bg-body rounded">   
+        <form method='POST'>
+            {{ form.hidden_tag() }}
+
+            {{ form.email.label(class="form-label") }}
+            {{ form.email(class="form-control") }}
+            <br>
+
+            {{ form.password.label(class="form-label") }}
+            {{ form.password(class="form-control") }}
+            <br>
+
+            {{ form.submit(class="btn btn-secondary") }}
+        </form>
+    </div>
+
+    <br><br>
+
+    <div class="shadow p-3 mb-5 bg-body rounded">
+        <a href='/user/add'>
+            <h2>Sign Up</h2>
+        </a>
+    </div>
+
+    <br><br>
+
+{% endblock body %}
