@@ -75,11 +75,12 @@ def add_user():
         return redirect(url_for('login'))
     return render_template('add-user.html', form=form)
 
-@app.route('logout')
+@app.route('/logout')
+@login_required
 def logout():
     logout_user()
     flash('Logged out Successfully')
-    return redirect(url_for('loging'))
+    return redirect(url_for('login'))
 
 @app.route('/dashboard')
 @login_required
@@ -88,10 +89,15 @@ def dashboard():
 
 @app.route("/score_data")
 @login_required
-def index():
+def score_data():
     return render_template("upload-files.html", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
+@app.route('/')
+def index():
+    return redirect(url_for('login'))
+
 @app.route("/process-file", methods=["POST"])
+@login_required
 def process_file():
     if request.method == 'POST':
         if INPUT_NAME not in request.files:
@@ -115,14 +121,17 @@ def process_file():
     return redirect('/')
 
 @app.route("/download-button/<filename>")
+@login_required
 def download_file(filename):
     return render_template("download-button.html", filename=filename, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
 @app.route("/download-zip/<filename>")
+@login_required
 def download_zip(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename)
     
 @app.route("/fail-input/<msg>")
+@login_required
 def fail_input(msg):
     return render_template('failure.html', msg=msg)
 
