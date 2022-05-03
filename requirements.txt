@@ -7,4 +7,9 @@ sklearn
 tqdm
 ipykernel
 flask
-flask_login
+markupsafe
+flask_wtf
+wtforms
+flask-sqlalchemy
+flask-login
+werkzeug

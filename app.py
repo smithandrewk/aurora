@@ -3,7 +3,6 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_login import LoginManager
 from lib.utils import *
-import lib.AppUser
 import os
 import secrets
 
@@ -17,15 +16,6 @@ RF_MODELS = {'Rat Model':'rf_model'}
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = secrets.token_hex()
-
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-user = lib.AppUser
-
-@login_manager.user_loader
-def load_user(user_id):
-    return user.get(user_id)
 
 @app.route("/")
 def index():
