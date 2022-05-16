@@ -1,31 +1,29 @@
-{% extends 'base.html' %}
+{% extends 'sign-base.html' %}
 
-{% block body %}
-    <div class="shadow p-3 mb-5 bg-body rounded">   
-        <form method='POST'>
-            {{ form.hidden_tag() }}
+{% block form %}
+    <form method='POST'>
+        {{ form.hidden_tag() }}
+        <div class="form-floating">
+            {{ form.first_name(class="form-control", id="first_name", placeholder="first name") }}
+            <label for="first_name">First Name</label>
+        </div>
+        <div class="form-floating">
+            {{ form.last_name(class="form-control", id="last_name", placeholder="last name") }}
+            <label for="last_name">Last Name</label>
+        </div>
+        <div class="form-floating">
+            {{ form.email(class="form-control", id="email", placeholder="name@example.com") }}
+            <label for="email">Email address</label>
+        </div>
+        <div class="form-floating">
+            {{ form.password(class="form-control", id="password", placeholder="Password") }}
+            <label for="password">Password</label>
+        </div>
+        <div class="form-floating">
+            {{ form.password_confirm(class="form-control", id="password_confirm", placeholder="Confirm Password") }}
+            <label for="password_confirm">Confirm Password</label>
+        </div>
 
-            {{ form.first_name.label(class="form-label") }}
-            {{ form.first_name(class="form-control") }}
-            <br>
-
-            {{ form.last_name.label(class="form-label") }}
-            {{ form.last_name(class="form-control") }}
-            <br>
-
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control") }}
-            <br>
-
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control") }}
-            <br>
-
-            {{ form.password_confirm.label(class="form-label") }}
-            {{ form.password_confirm(class="form-control") }}
-            <br>
-
-            {{ form.submit(class="btn btn-secondary") }}
-        </form>
-    </div> 
-{% endblock body %}
+        {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
+    </form>
+{% endblock form %}

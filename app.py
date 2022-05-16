@@ -42,35 +42,33 @@ def load_user(user_id):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
+        print('submitted')
         user = Users.query.filter_by(email=form.email.data).first()
         if user:
             if user.verify_password(form.password.data):
                 login_user(user)
+                print('logged in')
                 return redirect(url_for('dashboard'))
             else:
                 flash('Invalid Password')
         else:
             flash('Invlid Email Address')
+    print('home')
     return render_template('login.html', form=form)
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
-    print('post')
     form = SignupForm()
     if form.validate_on_submit():
-        print('valid')
         user = Users.query.filter_by(email=form.email.data).first()     #query database - get all users with submitted email address - should be none
         if user is None:    # user does not already exist
-            print('none user')
             user = Users(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data, password=form.password.data)
             db.session.add(user)
             db.session.commit()
-            print('commit')
         form.first_name.data = ''
         form.last_name.data = ''
         form.email.data = ''
         form.password = ''
-        print('before flash')
         flash('User created Successfully. ')
         return redirect(url_for('login'))
     return render_template('add-user.html', form=form)

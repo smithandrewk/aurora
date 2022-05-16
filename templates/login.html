@@ -1,31 +1,19 @@
-{% extends 'base.html' %}
+{% extends 'sign-base.html' %}
 
-{% block body %}
-    <h1>Aurora</h1>  
-    <div class="shadow p-3 mb-5 bg-body rounded">   
-        <form method='POST'>
-            {{ form.hidden_tag() }}
+{% block form %}
+    <form method='POST'>
+        {{ form.hidden_tag() }}
+        <div class="form-floating">
+            {{ form.email(class="form-control", id="floatingInput", placeholder="name@example.com") }}
+            <label for="floatingInput">Email address</label>
+        </div>
+        <div class="form-floating">
+            {{ form.password(class="form-control", id="floatingPassword", placeholder="Password") }}
+            <label for="floatingInput">Password</label>
+        </div>
+        {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
+    </form>
+    <br>
+    <p class="text-center">Or <a href="{{ url_for('add_user') }}"> create a new user</a></p>
 
-            {{ form.email.label(class="form-label") }}
-            {{ form.email(class="form-control") }}
-            <br>
-
-            {{ form.password.label(class="form-label") }}
-            {{ form.password(class="form-control") }}
-            <br>
-
-            {{ form.submit(class="btn btn-secondary") }}
-        </form>
-    </div>
-
-    <br><br>
-
-    <div class="shadow p-3 mb-5 bg-body rounded">
-        <a href='/user/add'>
-            <h2>Sign Up</h2>
-        </a>
-    </div>
-
-    <br><br>
-
-{% endblock body %}
+{% endblock form %}

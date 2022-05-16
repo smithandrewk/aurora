@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<html>
+    <head>
+        {% include 'inc/head.html' %}
+        <link href="{{ url_for('static',filename='styles/signin.css') }}" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                {% include 'inc/alerts.html' %}
+            </div>
+            <div class="row">
+                <main class="form-signin">
+                    <!-- <img class="mb-4" src="/docs/5.1/assets/brand/bootstrap-logo.svg" alt="" width="72" height="57"> -->
+                    <p class="text-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="90" height="90   " fill="currentColor" class="bi bi-activity" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M6 2a.5.5 0 0 1 .47.33L10 12.036l1.53-4.208A.5.5 0 0 1 12 7.5h3.5a.5.5 0 0 1 0 1h-3.15l-1.88 5.17a.5.5 0 0 1-.94 0L6 3.964 4.47 8.171A.5.5 0 0 1 4 8.5H.5a.5.5 0 0 1 0-1h3.15l1.88-5.17A.5.5 0 0 1 6 2Z"/>
+                        </svg>
+                    </p>
+                    <h1 class="h3 mb-3 fw-normal"><p class="text-center">Welcome to Aurora</p></h1>
+                    {% block form %} {% endblock form %}
+                    <!-- <div class="form-floating">
+                        <input type="email" class="form-control" id="floatingInput" placeholder="name@example.com">
+                        <label for="floatingInput">Email address</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="password" class="form-control" id="floatingPassword" placeholder="Password">
+                        <label for="floatingPassword">Password</label>
+                    </div>
+
+                    <div class="checkbox mb-3">
+                        <label>
+                            <input type="checkbox" value="remember-me"> Remember me
+                        </label>
+                    </div>
+                    <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+                    <p class="mt-5 mb-3 text-muted">&copy; 2017–2021</p> -->
+                </main>
+            </div>
+        </div>
+        {% include 'inc/jsbootstrap.html' %}
+    </body>
+</html>
