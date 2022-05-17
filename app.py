@@ -121,41 +121,41 @@ def score_data():
 # def score_data():
 #     return render_template("upload-files.jinja", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
-INPUT_NAME = "file_in"
+# INPUT_NAME = "file_in"
 
-@app.route("/process-file", methods=["POST"])
-@login_required
-def process_file():
-    if request.method == 'POST':
-        if INPUT_NAME not in request.files:
-            return redirect('/fail-input/post')    # no file
-        file = request.files[INPUT_NAME]
-        if file.filename == '':             # empty filename
-            return redirect('/fail-input/uploading file')
-        if file:
-            filename = secure_filename(file.filename)
-            ann_model = request.form.get('ann_model')
-            rf_model = request.form.get('rf_model')
-            iszip = int(request.form.get('iszip'))
-            if not valid_extension(filename, iszip):
-                return redirect(f'/fail-input/Invalid File Extension - Allowed extensions are: {list(ALLOWED_EXTENSIONS.values())}')
-            filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            new_filename = score_data(filename, iszip, ann_model, rf_model)
-            if not new_filename:
-                return redirect('/fail-input/Scoring Files')
-            return redirect(f"download-button/{new_filename}")
-    return redirect('/')
+# @app.route("/process-file", methods=["POST"])
+# @login_required
+# def process_file():
+#     if request.method == 'POST':
+#         if INPUT_NAME not in request.files:
+#             return redirect('/fail-input/post')    # no file
+#         file = request.files[INPUT_NAME]
+#         if file.filename == '':             # empty filename
+#             return redirect('/fail-input/uploading file')
+#         if file:
+#             filename = secure_filename(file.filename)
+#             ann_model = request.form.get('ann_model')
+#             rf_model = request.form.get('rf_model')
+#             iszip = int(request.form.get('iszip'))
+#             if not valid_extension(filename, iszip):
+#                 return redirect(f'/fail-input/Invalid File Extension - Allowed extensions are: {list(ALLOWED_EXTENSIONS.values())}')
+#             filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
+#             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+#             new_filename = score_data(filename, iszip, ann_model, rf_model)
+#             if not new_filename:
+#                 return redirect('/fail-input/Scoring Files')
+#             return redirect(f"download-button/{new_filename}")
+#     return redirect('/')
 
-@app.route("/download-button/<filename>")
-@login_required
-def download_file(filename):
-    return render_template("download-button.jinja", filename=filename, ann_models=ANN_MODELS, rf_models=RF_MODELS)
+# @app.route("/download-button/<filename>")
+# @login_required
+# def download_file(filename):
+#     return render_template("download-button.jinja", filename=filename, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
-@app.route("/download-zip/<filename>")
-@login_required
-def download_zip(filename):
-    return send_from_directory(DOWNLOAD_FOLDER, filename)
+# @app.route("/download-zip/<filename>")
+# @login_required
+# def download_zip(filename):
+#     return send_from_directory(DOWNLOAD_FOLDER, filename)
     
 @app.route("/fail-input/<msg>")
 @login_required
@@ -169,7 +169,7 @@ def score_data(filename, iszip, ann_model, rf_model):
     import subprocess
     subprocess.run(['mkdir', '-p', 'data/raw'])
     try:
-        new_filename = f'scored_{filename}'
+        new_filename = f"scored_{filename.replace('.xls','.zip')}"
         if iszip:
             args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
             subprocess.run(args, check=True)

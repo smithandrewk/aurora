@@ -41,5 +41,8 @@
         {{ form.file_submission(class="form-control") }}
 
         {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
+        {% if done %}
+            done
+        {% endif %}
     </form>
 {% endblock body %}
