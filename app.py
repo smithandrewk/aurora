@@ -51,7 +51,7 @@ def login():
                 flash('Invalid Password')
         else:
             flash('Invlid Email Address')
-    return render_template('login.html', form=form)
+    return render_template('login.jinja', form=form)
 
 @app.route('/add_user', methods=['GET', 'POST'])
 def add_user():
@@ -68,7 +68,7 @@ def add_user():
         form.password = ''
         flash('User created Successfully. ')
         return redirect(url_for('login'))
-    return render_template('add-user.html', form=form)
+    return render_template('add-user.jinja', form=form)
 
 @app.route('/logout')
 @login_required
@@ -81,12 +81,12 @@ def logout():
 @login_required
 def dashboard():
     print(current_user)
-    return render_template('dashboard.html')
+    return render_template('dashboard.jinja')
 
 @app.route("/score_data")
 @login_required
 def score_data():
-    return render_template("upload-files.html", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
+    return render_template("upload-files.jinja", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
 @app.route('/')
 def index():
@@ -119,7 +119,7 @@ def process_file():
 @app.route("/download-button/<filename>")
 @login_required
 def download_file(filename):
-    return render_template("download-button.html", filename=filename, ann_models=ANN_MODELS, rf_models=RF_MODELS)
+    return render_template("download-button.jinja", filename=filename, ann_models=ANN_MODELS, rf_models=RF_MODELS)
 
 @app.route("/download-zip/<filename>")
 @login_required
@@ -129,7 +129,7 @@ def download_zip(filename):
 @app.route("/fail-input/<msg>")
 @login_required
 def fail_input(msg):
-    return render_template('failure.html', msg=msg)
+    return render_template('failure.jinja', msg=msg)
 
 def score_data(filename, iszip, ann_model, rf_model):
     

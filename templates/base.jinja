@@ -3,12 +3,12 @@
 
 <html>
     <head>
-        {% include 'inc/head.html' %}
+        {% include 'inc/head.jinja' %}
     </head>
     <body>
-        {% include 'inc/alerts.html' %}
-        {% include 'inc/jsbootstrap.html' %}
-        {% include 'inc/navbar.html' %}
+        {% include 'inc/alerts.jinja' %}
+        {% include 'inc/jsbootstrap.jinja' %}
+        {% include 'inc/navbar.jinja' %}
         <div class="container">
             {% block body %}{% endblock body %}
         </div>

@@ -3,13 +3,13 @@
 
 <html>
     <head>
-        {% include 'inc/head.html' %}
+        {% include 'inc/head.jinja' %}
         <link href="{{ url_for('static',filename='styles/signin.css') }}" rel="stylesheet">
     </head>
     <body>
         <div class="container">
             <div class="row">
-                {% include 'inc/alerts.html' %}
+                {% include 'inc/alerts.jinja' %}
             </div>
             <div class="row">
                 <main class="form-signin">
@@ -40,6 +40,6 @@
                 </main>
             </div>
         </div>
-        {% include 'inc/jsbootstrap.html' %}
+        {% include 'inc/jsbootstrap.jinja' %}
     </body>
 </html>
