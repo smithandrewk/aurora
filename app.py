@@ -12,7 +12,6 @@ from lib.webforms import *
 
 UPLOAD_FOLDER = "Upload"
 DOWNLOAD_FOLDER = "Download"
-INPUT_NAME = "file_in"
 ALLOWED_EXTENSIONS = {'ZIP':'.zip', 'XLS':'.xls', 'XLSX':'.xlsx'}
 ANN_MODELS = {'Rat Model':'best_model.h5', 'Mice Model':'mice_512hln_ann_96.4_accuracy/best_model.h5'}
 RF_MODELS = {'Rat Model':'rf_model'}
@@ -79,20 +78,50 @@ def logout():
     flash('Logged out Successfully')
     return redirect(url_for('login'))
 
-@app.route('/dashboard')
-@login_required
-def dashboard():
-    print(current_user.first_name)
-    return render_template('dashboard.jinja', name=f'{current_user.first_name} {current_user.last_name}')
-
-@app.route("/score_data")
-@login_required
-def score_data():
-    return render_template("upload-files.jinja", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
-
 @app.route('/')
 def index():
     return redirect(url_for('login'))
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.jinja', name=f'{current_user.first_name} {current_user.last_name}')
+
+@app.route("/score_data", methods=['GET', 'POST'])
+@login_required
+def score_data():
+    form = FileUploadForm()
+    form.ann_model.choices=[(ANN_MODELS[model], model) for model in ANN_MODELS]
+    form.rf_model.choices=[(RF_MODELS[model], model) for model in RF_MODELS]
+    if form.validate_on_submit():
+        ann_model = form.ann_model.data
+        rf_model = form.rf_model.data
+        iszip = int(form.iszip.data)
+        file = form.file_submission.data[0]
+        if file:
+            filename = secure_filename(file.filename)
+            if not valid_extension(filename, iszip):
+                flash('Invalid file extension')
+                return render_template('score-data.jinja', form=form, done=False)
+            filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            new_filename = score_data(filename, iszip, ann_model, rf_model)
+            if not new_filename:
+                flash('Failed to score files')
+                return render_template('score-data.jinja', form=form, done=False)
+            form.ann_model.data = ''
+            form.rf_model.data = ''
+            form.iszip.data = ''
+            form.file_submission.data = None
+            return render_template('score-data.jinja', form=form, done=True)
+    return render_template('score-data.jinja', form=form, done=False)
+    
+# @app.route("/score_data")
+# @login_required
+# def score_data():
+#     return render_template("upload-files.jinja", input_name=INPUT_NAME, ann_models=ANN_MODELS, rf_models=RF_MODELS)
+
+INPUT_NAME = "file_in"
 
 @app.route("/process-file", methods=["POST"])
 @login_required
