@@ -42,18 +42,15 @@ def load_user(user_id):
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        print('submitted')
         user = Users.query.filter_by(email=form.email.data).first()
         if user:
             if user.verify_password(form.password.data):
                 login_user(user)
-                print('logged in')
                 return redirect(url_for('dashboard'))
             else:
                 flash('Invalid Password')
         else:
             flash('Invlid Email Address')
-    print('home')
     return render_template('login.html', form=form)
 
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -83,6 +80,7 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+    print(current_user)
     return render_template('dashboard.html')
 
 @app.route("/score_data")
