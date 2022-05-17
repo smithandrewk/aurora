@@ -82,8 +82,8 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    print(current_user)
-    return render_template('dashboard.jinja')
+    print(current_user.first_name)
+    return render_template('dashboard.jinja', name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route("/score_data")
 @login_required

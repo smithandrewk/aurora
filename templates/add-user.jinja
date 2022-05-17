@@ -1,4 +1,4 @@
-{% extends 'sign-base.jinja' %}
+{% extends 'base-login.jinja' %}
 
 {% block form %}
     <form method='POST'>
@@ -26,4 +26,7 @@
 
         {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
     </form>
+    <br>
+    <p class="text-center">Already have an account? <a href="{{ url_for('login') }}"> Log in</a></p>
+
 {% endblock form %}
