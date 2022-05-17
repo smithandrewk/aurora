@@ -62,12 +62,14 @@ def add_user():
             user = Users(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data, password=form.password.data)
             db.session.add(user)
             db.session.commit()
-        form.first_name.data = ''
-        form.last_name.data = ''
-        form.email.data = ''
-        form.password = ''
-        flash('User created Successfully. ')
-        return redirect(url_for('login'))
+            form.first_name.data = ''
+            form.last_name.data = ''
+            form.email.data = ''
+            form.password = ''
+            flash('User created Successfully. ')
+            return redirect(url_for('login'))
+        else:
+            flash('User with that email already exists')
     return render_template('add-user.jinja', form=form)
 
 @app.route('/logout')
