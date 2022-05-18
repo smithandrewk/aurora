@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, SelectField, BooleanField, MultipleFileField, ValidationError
+from wtforms import StringField, SubmitField, PasswordField, SelectField, BooleanField, FileField, ValidationError
 from wtforms.validators import DataRequired, EqualTo, Length
 
 class LoginForm(FlaskForm):
@@ -19,5 +19,5 @@ class FileUploadForm(FlaskForm):
     ann_model = SelectField("Choose an ANN Model", validators=[DataRequired()], validate_choice=False)
     rf_model = SelectField("Choose an RF Model", validators=[DataRequired()], validate_choice=False)
     iszip = SelectField("Choose upload type", choices=[(1, 'Zip Archive'), (0, 'Individual Files')], validators=[DataRequired()])
-    file_submission = MultipleFileField("Select a File", validators=[DataRequired()])
+    file_submission = FileField("Select a File", validators=[DataRequired()])
     submit = SubmitField('Start Scoring')

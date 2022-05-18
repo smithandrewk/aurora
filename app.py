@@ -116,15 +116,14 @@ def score_data():
 
 
 @app.route('/process-file/<ann_model>/<rf_model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
+@login_required
 def process_file(ann_model, rf_model, iszip, filename):
-    
-    # new_filename = score(filename, iszip, ann_model, rf_model)
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
     return render_template('process-file.jinja', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename, new_filename=new_filename)
-    # return render_template('process-file.jinja', ann_model=ann_model)
 
 
 @app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>')
+@login_required
 def main_score(ann_model, rf_model, iszip, filename):
     # This route will be called by javascript in 'process-file.jinja'
     import subprocess
@@ -140,9 +139,7 @@ def main_score(ann_model, rf_model, iszip, filename):
                 subprocess.run(args, check=True)
                 args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
                 subprocess.run(args, check=True)        
-            else:
-                # for file in os.listdir(UPLOAD_FOLDER):
-                    # subprocess.run(['cp', os.path.join(UPLOAD_FOLDER, file), 'data/raw/'])  
+            else: 
                 args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
                 subprocess.run(args, check=True)
         except CalledProcessError:
@@ -159,7 +156,9 @@ def main_score(ann_model, rf_model, iszip, filename):
         yield score_wrapper(expand_predictions, 8, total_steps)
         yield score_wrapper(rename_scores, 9, total_steps)
         yield score_wrapper(remap_names, 10, total_steps)
-        yield "data:" + str(100) + "\n\n"
+        
+        ## TODO mv scored files to 'to-client'
+        ## TODO save an archive and log of scores
         
     return Response(generate(), mimetype= 'text/event-stream')
     
@@ -181,7 +180,6 @@ def score_wrapper(scoring_function, step, total_steps, model=None):
             scoring_function()
     except:
         print(f'ERROR step {step}')
-    print('data:' + str(step//total_steps) + '\n\n')
     return 'data:' + str(step/total_steps*100) + '\n\n'
 
 def score(filename, iszip, ann_model, rf_model):
