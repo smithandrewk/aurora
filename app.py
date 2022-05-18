@@ -6,9 +6,9 @@ from werkzeug.utils import secure_filename
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, LoginManager, login_required, logout_user, current_user
-from lib.utils import *
 from lib.webmodels import *
 from lib.webforms import *
+from lib.modules import *
 
 UPLOAD_FOLDER = "from-client"
 DOWNLOAD_FOLDER = "to-client"
@@ -112,37 +112,77 @@ def score_data():
             form.file_submission.data = None            
             
             return redirect(url_for('process_file', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename))
-            # todo change this to new route maybe
-            new_filename = score_data(filename, iszip, ann_model, rf_model)
-
-
-            if not new_filename:
-                flash('Failed to score files')
-                return render_template('score-data.jinja', form=form, done=False, filename='')
-            form.ann_model.data = ''
-            form.rf_model.data = ''
-            form.iszip.data = ''
-            form.file_submission.data = None
-            return render_template('score-data.jinja', form=form, done=True, filename=filename)
     return render_template('score-data.jinja', form=form)
 
 
 @app.route('/process-file/<ann_model>/<rf_model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
 def process_file(ann_model, rf_model, iszip, filename):
-    print(filename, iszip, ann_model, rf_model)
-    new_filename = score(filename, iszip, ann_model, rf_model)
-    return render_template('process-file.jinja', filename=new_filename)
+    
+    # new_filename = score(filename, iszip, ann_model, rf_model)
+    new_filename = f"scored_{filename.replace('.xls','.zip')}"
+    return render_template('process-file.jinja', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename, new_filename=new_filename)
+    # return render_template('process-file.jinja', ann_model=ann_model)
 
 
+@app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>')
+def main_score(ann_model, rf_model, iszip, filename):
+    # This route will be called by javascript in 'process-file.jinja'
+    import subprocess
+    import time
+    total_steps = 10
+    
+    def generate():
+        # Step 0: Move files into data/raw directory
+        try:
+            subprocess.run(['mkdir', '-p', 'data/raw'])
+            if iszip:
+                args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
+                subprocess.run(args, check=True)
+                args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
+                subprocess.run(args, check=True)        
+            else:
+                # for file in os.listdir(UPLOAD_FOLDER):
+                    # subprocess.run(['cp', os.path.join(UPLOAD_FOLDER, file), 'data/raw/'])  
+                args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
+                subprocess.run(args, check=True)
+        except CalledProcessError:
+            print("ERROR step 1")
+        yield "data:" + str(0) + "\n\n"
+        
+        yield score_wrapper(rename_data_in_raw, 1, total_steps)
+        yield score_wrapper(initial_preprocessing, 2, total_steps)
+        yield score_wrapper(handle_anomalies, 3, total_steps)
+        yield score_wrapper(window, 4, total_steps)
+        yield score_wrapper(scale, 5, total_steps)
+        yield score_wrapper(score_ann, 6, total_steps, ann_model)
+        yield score_wrapper(score_rf, 7, total_steps, rf_model)
+        yield score_wrapper(expand_predictions, 8, total_steps)
+        yield score_wrapper(rename_scores, 9, total_steps)
+        yield score_wrapper(remap_names, 10, total_steps)
+        yield "data:" + str(100) + "\n\n"
+        
+    return Response(generate(), mimetype= 'text/event-stream')
+    
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required
 def download_zip(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename)
-    
+
 @app.route("/fail-input/<msg>")
 @login_required
 def fail_input(msg):
     return render_template('failure.jinja', msg=msg)
+
+def score_wrapper(scoring_function, step, total_steps, model=None):
+    try:
+        if model:
+            scoring_function(model)
+        else:
+            scoring_function()
+    except:
+        print(f'ERROR step {step}')
+    print('data:' + str(step//total_steps) + '\n\n')
+    return 'data:' + str(step/total_steps*100) + '\n\n'
 
 def score(filename, iszip, ann_model, rf_model):
     
@@ -155,8 +195,6 @@ def score(filename, iszip, ann_model, rf_model):
     try:
         new_filename = f"scored_{filename.replace('.xls','.zip')}"
         if iszip:
-            print('izzip ture')
-            print(type(iszip))
             args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
             subprocess.run(args, check=True)
             args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
@@ -188,5 +226,11 @@ def testing(filename, ann_model, rf_model):
     os.system(f'cp {UPLOAD_FOLDER}/{filename} {DOWNLOAD_FOLDER}/{new_fn}')
     return new_fn
 
+
+@app.route('/testing')
+def testing():
+    return render_template('process-file.jinja')
+
 if __name__=='__main__':
     app.run(debug='True')
+    
