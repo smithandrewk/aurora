@@ -1,27 +1,3 @@
-{# {% extends 'base.jinja' %}
-{% block body %}
-    <form method='POST', enctype='multipart/form-data'>
-        {{ form.hidden_tag }}
-        
-        {{ form.ann_model.label(class="form-label") }}
-        {{ form.ann_model(class="form-control") }}
-
-        {{ form.rf_model.label(class="form-label") }}
-        {{ form.rf_model(class="form-control") }}
-
-        {{ form.iszip.label(class="form-label") }}
-        {{ form.iszip(class="form-control") }}
-
-        {{ form.file_submission.label(class="form-label") }}
-        {{ form.file_submission(class="form-control") }}
-
-        {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
-    </form>
-    {% if done %}
-        done
-    {% endif %}
-{% endblock body %} #}
-
 {% extends 'base.jinja' %}
 
 {% block body %}
@@ -41,8 +17,5 @@
         {{ form.file_submission(class="form-control") }}
 
         {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
-        {% if done %}
-            done
-        {% endif %}
     </form>
 {% endblock body %}

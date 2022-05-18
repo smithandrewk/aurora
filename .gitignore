@@ -10,5 +10,5 @@ sessions
 backup
 categorical_accuracy.jpg
 cm.jpg
-Download
-Upload
+to-client/*
+from-client/*

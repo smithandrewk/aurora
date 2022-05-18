@@ -1,0 +1,8 @@
+{% extends 'base.jinja' %}
+{% block body %}
+    <form method='POST' action="{{ url_for('download_zip', filename=filename) }}">
+        <input type="submit" value="Download Scored files (ZIP)">
+        {# download ann files/zip #}
+        {# download rf files/zip #}
+    </form>
+{% endblock body %}
