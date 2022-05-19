@@ -22,3 +22,13 @@ class Users(db.Model, UserMixin):
     
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+class ScoringLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False)
+    project_name = db.Column(db.String(200), nullable=False)
+    date_scored = db.Column(db.DateTime, default=datetime.utcnow)
+    filename = db.Column(db.String(200), nullable=False)    #filename in ARCHIVE_FOLDER
+    ann_model = db.Column(db.String(200), nullable=False)
+    rf_model = db.Column(db.String(200), nullable=False)
+    files = db.Column(db.String(1000), nullable=False)      # comma delim list of files

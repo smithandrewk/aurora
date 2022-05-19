@@ -86,7 +86,10 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.jinja', name=f'{current_user.first_name} {current_user.last_name}')
+    logs = ScoringLog.query.filter_by(email=current_user.email)
+    return render_template('dashboard.jinja', 
+                           name=f'{current_user.first_name} {current_user.last_name}',
+                           logs=logs)
 
 @app.route("/score_data", methods=['GET', 'POST'])
 @login_required
@@ -95,8 +98,8 @@ def score_data():
     form.ann_model.choices=[(ANN_MODELS[model], model) for model in ANN_MODELS]
     form.rf_model.choices=[(RF_MODELS[model], model) for model in RF_MODELS]
     if form.validate_on_submit():
-        ann_model = form.ann_model.data
-        rf_model = form.rf_model.data
+        ann_model = form.ann_model.data.replace('/','\t')
+        rf_model = form.rf_model.data.replace('/','\t')
         iszip = int(form.iszip.data)
         file = form.file_submission.data
         if file:
@@ -120,22 +123,34 @@ def score_data():
 @login_required
 def process_file(ann_model, rf_model, iszip, filename):
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
-    return render_template('process-file.jinja', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename, new_filename=new_filename)
+    return render_template('process-file.jinja', 
+                           ann_model=ann_model, 
+                           rf_model=rf_model, 
+                           iszip=iszip, 
+                           filename=filename, 
+                           new_filename=new_filename, 
+                           email=current_user.email)
 
 
-@app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>')
+@app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
 @login_required
-def main_score(ann_model, rf_model, iszip, filename):
+def main_score(ann_model, rf_model, iszip, filename, email):
     # This route will be called by javascript in 'process-file.jinja'
     import subprocess
     from datetime import datetime
-    total_steps = 14
+    total_steps = 15
+    date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
+    files = []
+    
+    ann_model = ann_model.replace('\t', '/')
+    rf_model = rf_model.replace('\t', '/')
     
     # Generator that runs pipeline and generates progress information
     def generate():
         # Step 1: Move files into data/raw directory
         try:
+            subprocess.run(['rm', '-rf', 'data'])
             subprocess.run(['mkdir', '-p', 'data/raw'])
             if iszip:
                 args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
@@ -145,56 +160,78 @@ def main_score(ann_model, rf_model, iszip, filename):
             else: 
                 args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
                 subprocess.run(args, check=True)
-        except CalledProcessError:
+            yield f"data:{int(1/total_steps*100)}\tStep 2 - Renaming Data\n\n"
+        except CalledProcessError as exc:
             print("ERROR step 1")
-            yield f"data:0\tStep1 - Copying and unzipping files\n\n"
-        yield f"data:{int(1/total_steps*100)}\n\n"
+            yield f"data:0\tStep 1 - Copying files - {exc}\n\n"
+            return
+        
+        # Get list of files being scored
+        for file in os.listdir('data/raw'):
+            files.append(file)
         
         # Call each function of the pipeline
-        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Renaming data")        #Step 2
-        yield score_wrapper(initial_preprocessing, 3, total_steps, "Preprocessing")     #Step 3
-        yield score_wrapper(handle_anomalies, 4, total_steps, "Handling Anomalies")     #Step 4
-        yield score_wrapper(window, 5, total_steps, "Windowing")                        #Step 5
-        yield score_wrapper(scale, 6, total_steps, "Scaling")                           #Step 6
-        yield score_wrapper(score_ann, 7, total_steps, "Scoring ANN", ann_model)        #Step 7
-        yield score_wrapper(score_rf, 8, total_steps, "Scoring RF", rf_model)           #Step 8
-        yield score_wrapper(expand_predictions, 9, total_steps, "Expanding Predictions")#Step 9
-        yield score_wrapper(rename_scores, 10, total_steps, "Renaming Scores")          #Step 10
-        yield score_wrapper(remap_names, 11, total_steps, "Renaming Files")             #Step 11
+        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")        #Step 2
+        yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")     #Step 3
+        yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")     #Step 4
+        yield score_wrapper(window, 5, total_steps, "Scaling")                        #Step 5
+        yield score_wrapper(scale, 6, total_steps, "Scoring ANN")                           #Step 6
+        yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", ann_model)        #Step 7
+        yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model)           #Step 8
+        yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")#Step 9
+        yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")          #Step 10
+        yield score_wrapper(remap_names, 11, total_steps, "Copying files")             #Step 11
         
         # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
         try:
             args = ['sh', '-c', 
                     f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} final_ann final_rf"]
             subprocess.run(args, check=True)
-        except CalledProcessError:
+            yield f"data:{int(12/total_steps*100)}\tStep 13 - Archiving Scores\n\n"
+        except CalledProcessError as exc:
             print("ERROR step 12")
-            yield "data:0\tStep 12 - Copying files\n\n"
-        yield f"data:{int(12/total_steps*100)}\tStep 12 - Copying Files\n\n"
+            yield f"data:0\tStep 12 - Copying files - {exc}\n\n"
+            return
         
         # Step 13: Archive Raw and Scored Data
-        date = datetime.now().strftime("%m.%d.%Y_%H:%M")
         try:
             args = ['sh', '-c', 
                     f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip final_ann final_rf raw"]
             subprocess.run(args, check=True)
-            args = ['rm', '-rf', 'data']
-            subprocess.run(args, check=True)
-        except CalledProcessError:
+            yield f"data:{int(13/total_steps*100)}\tStep 14 - Cleaning Workspace\n\n"
+        except CalledProcessError as exc:
             print("ERROR step 13")
-            yield "data:0\tStep 13 - Archiving files\n\n"
-        yield f"data:{int(13/total_steps*100)}\tStep 13 - Archiving files\n\n"
+            yield f"data:0\tStep 13 - Archiving files - {exc}\n\n"
+            return
         
         # Step 14: Cleaning Workspace
         try:
             args = ['rm', '-rf', 'data', f'from-client/{filename}']
             subprocess.run(args, check=True)
-        except CalledProcessError:
+            yield f"data:{int(14/total_steps*100)}\tStep 15 - Logging Scores\n\n"
+        except CalledProcessError as exc:
             print("ERROR step 14")
-            yield "data:0\tStep 14 - Cleaning Workspace\n\n"
-        yield f"data:{int(14/total_steps*100)}\tStep 14 - Cleaning Workspace\n\n"
+            yield f"data:0\tStep 14 - Cleaning Workspace - {exc}\n\n"
+            return
         
         # Step 15: Log Scoring
+        try:
+            files_log = ""
+            for file in files:
+                files_log += file+","
+            log = ScoringLog(email=email, 
+                             project_name=filename.replace('.xls', '').replace('.zip', ''),
+                             filename=f'{date}.zip',
+                             ann_model=ann_model,
+                             rf_model=rf_model,
+                             files=files_log)
+            db.session.add(log)
+            db.session.commit()
+            yield f"data:{int(15/total_steps*100)}\tScoring Complete\n\n"
+        except Exception as exc:
+            print("ERROR step 15")
+            yield f"data:0\tStep 15 - Logging Scores - {exc}\n\n"
+            return
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype= 'text/event-stream')
@@ -217,6 +254,7 @@ def score_wrapper(scoring_function, step, total_steps, msg, model=None):
         scoring_function (function): pipeline function to call
         step (int): step number of this function
         total_steps (int): total number of steps in current pipeline
+        msg (str): Message to display when function completes (display msg for next step)
         model (str, optional): If scoring with a model, provide which model to use. Defaults to None.
 
     Returns:
@@ -228,41 +266,15 @@ def score_wrapper(scoring_function, step, total_steps, msg, model=None):
         else:
             scoring_function()
     #TODO raise exceptions in functions and use message
-    except:
+    except Exception as exc:
         print(f'ERROR step {step}')
-        return f"data:0\tStep {step} - error_msg\n\n"
+        return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
         
-    return f'data:{int(step/total_steps*100)}\tStep {step} - {msg}\n\n'
+    # return progress and the message for next step
+    return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
 
-
-
-# def score(filename, iszip, ann_model, rf_model):
-    
-#     # return testing(filename, ann_model, rf_model)
-    
-#     import subprocess
-    
-#     print('START SCORING')
-#     subprocess.run(['mkdir', '-p', 'data/raw'])
-#     try:
-#         new_filename = f"scored_{filename.replace('.xls','.zip')}"
-#         if iszip:
-#             args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
-#             subprocess.run(args, check=True)
-#             args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
-#             subprocess.run(args, check=True)
-#         else:
-#             subprocess.run(['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/'])
-#         args = ['python3', 'main.py']
-#         args += ['--ann-model', ann_model]
-#         args += ['--rf-model', rf_model]
-#         subprocess.run(args, check=True)
-#         subprocess.run(['make', 'archiveScores'], check=True)
-#         args = ['cp', 'Scored.zip', os.path.join(DOWNLOAD_FOLDER, new_filename)]
-#         subprocess.run(args, check=True)
-#     except CalledProcessError:
-#         return None
-#     return(new_filename)
+def log_score(date):
+    pass
 
 def valid_extension(filename, iszip):
     if iszip:
