@@ -3,16 +3,29 @@
     <head>
         {% include 'inc/head.jinja' %}
         <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+        {# <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"> #}
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
         <script>
 
             var source = new EventSource({{ url_for('main_score', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename)|tojson }});
             source.onmessage = function(event) {
-                $('.progress-bar').css('width', event.data+'%').attr('aria-valuenow', event.data);
-                $('.progress-bar-label').text(event.data+'%');
-                if(event.data == 100){
+                const data = event.data.split("\t")
+                let progress = data[0]
+                let msg = data[1]
+                if(progress == 0){
                     source.close()
+                    $("#step_message").addClass('d-none')
+                    $("#ErrorMessage").removeClass('d-none');
+                    $("#ErrorMessage").text("ERROR: " + msg)
+                    $('.progress-bar').css('background-color', '#ff3333');
+                }
+                else{
+                    $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress);
+                    $('.progress-bar-label').text(progress+'%');
+                    $("#step_message").text(msg)
+                    if(progress == 100){
+                        source.close()
+                    }
                 }
             }
         </script>
@@ -21,11 +34,15 @@
         {% include 'inc/alerts.jinja' %}
         {% include 'inc/jsbootstrap.jinja' %}
         {% include 'inc/navbar.jinja' %}
-        <div class="progress" style="width: 50%; margin: 50px;">
-            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+        <div id="progress-bar" class="progress" style="width: 50%; margin: 50px;">
+            <div class="progress-bar progress-bar-striped active progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
                 <span class="progress-bar-label">0%</span>
             </div>
         </div>
+
+        <p id="step_message"></p>
+        <p id="ErrorMessage" class="d-none"></p>
+
         <form method='POST' action="{{ url_for('download_zip', filename=new_filename) }}">
             <input type="submit" value="Download Scored files (ZIP)">
             {# download ann files/zip #}
@@ -82,3 +99,6 @@
 
 {# var source = new EventSource({{ url_for('main_score', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename) }}); #}
             {# var source = new EventSource({{ url_for('main_score')|tojson }}); #}
+
+
+{# $('.progress-bar').class("progress-bar progress-bar-striped active bg-danger") #}

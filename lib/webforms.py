@@ -18,6 +18,6 @@ class SignupForm(FlaskForm):
 class FileUploadForm(FlaskForm):
     ann_model = SelectField("Choose an ANN Model", validators=[DataRequired()], validate_choice=False)
     rf_model = SelectField("Choose an RF Model", validators=[DataRequired()], validate_choice=False)
-    iszip = SelectField("Choose upload type", choices=[(1, 'Zip Archive'), (0, 'Individual Files')], validators=[DataRequired()])
+    iszip = SelectField("Choose upload type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
     file_submission = FileField("Select a File", validators=[DataRequired()])
     submit = SubmitField('Start Scoring')
