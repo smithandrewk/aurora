@@ -282,6 +282,20 @@ def valid_extension(filename, iszip):
     else:
         return filename.endswith(ALLOWED_EXTENSIONS['XLS']) or filename.endswith(ALLOWED_EXTENSIONS['XLSX'])
 
+def init_dir():
+    import subprocess
+    try:
+        subprocess.run(['mkdir', '-p', 'from-client'])
+        subprocess.run(['mkdir', '-p', 'to-client'])
+        subprocess.run(['mkdir', '-p', 'data-archive'])
+
+        from lib.webmodels import db
+        db.create_all()
+
+    except CalledProcessError as exc:
+        print(f'Error initializing directory: {exc}')
+        exit(1)
+
 def testing(filename, ann_model, rf_model):
     print(filename)
     print(ann_model)
@@ -295,6 +309,8 @@ def testing(filename, ann_model, rf_model):
 def testing():
     return render_template('process-file.jinja')
 
+
 if __name__=='__main__':
+    init_dir()
     app.run(debug='True')
     

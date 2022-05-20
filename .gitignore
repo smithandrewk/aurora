@@ -13,3 +13,4 @@ cm.jpg
 to-client/*
 from-client/*
 data-archive/*
+.DS_Store
