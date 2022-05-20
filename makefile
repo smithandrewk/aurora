@@ -26,3 +26,6 @@ archiveScores:
 	zip -r Scored.zip final_ann/ final_rf/
 	cp Scored.zip data/Scored.zip
 	rm -r final_ann final_rf
+
+createDB:
+	python3 -c "from app import db; db.create_all()"

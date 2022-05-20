@@ -1,12 +1,14 @@
+from enum import unique
 from subprocess import CalledProcessError
 import os
 import secrets
 from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
 from werkzeug.utils import secure_filename
-from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import login_user, LoginManager, login_required, logout_user, current_user
-from lib.webmodels import *
+from flask_migrate import Migrate
+from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 from lib.webforms import *
 from lib.modules import *
 
@@ -23,6 +25,8 @@ app.secret_key = secrets.token_hex()
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Data.db'
 db = SQLAlchemy(app)
+
+migrate = Migrate(app, db)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -87,7 +91,9 @@ def index():
 @login_required
 def dashboard():
     logs = ScoringLog.query.filter_by(email=current_user.email)
+    is_admin = AllowedUserEmails.query.filter_by(email=current_user.email).first().is_admin
     return render_template('dashboard.jinja', 
+                           is_admin=is_admin,
                            name=f'{current_user.first_name} {current_user.last_name}',
                            logs=logs)
 
@@ -273,8 +279,6 @@ def score_wrapper(scoring_function, step, total_steps, msg, model=None):
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
 
-def log_score(date):
-    pass
 
 def valid_extension(filename, iszip):
     if iszip:
@@ -289,12 +293,50 @@ def init_dir():
         subprocess.run(['mkdir', '-p', 'to-client'])
         subprocess.run(['mkdir', '-p', 'data-archive'])
 
-        from lib.webmodels import db
-        db.create_all()
-
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')
         exit(1)
+
+
+# Databse Models
+
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(200), nullable=False)
+    last_name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(200), nullable=False, unique=True)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(2000))
+    
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+    
+    @password.setter
+    def password(self, password):
+        # Set password_hash with hashed value of password
+        self.password_hash = generate_password_hash(password)
+    
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+class ScoringLog(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False)
+    project_name = db.Column(db.String(200), nullable=False)
+    date_scored = db.Column(db.DateTime, default=datetime.utcnow)
+    filename = db.Column(db.String(200), nullable=False)    #filename in ARCHIVE_FOLDER
+    ann_model = db.Column(db.String(200), nullable=False)
+    rf_model = db.Column(db.String(200), nullable=False)
+    files = db.Column(db.String(1000), nullable=False)      # comma delim list of files
+
+class AllowedUserEmails(db.Model):
+    """
+    Table lists emails that are allowed to be used to create a porfile on the app
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False, unique=True)
+    is_admin = db.Column(db.Boolean(), default=False)
 
 def testing(filename, ann_model, rf_model):
     print(filename)
