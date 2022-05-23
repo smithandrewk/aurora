@@ -6,7 +6,6 @@
         {# <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"> #}
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
         <script>
-
             var source = new EventSource({{ url_for('main_score', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename, email=email)|tojson }});
             source.onmessage = function(event) {
                 const data = event.data.split("\t")
@@ -25,6 +24,7 @@
                     $("#step-message").text(msg)
                     if(progress == 100){
                         source.close()
+                        $('.progress-bar').css('background-color', '#198754');
                         $("#download-button").removeClass('d-none');
                     }
                 }
@@ -45,7 +45,7 @@
         <p id="error-message" class="d-none"></p>
 
         <form id='download-button' class='d-none' method='POST' action="{{ url_for('download_zip', filename=new_filename) }}">
-            <input type="submit" value="Download Scored files (ZIP)">
+            <input type="submit" value="Download Scored files (ZIP)" class="w-50 btn btn-primary">
             {# download ann files/zip #}
             {# download rf files/zip #}
         </form>
