@@ -91,9 +91,7 @@ def index():
 @login_required
 def dashboard():
     logs = ScoringLog.query.filter_by(email=current_user.email)
-    is_admin = AllowedUserEmails.query.filter_by(email=current_user.email).first().is_admin
     return render_template('dashboard.jinja', 
-                           is_admin=is_admin,
                            name=f'{current_user.first_name} {current_user.last_name}',
                            logs=logs)
 
@@ -247,11 +245,6 @@ def main_score(ann_model, rf_model, iszip, filename, email):
 def download_zip(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
-@app.route("/fail-input/<msg>")
-@login_required
-def fail_input(msg):
-    return render_template('failure.jinja', msg=msg)
-
 def score_wrapper(scoring_function, step, total_steps, msg, model=None):
     """ Used by generator in 'main_score' to wrap pipeline functions in order to
         generate progress steps
@@ -329,28 +322,6 @@ class ScoringLog(db.Model):
     ann_model = db.Column(db.String(200), nullable=False)
     rf_model = db.Column(db.String(200), nullable=False)
     files = db.Column(db.String(1000), nullable=False)      # comma delim list of files
-
-class AllowedUserEmails(db.Model):
-    """
-    Table lists emails that are allowed to be used to create a porfile on the app
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(200), nullable=False, unique=True)
-    is_admin = db.Column(db.Boolean(), default=False)
-
-def testing(filename, ann_model, rf_model):
-    print(filename)
-    print(ann_model)
-    print(rf_model)
-    new_fn = f'processed_{filename}'
-    os.system(f'cp {UPLOAD_FOLDER}/{filename} {DOWNLOAD_FOLDER}/{new_fn}')
-    return new_fn
-
-
-@app.route('/testing')
-def testing():
-    return render_template('process-file.jinja')
-
 
 if __name__=='__main__':
     init_dir()
