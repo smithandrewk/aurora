@@ -1,21 +1,52 @@
 {% extends 'base.jinja' %}
 
 {% block body %}
+    <div class="shadow p-3 mb-5 bg-white rounded">
     <form method='POST', enctype='multipart/form-data'>
         {{ form.hidden_tag() }}
-
-        {{ form.ann_model.label(class="form-label") }}
-        {{ form.ann_model(class="form-control") }}
-
-        {{ form.rf_model.label(class="form-label") }}
-        {{ form.rf_model(class="form-control") }}
-
-        {{ form.iszip.label(class="form-label") }}
-        {{ form.iszip(class="form-control") }}
-
-        {{ form.file_submission.label(class="form-label") }}
-        {{ form.file_submission(class="form-control") }}
-
-        {{ form.submit(class="w-100 btn btn-lg btn-primary") }}
+        <div class="form-group row d-flex justify-content-center">
+            {# {{ form.ann_model.label() }} #}
+            <label for="ann-model" class="col-sm-3 col-form-label">Choose an ANN Model</label>
+            <div class="col-sm-2">
+                {{ form.ann_model(class="form-control", id='ann-model') }}
+            </div>
+        </div>
+        <div class="form-group row d-flex justify-content-center">
+            <label for="rf-model" class="col-sm-3 col-form-label">Choose an RF Model</label>
+            <div class="col-sm-2">
+                {{ form.rf_model(class="form-control", id='ann-model') }}
+            </div>
+        </div>
+        <fieldset class="form-group" required>
+            <div class="row d-flex justify-content-center">
+                <legend class="col-form-label col-sm-3 pt-0">Choose Upload Type</legend>
+                <div class="col-sm-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="iszip" id="is-zip" value="1" required>
+                        <label class="form-check-label" for="is-zip">
+                            Zip Archive
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="iszip" id="is-zip" value="0" required>
+                        <label class="form-check-label" for="is-zip">
+                            Individual File
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </fieldset>   
+        <div class="form-group row d-flex justify-content-center">
+            <label for="file-sub" class="col-sm-3 col-form-label">Select a File</label>
+            {# {{ form.file_submission.label(class="form-label") }} #}
+            {# <input type="file" class="form-control-file" name="file_submission" id="file-sub"> #}
+            <div class="col-sm-2">
+                {{ form.file_submission(class="form-control-file", id="file-sub") }}
+            </div>
+        </div>
+        <div class="d-flex justify-content-center">
+            {{ form.submit(class="w-50 btn btn-primary") }}
+        </div>
     </form>
+    </div>
 {% endblock body %}

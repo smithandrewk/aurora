@@ -1,9 +1,10 @@
 {% extends 'base-login.jinja' %}
 
 {% block form %}
-    <form method='POST'>
+    <form method='POST' class='needs-validation' novalidate>
         {{ form.hidden_tag() }}
         <div class="form-floating">
+            {# <input type='text' class='form-control' id='floatingInput' name='email' placeholder="name@example.com" required> #}
             {{ form.email(class="form-control", id="floatingInput", placeholder="name@example.com") }}
             <label for="floatingInput">Email address</label>
         </div>
@@ -15,5 +16,5 @@
     </form>
     <br>
     <p class="text-center">Or <a href="{{ url_for('add_user') }}"> create a new user</a></p>
-
 {% endblock form %}
+
