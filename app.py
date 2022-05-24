@@ -142,7 +142,7 @@ def main_score(ann_model, rf_model, iszip, filename, email):
     # This route will be called by javascript in 'process-file.jinja'
     import subprocess
     from datetime import datetime
-    total_steps = 15
+    total_steps = 16
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
     files = []
@@ -231,10 +231,36 @@ def main_score(ann_model, rf_model, iszip, filename, email):
                              files=files_log)
             db.session.add(log)
             db.session.commit()
-            yield f"data:{int(15/total_steps*100)}\tScoring Complete\n\n"
+            yield f"data:{int(15/total_steps*100)}\tStep 16 - Emailing Results\n\n"
         except Exception as exc:
             print("ERROR step 15")
             yield f"data:0\tStep 15 - Logging Scores - {exc}\n\n"
+            return
+        
+        # Step 16: Email Results
+        try:
+            import smtplib
+
+            SENDER = 'AuroraProjectEmail@gmail.com'
+            PASSWORD = 'kxfiusttkwlwneii'
+            RECIEVER = email
+
+            with smtplib.SMTP('smtp.gmail.com', 587) as s:
+                s.ehlo()
+                s.starttls()
+                s.ehlo()
+
+                s.login(SENDER, PASSWORD)  # app password
+                subject = 'Data Scoring Complete'
+                body = 'Your data has been successfully scored'
+                msg = f'Subject: {subject}\n\n{body}'
+
+                s.sendmail(SENDER, RECIEVER, msg)
+                
+                yield f"data:{int(16/total_steps*100)}\tScoring Complete\n\n"
+        except Exception as exc:
+            print("ERROR step 16")
+            yield f"data:0\tStep 16 - Emailing Results - {exc}\n\n"
             return
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
@@ -325,5 +351,5 @@ class ScoringLog(db.Model):
 
 if __name__=='__main__':
     init_dir()
-    app.run(debug='True')
+    app.run(debug='True', host='0.0.0.0')
     
