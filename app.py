@@ -161,7 +161,9 @@ def main_score(ann_model, rf_model, iszip, filename, email):
     def generate():
         # Step 1: Move files into data/raw directory
         try:
+            # remove old files if they exist
             subprocess.run(['rm', '-rf', 'data'])
+            os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
             subprocess.run(['mkdir', '-p', 'data/raw'])
             if iszip:
                 args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
