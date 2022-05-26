@@ -1,8 +1,9 @@
 from enum import unique
-from subprocess import CalledProcessError
 import os
 import secrets
 import json
+import subprocess
+from subprocess import CalledProcessError
 from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
@@ -95,6 +96,7 @@ def dashboard():
     logs.reverse()
     files = []
     for log in logs:
+        log.date_scored = str(log.date_scored)[:-7]
         files.append(json.loads(log.files)[0])
     return render_template('dashboard.jinja', 
                            name=f'{current_user.first_name} {current_user.last_name}',
@@ -146,7 +148,6 @@ def process_file(ann_model, rf_model, iszip, filename):
 @login_required
 def main_score(ann_model, rf_model, iszip, filename, email):
     # This route will be called by javascript in 'process-file.jinja'
-    import subprocess
     from datetime import datetime
     total_steps = 16
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
@@ -180,16 +181,16 @@ def main_score(ann_model, rf_model, iszip, filename, email):
         files.append(os.listdir('data/raw'))
         
         # Call each function of the pipeline
-        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")        #Step 2
-        yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")     #Step 3
-        yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")     #Step 4
-        yield score_wrapper(window, 5, total_steps, "Scaling")                        #Step 5
+        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")            #Step 2
+        yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")    #Step 3
+        yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")                  #Step 4
+        yield score_wrapper(window, 5, total_steps, "Scaling")                              #Step 5
         yield score_wrapper(scale, 6, total_steps, "Scoring ANN")                           #Step 6
         yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", ann_model_file)        #Step 7
-        yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)           #Step 8
-        yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")#Step 9
-        yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")          #Step 10
-        yield score_wrapper(remap_names, 11, total_steps, "Copying files")             #Step 11
+        yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)#Step 8
+        yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")          #Step 9
+        yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")               #Step 10
+        yield score_wrapper(remap_names, 11, total_steps, "Copying files")                  #Step 11
         
         # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
         try:
@@ -274,6 +275,17 @@ def main_score(ann_model, rf_model, iszip, filename, email):
 def download_zip(filename):
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
+@app.route("/download-archive-zip/<filename>", methods=['GET', 'POST'])
+@login_required
+def download_archive_zip(filename):
+    try:
+        args = ['cp', os.path.join(ARCHIVE_FOLDER, filename), DOWNLOAD_FOLDER]
+        subprocess.run(args, check=True)
+    except CalledProcessError as exp:
+        flash('Archive no longer available')
+        return redirect(url_for('dashboard'))
+    return send_from_directory(DOWNLOAD_FOLDER, filename)
+
 def score_wrapper(scoring_function, step, total_steps, msg, model=None):
     """ Used by generator in 'main_score' to wrap pipeline functions in order to
         generate progress steps
@@ -309,7 +321,6 @@ def valid_extension(filename, iszip):
         return filename.endswith(ALLOWED_EXTENSIONS['XLS']) or filename.endswith(ALLOWED_EXTENSIONS['XLSX'])
 
 def init_dir():
-    import subprocess
     try:
         subprocess.run(['mkdir', '-p', 'from-client'])
         subprocess.run(['mkdir', '-p', 'to-client'])
@@ -354,5 +365,5 @@ class ScoringLog(db.Model):
 
 if __name__=='__main__':
     init_dir()
-    app.run(debug='True', host='0.0.0.0')
+    app.run(debug='True')
     

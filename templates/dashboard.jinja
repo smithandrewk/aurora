@@ -27,7 +27,7 @@
                     <td>
                         <a href="#collapseFiles{{ log.id }}" data-bs-toggle="collapse">
                         {# <a data-toggle="collapse" href="#collapseFiles" role="button" aria-controls="collapseFiles"> #}
-                            <p class="text-center">Files Scored</p>
+                            <p class="text-center">Toggle View</p>
                         </a>
                         <div class="collapse" id="collapseFiles{{ log.id }}">
                             {% for file in files[loop.index-1] %}
@@ -35,7 +35,11 @@
                             {% endfor %}
                         </div>
                     </td>
-                    <td><p class="text-center">TODO</p></td>
+                    <td>
+                        <a href="{{ url_for('download_archive_zip', filename=log.filename) }}">
+                            <p class="text-center">Download</p>
+                        </a>
+                    </td>
                 </tr>
             </tbody>
         {% endfor %}
