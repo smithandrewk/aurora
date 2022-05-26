@@ -87,7 +87,7 @@ def logout():
 
 @app.route('/')
 def index():
-    return redirect(url_for('login'))
+    return render_template('index.jinja')
 
 @app.route('/dashboard')
 @login_required

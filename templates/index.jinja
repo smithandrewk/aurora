@@ -1,0 +1,16 @@
+{% extends 'base.jinja' %}
+
+{% block body %}
+    <div class="shadow p-3 mb-5 bg-white rounded">
+        <h1 class="text-center">Welcome to Aurora</h1>
+        <p>A very nice description of our project ...</p>
+        <a href="{{ url_for('login') }}">
+            <p class='btn btn-primary'>Login</p>
+        </a>
+        <br>
+        <a href="{{ url_for('add_user') }}">
+            <p class='btn btn-primary'>Create User</p>
+        </a>
+        
+    </div>
+{% endblock body %}

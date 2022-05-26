@@ -1,47 +1,50 @@
 {% extends 'base.jinja' %}
 
 {% block body %}
-    <h1>Dashboard</h1>
-    <p>Signed in as {{ name }}</p>
-    <p>Scoring History:</p>
-    <table class="table table-striped table-hover table-condensed">
-        <thead>
-            <tr>
-                <th scope="col"><p class="text-center">#</p></th>
-                <th scope="col"><p class="text-center">Project Name</p></th>
-                <th scope="col"><p class="text-center">Date Scored</p></th>
-                <th scope="col"><p class="text-center">ANN Model Used</p></th>
-                <th scope="col"><p class="text-center">RF Model Used</p></th>
-                <th scope="col"><p class="text-center">Files Scored</p></th>
-                <th scope="col"><p class="text-center">Download Archive</p></th>
-            </tr>
-        </thead>
-        {% for log in logs %}
-            <tbody>
-                <tr >
-                    <th scope="row"><p class="text-center">{{ log.id }}</p></th>
-                    <td><p class="text-center">{{ log.project_name }}</p></td>
-                    <td><p class="text-center">{{ log.date_scored }}</p></td>
-                    <td><p class="text-center">{{ log.ann_model }}</p></td>
-                    <td><p class="text-center">{{ log.rf_model }}</p></td>
-                    <td>
-                        <a href="#collapseFiles{{ log.id }}" data-bs-toggle="collapse">
-                        {# <a data-toggle="collapse" href="#collapseFiles" role="button" aria-controls="collapseFiles"> #}
-                            <p class="text-center">Toggle View</p>
-                        </a>
-                        <div class="collapse" id="collapseFiles{{ log.id }}">
-                            {% for file in files[loop.index-1] %}
-                                <p class="text-center">{{ file }}</p>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td>
-                        <a href="{{ url_for('download_archive_zip', filename=log.filename) }}">
-                            <p class="text-center">Download</p>
-                        </a>
-                    </td>
+    <div class="shadow p-3 mb-5 bg-white rounded">
+        <h1 class="text-center">Dashboard</h1>
+        <p class="text-center">- Signed in as {{ name }}</p>
+        <h4 class="text-center">Scoring History</h4>
+        <br>
+        <table class="table table-striped table-hover table-condensed">
+            <thead>
+                <tr>
+                    <th scope="col"><p class="text-center">#</p></th>
+                    <th scope="col"><p class="text-center">Project Name</p></th>
+                    <th scope="col"><p class="text-center">Date Scored</p></th>
+                    <th scope="col"><p class="text-center">ANN Model Used</p></th>
+                    <th scope="col"><p class="text-center">RF Model Used</p></th>
+                    <th scope="col"><p class="text-center">Files Scored</p></th>
+                    <th scope="col"><p class="text-center">Download Archive</p></th>
                 </tr>
-            </tbody>
-        {% endfor %}
-    </table>
+            </thead>
+            {% for log in logs %}
+                <tbody>
+                    <tr >
+                        <th scope="row"><p class="text-center">{{ log.id }}</p></th>
+                        <td><p class="text-center">{{ log.project_name }}</p></td>
+                        <td><p class="text-center">{{ log.date_scored }}</p></td>
+                        <td><p class="text-center">{{ log.ann_model }}</p></td>
+                        <td><p class="text-center">{{ log.rf_model }}</p></td>
+                        <td>
+                            <a href="#collapseFiles{{ log.id }}" data-bs-toggle="collapse">
+                            {# <a data-toggle="collapse" href="#collapseFiles" role="button" aria-controls="collapseFiles"> #}
+                                <p class="text-center">Toggle View</p>
+                            </a>
+                            <div class="collapse" id="collapseFiles{{ log.id }}">
+                                {% for file in files[loop.index-1] %}
+                                    <p class="text-center">{{ file }}</p>
+                                {% endfor %}
+                            </div>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('download_archive_zip', filename=log.filename) }}">
+                                <p class="text-center">Download</p>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            {% endfor %}
+        </table>
+    </div>
 {% endblock body %}
