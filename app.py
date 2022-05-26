@@ -92,6 +92,7 @@ def index():
 @login_required
 def dashboard():
     logs = list(ScoringLog.query.filter_by(email=current_user.email))
+    logs.reverse()
     files = []
     for log in logs:
         files.append(json.loads(log.files)[0])
@@ -104,11 +105,11 @@ def dashboard():
 @login_required
 def score_data():
     form = FileUploadForm()
-    form.ann_model.choices=[(ANN_MODELS[model], model) for model in ANN_MODELS]
-    form.rf_model.choices=[(RF_MODELS[model], model) for model in RF_MODELS]
+    form.ann_model.choices=[(model, model) for model in ANN_MODELS]
+    form.rf_model.choices=[(model, model) for model in RF_MODELS]
     if form.validate_on_submit():
-        ann_model = form.ann_model.data.replace('/','\t')
-        rf_model = form.rf_model.data.replace('/','\t')
+        ann_model = form.ann_model.data #.replace('/','\t')
+        rf_model = form.rf_model.data   #.replace('/','\t')
         iszip = int(form.iszip.data)
         file = form.file_submission.data
         if file:
@@ -152,8 +153,8 @@ def main_score(ann_model, rf_model, iszip, filename, email):
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
     files = []
     
-    ann_model = ann_model.replace('\t', '/')
-    rf_model = rf_model.replace('\t', '/')
+    ann_model_file = ANN_MODELS[ann_model]
+    rf_model_file = RF_MODELS[rf_model]
     
     # Generator that runs pipeline and generates progress information
     def generate():
@@ -184,8 +185,8 @@ def main_score(ann_model, rf_model, iszip, filename, email):
         yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")     #Step 4
         yield score_wrapper(window, 5, total_steps, "Scaling")                        #Step 5
         yield score_wrapper(scale, 6, total_steps, "Scoring ANN")                           #Step 6
-        yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", ann_model)        #Step 7
-        yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model)           #Step 8
+        yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", ann_model_file)        #Step 7
+        yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)           #Step 8
         yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")#Step 9
         yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")          #Step 10
         yield score_wrapper(remap_names, 11, total_steps, "Copying files")             #Step 11
@@ -228,8 +229,8 @@ def main_score(ann_model, rf_model, iszip, filename, email):
             log = ScoringLog(email=email, 
                              project_name=filename.replace('.xls', '').replace('.zip', ''),
                              filename=f'{date}.zip',
-                             ann_model=ann_model,
-                             rf_model=rf_model,
+                             ann_model=f'{ann_model} [{ann_model_file}]',
+                             rf_model=f'{rf_model} [{rf_model_file}]',
                              files=files_log)
             db.session.add(log)
             db.session.commit()
