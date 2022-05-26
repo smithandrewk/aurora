@@ -2,6 +2,7 @@ from enum import unique
 from subprocess import CalledProcessError
 import os
 import secrets
+import json
 from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
@@ -90,10 +91,14 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    logs = ScoringLog.query.filter_by(email=current_user.email)
+    logs = list(ScoringLog.query.filter_by(email=current_user.email))
+    files = []
+    for log in logs:
+        files.append(json.loads(log.files)[0])
     return render_template('dashboard.jinja', 
                            name=f'{current_user.first_name} {current_user.last_name}',
-                           logs=logs)
+                           logs=logs,
+                           files=files)
 
 @app.route("/score_data", methods=['GET', 'POST'])
 @login_required
@@ -171,8 +176,7 @@ def main_score(ann_model, rf_model, iszip, filename, email):
             return
         
         # Get list of files being scored
-        for file in os.listdir('data/raw'):
-            files.append(file)
+        files.append(os.listdir('data/raw'))
         
         # Call each function of the pipeline
         yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")        #Step 2
@@ -220,9 +224,7 @@ def main_score(ann_model, rf_model, iszip, filename, email):
         
         # Step 15: Log Scoring
         try:
-            files_log = ""
-            for file in files:
-                files_log += file+","
+            files_log = json.dumps(files)
             log = ScoringLog(email=email, 
                              project_name=filename.replace('.xls', '').replace('.zip', ''),
                              filename=f'{date}.zip',
@@ -264,7 +266,7 @@ def main_score(ann_model, rf_model, iszip, filename, email):
             return
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
-    return Response(generate(), mimetype= 'text/event-stream')
+    return Response(generate(), mimetype='text/event-stream')
     
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required
