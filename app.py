@@ -266,7 +266,6 @@ def main_score(ann_model, rf_model, iszip, filename, email):
             print("ERROR step 16")
             yield f"data:0\tStep 16 - Emailing Results - {exc}\n\n"
             return
-        
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
     

@@ -35,19 +35,25 @@
         {% include 'inc/alerts.jinja' %}
         {% include 'inc/jsbootstrap.jinja' %}
         {% include 'inc/navbar.jinja' %}
-        <div id="progress-bar" class="progress" style="width: 50%; margin: 50px;">
-            <div class="progress-bar progress-bar-striped active progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
-                <span class="progress-bar-label">0%</span>
+        <div class="container shadow p-3 mb-5 bg-white rounded">
+            <h1 class="text-center">Scoring Data</h1>
+            <p class="text-center">- Do not close page</p>
+            <div class="d-flex justify-content-center">
+                <div id="progress-bar" class="progress" style="width: 50%; margin: 50px;">
+                    <div class="progress-bar progress-bar-striped active progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                        <span class="progress-bar-label">0%</span>
+                    </div>
+                </div>
+            </div>
+
+            <p id="step-message" class="text-center"></p>
+            <p id="error-message" class="d-none text-center"></p>
+
+            <div class="d-flex justify-content-center">
+                <form id='download-button' class='d-none' method='POST' action="{{ url_for('download_zip', filename=new_filename) }}">
+                    <input type="submit" value="Download Scored files (ZIP)" class="w-100 btn btn-primary">
+                </form>
             </div>
         </div>
-
-        <p id="step-message"></p>
-        <p id="error-message" class="d-none"></p>
-
-        <form id='download-button' class='d-none' method='POST' action="{{ url_for('download_zip', filename=new_filename) }}">
-            <input type="submit" value="Download Scored files (ZIP)" class="w-50 btn btn-primary">
-            {# download ann files/zip #}
-            {# download rf files/zip #}
-        </form>
     </body>
 </html>

@@ -1,7 +1,6 @@
 {% extends 'base.jinja' %}
 
 {% block body %}
-    <div class="shadow p-3 mb-5 bg-white rounded">
     <form method='POST', enctype='multipart/form-data'>
         {{ form.hidden_tag() }}
         <div class="form-group row d-flex justify-content-center">
@@ -46,5 +45,4 @@
             {{ form.submit(class="w-50 btn btn-primary") }}
         </div>
     </form>
-    </div>
 {% endblock body %}
