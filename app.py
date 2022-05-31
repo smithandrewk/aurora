@@ -13,13 +13,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 from lib.webforms import *
 from lib.modules import *
-
-UPLOAD_FOLDER = "from-client"
-DOWNLOAD_FOLDER = "to-client"
-ARCHIVE_FOLDER = "data-archive"
-ALLOWED_EXTENSIONS = {'ZIP':'.zip', 'XLS':'.xls', 'XLSX':'.xlsx'}
-ANN_MODELS = {'Rat Model':'best_model.h5', 'Mice Model':'mice_512hln_ann_96.4_accuracy/best_model.h5'}
-RF_MODELS = {'Rat Model':'rf_model'}
+from lib.webconfig import *
+from lib.webmodules import *
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -159,25 +154,27 @@ def main_score(ann_model, rf_model, iszip, filename, email):
     
     # Generator that runs pipeline and generates progress information
     def generate():
+        yield f"data:0\tStep 1 - Copying files - {exc}\n\n"
         # Step 1: Move files into data/raw directory
-        try:
-            # remove old files if they exist
-            subprocess.run(['rm', '-rf', 'data'])
-            os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
-            subprocess.run(['mkdir', '-p', 'data/raw'])
-            if iszip:
-                args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
-                subprocess.run(args, check=True)
-                args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
-                subprocess.run(args, check=True)        
-            else: 
-                args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
-                subprocess.run(args, check=True)
-            yield f"data:{int(1/total_steps*100)}\tStep 2 - Renaming Data\n\n"
-        except CalledProcessError as exc:
-            print("ERROR step 1")
-            yield f"data:0\tStep 1 - Copying files - {exc}\n\n"
-            return
+        yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data")
+        # try:
+        #     # remove old files if they exist
+        #     subprocess.run(['rm', '-rf', 'data'])
+        #     os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
+        #     subprocess.run(['mkdir', '-p', 'data/raw'])
+        #     if iszip:
+        #         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
+        #         subprocess.run(args, check=True)
+        #         args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
+        #         subprocess.run(args, check=True)        
+        #     else: 
+        #         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
+        #         subprocess.run(args, check=True)
+        #     yield f"data:{int(1/total_steps*100)}\tStep 2 - Renaming Data\n\n"
+        # except CalledProcessError as exc:
+        #     print("ERROR step 1")
+        #     yield f"data:0\tStep 1 - Copying files - {exc}\n\n"
+        #     return
         
         # Get list of files being scored
         files.append(os.listdir('data/raw'))
@@ -195,6 +192,7 @@ def main_score(ann_model, rf_model, iszip, filename, email):
         yield score_wrapper(remap_names, 11, total_steps, "Copying files")                  #Step 11
         
         # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
+        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files")
         try:
             args = ['sh', '-c', 
                     f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} final_ann final_rf"]
@@ -287,50 +285,6 @@ def download_archive_zip(filename):
         return redirect(url_for('dashboard'))
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
-def score_wrapper(scoring_function, step, total_steps, msg, model=None):
-    """ Used by generator in 'main_score' to wrap pipeline functions in order to
-        generate progress steps
-
-    Args:
-        scoring_function (function): pipeline function to call
-        step (int): step number of this function
-        total_steps (int): total number of steps in current pipeline
-        msg (str): Message to display when function completes (display msg for next step)
-        model (str, optional): If scoring with a model, provide which model to use. Defaults to None.
-
-    Returns:
-        str: text event stream string providing the progress of the pipeline
-    """
-    try:
-        if model:
-            scoring_function(model)
-        else:
-            scoring_function()
-    #TODO raise exceptions in functions and use message
-    except Exception as exc:
-        print(f'ERROR step {step}')
-        return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
-        
-    # return progress and the message for next step
-    return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
-
-
-def valid_extension(filename, iszip):
-    if iszip:
-        return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
-    else:
-        return filename.endswith(ALLOWED_EXTENSIONS['XLS']) or filename.endswith(ALLOWED_EXTENSIONS['XLSX'])
-
-def init_dir():
-    try:
-        subprocess.run(['mkdir', '-p', 'from-client'])
-        subprocess.run(['mkdir', '-p', 'to-client'])
-        subprocess.run(['mkdir', '-p', 'data-archive'])
-
-    except CalledProcessError as exc:
-        print(f'Error initializing directory: {exc}')
-        exit(1)
-
 
 # Databse Models
 
@@ -367,4 +321,3 @@ class ScoringLog(db.Model):
 if __name__=='__main__':
     init_dir()
     app.run(debug='True')
-    
