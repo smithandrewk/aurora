@@ -14,112 +14,58 @@ def print_green(str):
     print(f'{bcolors.OKGREEN}{str}{bcolors.ENDC}')
 
 def rename_data_in_raw():
-    import os
-    print_yellow("Starting renaming data in raw")
-    os.system('mkdir -p data/renamed')
-    f = open('data/mapping','w+')
-    for i, file in enumerate(os.listdir("data/raw")):
-        original_name = file
-        file = file.replace(" ", "\ ")
-        new_name = str(i)  + ".csv"
-        cmd = f"ssconvert data/raw/{file} data/renamed/{new_name}"
-        os.system(cmd)
-        print_yellow(f"Iteration {i}: Converting {original_name}")
-        f.write(original_name+'\n')
-    f.close()
-    print_green("Finished Renaming")
-def initial_preprocessing():
-    """
-    initial_preprocessing does.
+    print_yellow(f'Renaming data in raw')
+    from os import listdir, system
+    with open('data/mapping', 'w+') as f:
+        system(f'mkdir data/1_renamed')
+        for i, file in enumerate(listdir("data/0_raw")):
+            f.write(f'{i},{file}\n')
+            command = f'cp \"data/0_raw/{file}\" data/1_renamed/{str(i)}.xls'
+            print_yellow(command)
+            system(command)
+    print_green(f'Finished renaming data in raw')
 
-    @params
-        filename : name of file
-    """
-    print_yellow('Starting Preprocessing')
-    import os
-    from lib.submodules import preprocess_csv
-
-    i = 0
-    dir = f'data/renamed'
-    for file in os.listdir(dir):
-        print_yellow("Iteration " + str(i))
-        print_yellow(dir+" "+file)
-        preprocess_csv(dir,file)
-        i += 1
-    print_green("Finishing Preprocessing")
-def handle_anomalies():
-    """
-    handle_anomalies handles anomalies.
-
-    @params
-        filename : name of file
-    """
-    print_yellow("Starting Handling Anomalies")
-    import pandas as pd
+def preprocess_data_in_renamed():
+    print_yellow(f'Started preprocessing data')
     from os import listdir
-    for file in listdir("data/preprocessed"):
-        df = pd.read_csv("data/preprocessed/"+file)
-        print_yellow("======================================"+file)
-        if(df.columns[0]!="Class"):
-            print_yellow("NOT SCORED")
-            continue
-        if(df.columns[1]!="0-0.5"):
-            print(f"{bcolors.FAIL}ANOMALY{bcolors.ENDC}")
-            df.rename(columns={"EEG 1 (0-0.5 Hz, 0-0.5Hz , 10s) (Mean, 10s)":"0-0.5"},inplace=True)
-        EEG_2 = df["EEG 2"]
-        Activity = df["Activity"]
-        X = df.iloc[:,:-2]
-        X.insert(X.shape[1],"EEG 2",EEG_2)
-        X.insert(X.shape[1],"Activity",Activity)
-        X.to_csv("data/preprocessed/"+file,index=False)
-
-    print_green("Finishing Handling Anomalies")
-def window():
-    """
-    window windows.
-
-    @params
-        filename : name of file
-    """
-    print_yellow("Starting Windowing")
-    from lib.submodules import window_data
-    from os import listdir
-    i = 0
-    dir = f'data/preprocessed'
+    from lib.submodules import preprocess_file
+    dir = f'data/1_renamed'
     for file in listdir(dir):
-        print_yellow("Iteration: " + str(i))
         print_yellow(file)
-        # X = read_csv(i)
-        window_data(dir,file)
-        i += 1
-    print_green("Finishing Windowing")
-def scale():
-    """
-    scale scales.
+        preprocess_file(dir, file)
+    print_green(f'Finished preprocessing data')
 
-    @params
-        filename : name of file
-    """
-    print_yellow("Starting Scaling")
-    import pandas as pd
-    import os
-    i = 0
-    dir = 'data/windowed'
-    for file in os.listdir(dir):
-        filename = f'{dir}/{file}'
-        X = pd.read_csv(filename)
-        from sklearn.preprocessing import MinMaxScaler
-        scaler = MinMaxScaler()
-        print_yellow("Iteration: " + str(i))
-        X = scaler.fit_transform(X)
-        if ( not os.path.isdir('data/windowed_scaled')):
-            os.system('mkdir data/windowed_scaled')
-        file = file.replace("_preprocessed_windowed.csv", "")
-        filename = "data/windowed_scaled/"+file+"_windowed_scaled.csv"
-        pd.DataFrame(X).to_csv(filename, index=False)
-        print_yellow(filename)
-        i += 1
-    print_green("Finishing Scaling")
+def scale_features_in_preprocessed():
+    from os import listdir, system
+    dir = f'data/2_preprocessed'
+    system(f'mkdir data/3_scaled')
+    for file in listdir(dir):
+        import pandas as pd
+        df = pd.read_csv(f'{dir}/{file}')
+        print(f'Length before:{df.shape[0]}')
+
+        from sklearn.preprocessing import StandardScaler
+        scaler = StandardScaler()
+
+        scaler.fit(df)
+        features_scaled = scaler.transform(df)
+        import pandas as pd
+        features_scaled_df = pd.DataFrame(features_scaled) 
+        features_scaled_df.to_csv(f'data/3_scaled/{file}', index=False)
+        print(f'Length After:{features_scaled_df.shape[0]}')
+
+def window_and_score_files_in_scaled():
+    print_yellow('Starting windowing')
+    from os import listdir, system, path
+    from lib.submodules import window_and_score_data
+    if (not path.isdir('data/4_scored')):
+        system('mkdir data/4_scored')
+    dir = f'data/3_scaled'
+    for file in listdir(dir):
+        print_yellow(file)
+        window_and_score_data(dir, file)
+    print_green('Finished windowing')
+
 def score_ann(model):
     """
     score_ann scores ANN.
@@ -139,6 +85,7 @@ def score_ann(model):
         i += 1
 
     print_green("Finishing Scoring ANN")
+
 def score_rf(model):
     """
     score_rf scores RF.
@@ -219,6 +166,28 @@ def rename_scores():
         pd.DataFrame(new_y).to_csv("data/expanded_renamed_rf/"+file,index=False)
     
     print_green("Finishing Rename Scores")
+def remap_names_lstm(model_name):
+    """
+    remap_names remaps names to original names
+
+    @params
+        filename : name of file
+    """
+    print_yellow("Starting Remap Names")
+    import os
+    mapping = open('data/mapping').read().splitlines()
+    if not os.path.isdir('data/5_final_lstm'):
+        os.system('mkdir data/5_final_lstm')
+    animal=''
+    if('mice' in model_name):
+        animal='mouse'
+    else:
+        animal="rat"
+    for i,file in enumerate(os.listdir('data/4_scored')):
+        index_str = file.replace('.csv', '')
+        newName = mapping[int(index_str)].replace('.xls', f'-lstm-{animal}.csv')
+        os.system(f"cp data/4_scored/'{file}' data/5_final_lstm/'{newName}'")
+    print_green("Finishing Remap Names")
 def remap_names():
     """
     remap_names remaps names to original names
