@@ -4,7 +4,7 @@ import secrets
 import json
 import subprocess
 from subprocess import CalledProcessError
-from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, Response, send_from_directory, Markup
 from werkzeug.utils import secure_filename
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -84,11 +84,13 @@ def logout():
 def index():
     return render_template('index.jinja')
 
+# @app.route('/dashboard/<log_id>', defaults={'log_id': None}, methods=['GET', 'POST'])
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    logs = list(ScoringLog.query.filter_by(email=current_user.email))
+    logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
+    print(logs)
     files = []
     for log in logs:
         log.date_scored = str(log.date_scored)[:-7]
@@ -220,6 +222,23 @@ def download_archive_zip(filename):
         return redirect(url_for('dashboard'))
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
+@app.route("/delete_log/<log_id>")
+@login_required
+def delete_log(log_id):
+    url = url_for('restore_log', log_id=log_id)
+    flash(Markup(f"Log {log_id} deleted <a href='{url}'>Undo?</a>"))
+    log = ScoringLog.query.filter_by(id=log_id).first()
+    log.is_deleted = True
+    db.session.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route("/restore_log/<log_id>")
+@login_required
+def restore_log(log_id):
+    log = ScoringLog.query.filter_by(id=log_id).first()
+    log.is_deleted = False
+    db.session.commit()
+    return redirect(url_for('dashboard'))
 
 # Databse Models
 
@@ -252,6 +271,7 @@ class ScoringLog(db.Model):
     ann_model = db.Column(db.String(200), nullable=False)
     rf_model = db.Column(db.String(200), nullable=False)
     files = db.Column(db.String(1000), nullable=False)      # json list of files
+    is_deleted = db.Column(db.Boolean, default=False)  
 
 if __name__=='__main__':
     init_dir()
