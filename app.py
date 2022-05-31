@@ -154,27 +154,9 @@ def main_score(ann_model, rf_model, iszip, filename, email):
     
     # Generator that runs pipeline and generates progress information
     def generate():
-        yield f"data:0\tStep 1 - Copying files - {exc}\n\n"
+        
         # Step 1: Move files into data/raw directory
-        yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data")
-        # try:
-        #     # remove old files if they exist
-        #     subprocess.run(['rm', '-rf', 'data'])
-        #     os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
-        #     subprocess.run(['mkdir', '-p', 'data/raw'])
-        #     if iszip:
-        #         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
-        #         subprocess.run(args, check=True)
-        #         args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
-        #         subprocess.run(args, check=True)        
-        #     else: 
-        #         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
-        #         subprocess.run(args, check=True)
-        #     yield f"data:{int(1/total_steps*100)}\tStep 2 - Renaming Data\n\n"
-        # except CalledProcessError as exc:
-        #     print("ERROR step 1")
-        #     yield f"data:0\tStep 1 - Copying files - {exc}\n\n"
-        #     return
+        yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", filename, iszip)
         
         # Get list of files being scored
         files.append(os.listdir('data/raw'))
@@ -192,37 +174,13 @@ def main_score(ann_model, rf_model, iszip, filename, email):
         yield score_wrapper(remap_names, 11, total_steps, "Copying files")                  #Step 11
         
         # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
-        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files")
-        try:
-            args = ['sh', '-c', 
-                    f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} final_ann final_rf"]
-            subprocess.run(args, check=True)
-            yield f"data:{int(12/total_steps*100)}\tStep 13 - Archiving Scores\n\n"
-        except CalledProcessError as exc:
-            print("ERROR step 12")
-            yield f"data:0\tStep 12 - Copying files - {exc}\n\n"
-            return
+        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)
         
         # Step 13: Archive Raw and Scored Data
-        try:
-            args = ['sh', '-c', 
-                    f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip final_ann final_rf raw"]
-            subprocess.run(args, check=True)
-            yield f"data:{int(13/total_steps*100)}\tStep 14 - Cleaning Workspace\n\n"
-        except CalledProcessError as exc:
-            print("ERROR step 13")
-            yield f"data:0\tStep 13 - Archiving files - {exc}\n\n"
-            return
+        yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", date)
         
         # Step 14: Cleaning Workspace
-        try:
-            args = ['rm', '-rf', 'data', f'from-client/{filename}']
-            subprocess.run(args, check=True)
-            yield f"data:{int(14/total_steps*100)}\tStep 15 - Logging Scores\n\n"
-        except CalledProcessError as exc:
-            print("ERROR step 14")
-            yield f"data:0\tStep 14 - Cleaning Workspace - {exc}\n\n"
-            return
+        yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", filename)
         
         # Step 15: Log Scoring
         try:
@@ -242,30 +200,7 @@ def main_score(ann_model, rf_model, iszip, filename, email):
             return
         
         # Step 16: Email Results
-        try:
-            import smtplib
-
-            SENDER = 'AuroraProjectEmail@gmail.com'
-            PASSWORD = 'kxfiusttkwlwneii'
-            RECIEVER = email
-
-            with smtplib.SMTP('smtp.gmail.com', 587) as s:
-                s.ehlo()
-                s.starttls()
-                s.ehlo()
-
-                s.login(SENDER, PASSWORD)  # app password
-                subject = 'Data Scoring Complete'
-                body = 'Your data has been successfully scored'
-                msg = f'Subject: {subject}\n\n{body}'
-
-                s.sendmail(SENDER, RECIEVER, msg)
-                
-                yield f"data:{int(16/total_steps*100)}\tScoring Complete\n\n"
-        except Exception as exc:
-            print("ERROR step 16")
-            yield f"data:0\tStep 16 - Emailing Results - {exc}\n\n"
-            return
+        yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
     
@@ -316,7 +251,7 @@ class ScoringLog(db.Model):
     filename = db.Column(db.String(200), nullable=False)    #filename in ARCHIVE_FOLDER
     ann_model = db.Column(db.String(200), nullable=False)
     rf_model = db.Column(db.String(200), nullable=False)
-    files = db.Column(db.String(1000), nullable=False)      # comma delim list of files
+    files = db.Column(db.String(1000), nullable=False)      # json list of files
 
 if __name__=='__main__':
     init_dir()

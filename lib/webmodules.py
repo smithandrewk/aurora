@@ -2,6 +2,7 @@ import subprocess
 import os
 from subprocess import CalledProcessError
 from lib.webconfig import *
+import json
 
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """ Used by generator in 'main_score' to wrap pipeline functions in order to
@@ -22,6 +23,7 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     #TODO raise exceptions in functions and use message
     except Exception as exc:
         print(f'ERROR step {step}')
+        # return error message
         return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
         
     # return progress and the message for next step
@@ -43,10 +45,38 @@ def unzip_upload(filename, iszip):
         subprocess.run(args, check=True)
 
 def move_to_download_folder(new_filename):
-        args = ['sh', '-c', 
+    args = ['sh', '-c', 
             f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} final_ann final_rf"]
     subprocess.run(args, check=True)
+    
+def archive_files(date):
+    args = ['sh', '-c', 
+            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip final_ann final_rf raw"]
+    subprocess.run(args, check=True)
 
+def clean_workspace(filename):
+    args = ['rm', '-rf', 'data', f'from-client/{filename}']
+    subprocess.run(args, check=True)
+
+def email_results(email):
+    import smtplib
+
+    SENDER = 'AuroraProjectEmail@gmail.com'
+    PASSWORD = 'kxfiusttkwlwneii'
+    RECIEVER = email
+
+    with smtplib.SMTP('smtp.gmail.com', 587) as s:
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+
+        s.login(SENDER, PASSWORD)  # app password
+        subject = 'Data Scoring Complete'
+        body = 'Your data has been successfully scored'
+        msg = f'Subject: {subject}\n\n{body}'
+
+        s.sendmail(SENDER, RECIEVER, msg)
+        
 def valid_extension(filename, iszip):
     if iszip:
         return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
