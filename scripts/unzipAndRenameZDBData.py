@@ -2,6 +2,7 @@
 
 import os
 
+os.system('mkdir data')
 os.system('mkdir data/rawZDB')
 os.system('mkdir data/renamedZDB')
 

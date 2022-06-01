@@ -26,7 +26,7 @@ NOTE:  zdb code has not been completely tested</br>
 
 Prepare data for scoring by typing the following in the command line
 
-```make renameZIP```
+```make openZIP```
 
 and, if ZBD files are available,
 
