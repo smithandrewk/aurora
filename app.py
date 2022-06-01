@@ -82,7 +82,7 @@ def logout():
 
 @app.route('/')
 def index():
-    return render_template('index.jinja')
+    return render_template('home.jinja')
 
 @app.route('/dashboard')
 @login_required
