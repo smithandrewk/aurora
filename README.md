@@ -2,11 +2,10 @@
 Directory Structure
 ```
 aurora
-├── main.ipynb
-├── makefile
+├── main.py
+├── .gitignore
 ├── README.md
 ├── requirements.txt
-├── scripts
 └── utils
 ```
 
