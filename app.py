@@ -144,6 +144,7 @@ def process_file(ann_model, rf_model, iszip, filename):
 @app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
 @login_required
 def main_score(ann_model, rf_model, iszip, filename, email):
+    
     # This route will be called by javascript in 'process-file.jinja'
     from datetime import datetime
     total_steps = 16
