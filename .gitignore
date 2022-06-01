@@ -1,7 +1,7 @@
 rf_model
 __pycache__
 env
-model
+model/*
 data
 Unscored.zip
 UnscoredZDB.zip
@@ -10,8 +10,8 @@ sessions
 backup
 categorical_accuracy.jpg
 cm.jpg
-to-client/*
-from-client/*
-data-archive/*
+to-client
+from-client
+data-archive
 .DS_Store
 archive

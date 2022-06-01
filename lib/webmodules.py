@@ -82,11 +82,12 @@ def valid_extension(filename, iszip):
     else:
         return (filename.endswith(ALLOWED_EXTENSIONS['XLS']) 
                 or filename.endswith(ALLOWED_EXTENSIONS['XLSX']))
-def init_dir():
+def init_dir(db):
+    db.create_all()
     try:
-        subprocess.run(['mkdir', '-p', 'from-client'])
-        subprocess.run(['mkdir', '-p', 'to-client'])
-        subprocess.run(['mkdir', '-p', 'data-archive'])
+        subprocess.run(['mkdir', '-p', UPLOAD_FOLDER])
+        subprocess.run(['mkdir', '-p', DOWNLOAD_FOLDER])
+        subprocess.run(['mkdir', '-p', ARCHIVE_FOLDER])
 
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')

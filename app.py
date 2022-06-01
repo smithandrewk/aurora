@@ -261,5 +261,5 @@ class ScoringLog(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)  
 
 if __name__=='__main__':
-    init_dir()
+    init_dir(db)
     app.run(debug='True')
