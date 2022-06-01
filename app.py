@@ -191,45 +191,7 @@ def main_score(model, iszip, filename, email):
         
         # Step 11: Email Results
         yield score_wrapper(email_results, 11, total_steps, "Scoring Complete", email)
-        # yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")            #Step 2
-        # yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")    #Step 3
-        # yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")                  #Step 4
-        # yield score_wrapper(window, 5, total_steps, "Scaling")                              #Step 5
-        # yield score_wrapper(scale, 6, total_steps, "Scoring ANN")                           #Step 6
-        # yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", model_file)        #Step 7
-        # yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)#Step 8
-        # yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")          #Step 9
-        # yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")               #Step 10
-        # yield score_wrapper(remap_names, 11, total_steps, "Copying files")                  #Step 11
         
-        # # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
-        # yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)
-        
-        # # Step 13: Archive Raw and Scored Data
-        # yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", date)
-        
-        # # Step 14: Cleaning Workspace
-        # yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", filename)
-        
-        # # Step 15: Log Scoring
-        # try:
-        #     files_log = json.dumps(files)
-        #     log = ScoringLog(email=email, 
-        #                      project_name=filename.replace('.xls', '').replace('.zip', ''),
-        #                      filename=f'{date}.zip',
-        #                      model=f'{model} [{model_file}]',
-        #                      rf_model=f'{rf_model} [{rf_model_file}]',
-        #                      files=files_log)
-        #     db.session.add(log)
-        #     db.session.commit()
-        #     yield f"data:{int(15/total_steps*100)}\tStep 16 - Emailing Results\n\n"
-        # except Exception as exc:
-        #     print("ERROR step 15")
-        #     yield f"data:0\tStep 15 - Logging Scores - {exc}\n\n"
-        #     return
-        
-        # # Step 16: Email Results
-        # yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
     
