@@ -39,9 +39,9 @@ def preprocess_file(dir, file):
     df.to_csv(f'data/2_preprocessed/{outfilename}', index=False)
     print(f'Length Before: {len_before}\nLength After : {df.shape[0]}')
 
+@print_on_start_on_end
 def window_and_score_data(dir, file,model):
     from pandas import read_csv,DataFrame
-    from keras.models import load_model
     import numpy as np
     import tensorflow as tf
 
@@ -50,15 +50,18 @@ def window_and_score_data(dir, file,model):
     len_before = scaled.shape[0]
     
     WINDOW_SIZE = 9
+    
     labels = np.zeros(len(scaled))
     gen = tf.keras.preprocessing.sequence.TimeseriesGenerator(scaled, labels,length=WINDOW_SIZE, sampling_rate=1,batch_size=1,shuffle=False)
     pred = model.predict(gen).argmax(axis=1)
     pred_expert = pred.copy()
+
     expert=True
     if(expert):
         for j in range(len(pred_expert)-2):
             if((pred_expert[j:j+2]==np.array([2,0])).all()):
                 pred_expert[j+1] = 2
+
     final = np.concatenate([[-1,-1,-1,-1],pred_expert,[-1,-1,-1,-1,-1]])
     final = DataFrame(final)
     final[final==-1] = 'X'
