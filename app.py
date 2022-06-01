@@ -104,11 +104,9 @@ def dashboard():
 @login_required
 def score_data():
     form = FileUploadForm()
-    form.ann_model.choices=[(model, model) for model in ANN_MODELS]
-    form.rf_model.choices=[(model, model) for model in RF_MODELS]
+    form.model.choices=[(model, model) for model in MODELS]
     if form.validate_on_submit():
-        ann_model = form.ann_model.data
-        rf_model = form.rf_model.data
+        model = form.model.data
         iszip = int(form.iszip.data)
         file = form.file_submission.data
         if file:
@@ -119,41 +117,41 @@ def score_data():
             filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-            form.ann_model.data = ''
-            form.rf_model.data = ''
+            form.model.data = ''
             form.iszip.data = ''
             form.file_submission.data = None            
             
-            return redirect(url_for('process_file', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename))
+            return redirect(url_for('process_file', 
+                                    model=model, 
+                                    iszip=iszip,
+                                    filename=filename))
     return render_template('score-data.jinja', form=form)
 
 
-@app.route('/process-file/<ann_model>/<rf_model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
+@app.route('/process-file/<model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
 @login_required
-def process_file(ann_model, rf_model, iszip, filename):
+def process_file(model, iszip, filename):
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
     return render_template('process-file.jinja', 
-                           ann_model=ann_model, 
-                           rf_model=rf_model, 
+                           model=model,
                            iszip=iszip, 
                            filename=filename, 
                            new_filename=new_filename, 
                            email=current_user.email)
 
 
-@app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
+@app.route('/main-score/<model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
 @login_required
-def main_score(ann_model, rf_model, iszip, filename, email):
+def main_score(model, iszip, filename, email):
     
     # This route will be called by javascript in 'process-file.jinja'
     from datetime import datetime
-    total_steps = 16
+    total_steps = 11
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     new_filename = f"scored_{filename.replace('.xls','.zip')}"
     files = []
     
-    ann_model_file = ANN_MODELS[ann_model]
-    rf_model_file = RF_MODELS[rf_model]
+    path_to_model = f"model/{MODELS[model]}"
     
     # Generator that runs pipeline and generates progress information
     def generate():
@@ -162,48 +160,76 @@ def main_score(ann_model, rf_model, iszip, filename, email):
         yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", filename, iszip)
         
         # Get list of files being scored
-        files.append(os.listdir('data/raw'))
+        files.append(os.listdir(f'data/{RAW_DIR}'))
         
         # Call each function of the pipeline
-        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")            #Step 2
-        yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")    #Step 3
-        yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")                  #Step 4
-        yield score_wrapper(window, 5, total_steps, "Scaling")                              #Step 5
-        yield score_wrapper(scale, 6, total_steps, "Scoring ANN")                           #Step 6
-        yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", ann_model_file)        #Step 7
-        yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)#Step 8
-        yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")          #Step 9
-        yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")               #Step 10
-        yield score_wrapper(remap_names, 11, total_steps, "Copying files")                  #Step 11
-        
-        # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
-        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)
-        
-        # Step 13: Archive Raw and Scored Data
-        yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", date)
-        
-        # Step 14: Cleaning Workspace
-        yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", filename)
-        
-        # Step 15: Log Scoring
+        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")
+        yield score_wrapper(preprocess_data_in_renamed, 3, total_steps, "Scaling")
+        yield score_wrapper(scale_features_in_preprocessed, 4, total_steps, "Scoring Data")
+        yield score_wrapper(window_and_score_files_in_scaled_with_LSTM, 5, total_steps, "Remapping File Names", path_to_model)
+        yield score_wrapper(remap_names_lstm, 6, total_steps, "Moving Files", path_to_model)
+
+        # Call helper modules
+        yield score_wrapper(move_to_download_folder, 7, total_steps, "Archiving files", new_filename)        
+        yield score_wrapper(archive_files, 8, total_steps, "Cleaning Workspace", date)
+        yield score_wrapper(clean_workspace, 9, total_steps, "Logging Scores", filename)
+        # Step 10: Log Scoring
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
                              project_name=filename.replace('.xls', '').replace('.zip', ''),
                              filename=f'{date}.zip',
-                             ann_model=f'{ann_model} [{ann_model_file}]',
-                             rf_model=f'{rf_model} [{rf_model_file}]',
+                             model=f'{model} [{MODELS[model]}]',
                              files=files_log)
             db.session.add(log)
             db.session.commit()
-            yield f"data:{int(15/total_steps*100)}\tStep 16 - Emailing Results\n\n"
+            yield f"data:{int(10/total_steps*100)}\tStep 11 - Emailing Results\n\n"
         except Exception as exc:
-            print("ERROR step 15")
-            yield f"data:0\tStep 15 - Logging Scores - {exc}\n\n"
+            print("ERROR step 10")
+            yield f"data:0\tStep 10 - Logging Scores - {exc}\n\n"
             return
         
-        # Step 16: Email Results
-        yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
+        # Step 11: Email Results
+        yield score_wrapper(email_results, 11, total_steps, "Scoring Complete", email)
+        # yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")            #Step 2
+        # yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")    #Step 3
+        # yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")                  #Step 4
+        # yield score_wrapper(window, 5, total_steps, "Scaling")                              #Step 5
+        # yield score_wrapper(scale, 6, total_steps, "Scoring ANN")                           #Step 6
+        # yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", model_file)        #Step 7
+        # yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)#Step 8
+        # yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")          #Step 9
+        # yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")               #Step 10
+        # yield score_wrapper(remap_names, 11, total_steps, "Copying files")                  #Step 11
+        
+        # # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
+        # yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)
+        
+        # # Step 13: Archive Raw and Scored Data
+        # yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", date)
+        
+        # # Step 14: Cleaning Workspace
+        # yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", filename)
+        
+        # # Step 15: Log Scoring
+        # try:
+        #     files_log = json.dumps(files)
+        #     log = ScoringLog(email=email, 
+        #                      project_name=filename.replace('.xls', '').replace('.zip', ''),
+        #                      filename=f'{date}.zip',
+        #                      model=f'{model} [{model_file}]',
+        #                      rf_model=f'{rf_model} [{rf_model_file}]',
+        #                      files=files_log)
+        #     db.session.add(log)
+        #     db.session.commit()
+        #     yield f"data:{int(15/total_steps*100)}\tStep 16 - Emailing Results\n\n"
+        # except Exception as exc:
+        #     print("ERROR step 15")
+        #     yield f"data:0\tStep 15 - Logging Scores - {exc}\n\n"
+        #     return
+        
+        # # Step 16: Email Results
+        # yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
     
@@ -394,8 +420,7 @@ class ScoringLog(db.Model):
     project_name = db.Column(db.String(200), nullable=False)
     date_scored = db.Column(db.DateTime, default=datetime.utcnow)
     filename = db.Column(db.String(200), nullable=False)    #filename in ARCHIVE_FOLDER
-    ann_model = db.Column(db.String(200), nullable=False)
-    rf_model = db.Column(db.String(200), nullable=False)
+    model = db.Column(db.String(200), nullable=False)
     files = db.Column(db.String(1000), nullable=False)      # json list of files
     is_deleted = db.Column(db.Boolean, default=False)  
 

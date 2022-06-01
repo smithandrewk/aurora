@@ -34,14 +34,14 @@ def unzip_upload(filename, iszip):
     # remove old files if they exist
     subprocess.run(['rm', '-rf', 'data'])
     os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
-    subprocess.run(['mkdir', '-p', 'data/raw'])
+    subprocess.run(['mkdir', '-p', f'data/{RAW_DIR}'])
     if iszip:
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/raw']
+        args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{RAW_DIR}']
         subprocess.run(args, check=True)        
     else: 
-        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_DIR}/']
         subprocess.run(args, check=True)
 def unzip_zdb_upload(filename, iszip):
     subprocess.run(['mkdir', '-p', 'data/rawZDB'])
@@ -55,12 +55,12 @@ def unzip_zdb_upload(filename, iszip):
         subprocess.run(args, check=True)
 def move_to_download_folder(new_filename):
     args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} final_ann final_rf"]
+            f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_DIR}"]
     subprocess.run(args, check=True)
     
 def archive_files(date):
     args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip final_ann final_rf raw"]
+            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip {FINAL_SCORED_DIR} {RAW_DIR}"]
     subprocess.run(args, check=True)
 
 def clean_workspace(filename):
