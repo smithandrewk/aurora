@@ -107,8 +107,8 @@ def score_data():
     form.ann_model.choices=[(model, model) for model in ANN_MODELS]
     form.rf_model.choices=[(model, model) for model in RF_MODELS]
     if form.validate_on_submit():
-        ann_model = form.ann_model.data #.replace('/','\t')
-        rf_model = form.rf_model.data   #.replace('/','\t')
+        ann_model = form.ann_model.data
+        rf_model = form.rf_model.data
         iszip = int(form.iszip.data)
         file = form.file_submission.data
         if file:
@@ -240,8 +240,133 @@ def restore_log(log_id):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-# Databse Models
+# For the Future - not complete
+#######################################################################
 
+# @app.route("/score_data_zdb", methods=['GET', 'POST'])
+# @login_required
+# def score_data_zdb():
+#     form = ZDBFileUploadForm()
+#     form.ann_model.choices=[(model, model) for model in ANN_MODELS]
+#     form.rf_model.choices=[(model, model) for model in RF_MODELS]
+#     if form.validate_on_submit():
+#         ann_model = form.ann_model.data
+#         rf_model = form.rf_model.data
+#         iszip = int(form.iszip.data)
+#         data_file = form.data_file.data
+#         zdb_file = form.zdb_file.data
+#         if data_file and zdb_file:
+#             data_filename = secure_filename(data_file.filename)
+#             zdb_filename = secure_filename(zdb_file.filename)
+#             if (not valid_extension(data_filename, iszip) 
+#                 or not valid_zdb_extension(zdb_filename, iszip)):
+#                 flash('Invalid file extension')
+#                 return render_template('score-data-zdb.jinja', form=form)
+#             data_filename = data_filename.replace(ALLOWED_EXTENSIONS['XLSX'], 
+#                                                   ALLOWED_EXTENSIONS['XLS'])
+#             data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
+#             zdb_file.save(os.path.join(app.config['UPLOAD_FOLDER'], zdb_filename))
+
+#             form.ann_model.data = ''
+#             form.rf_model.data = ''
+#             form.iszip.data = ''
+#             form.data_file.data = None            
+#             form.zdb_file.data = None            
+            
+#             return redirect(url_for('process_file_zdb',
+#                                     ann_model=ann_model,
+#                                     rf_model=rf_model,
+#                                     iszip=iszip,
+#                                     data_filename=data_filename,
+#                                     zdb_filename=zdb_filename))
+
+#     return render_template('score-data-zdb.jinja', form=form)
+
+# @app.route('/process-file-zdb/<ann_model>/<rf_model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
+# @login_required
+# def process_file_zdb(ann_model, rf_model, iszip, data_filename, zdb_filename):
+#     new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
+#     return render_template('process-file.jinja',
+#                            ann_model=ann_model, 
+#                            rf_model=rf_model, 
+#                            iszip=iszip, 
+#                            data_filename=data_filename, 
+#                            zdb_filename=zdb_filename,
+#                            new_filename=new_filename, 
+#                            email=current_user.email)
+
+# @app.route('/main-score/<ann_model>/<rf_model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
+# @login_required
+# def main_score_zdb(ann_model, rf_model, iszip, filename, email):
+#     # This route will be called by javascript in 'process-file.jinja'
+#     from datetime import datetime
+#     total_steps = 16
+#     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
+#     new_filename = f"scored_{filename.replace('.xls','.zip')}"
+#     files = []
+    
+#     ann_model_file = ANN_MODELS[ann_model]
+#     rf_model_file = RF_MODELS[rf_model]
+    
+#     # Generator that runs pipeline and generates progress information
+#     def generate():
+#         # TODO add zdb steps
+#         # Step 1: Move files into data/raw directory
+#         yield score_wrapper(unzip_upload, 1, total_steps, "Moving Files", filename, iszip)
+
+#         # Step 2: Move zdb files into data/rawZDB directory
+#         yield score_wrapper(unzip_zdb_upload, 2, total_steps, "Renaming Data", filename, iszip)
+        
+#         # Get list of files being scored
+#         files.append(os.listdir('data/raw'))
+        
+#         # Call each function of the pipeline
+#         yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")
+#         yield score_wrapper(initial_preprocessing, 3, total_steps, "Handling Anomalies")
+#         yield score_wrapper(handle_anomalies, 4, total_steps, "Windowing")
+#         yield score_wrapper(window, 5, total_steps, "Scaling")
+#         yield score_wrapper(scale, 6, total_steps, "Scoring ANN")
+#         yield score_wrapper(score_ann, 7, total_steps, "Scoring RF", ann_model_file)
+#         yield score_wrapper(score_rf, 8, total_steps, "Expanding Predictions", rf_model_file)
+#         yield score_wrapper(expand_predictions, 9, total_steps, "Renaming Scores")
+#         yield score_wrapper(rename_scores, 10, total_steps, "Renaming Files")
+#         yield score_wrapper(remap_names, 11, total_steps, "Copying files")
+        
+#         # Step 12: Copy 'final_ann' and 'final_rf' to Download-to-client folder
+#         yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)
+        
+#         # Step 13: Archive Raw and Scored Data
+#         yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", date)
+        
+#         # Step 14: Cleaning Workspace
+#         yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", filename)
+        
+#         # Step 15: Log Scoring
+#         try:
+#             files_log = json.dumps(files)
+#             log = ScoringLog(email=email, 
+#                              project_name=filename.replace('.xls', '').replace('.zip', ''),
+#                              filename=f'{date}.zip',
+#                              ann_model=f'{ann_model} [{ann_model_file}]',
+#                              rf_model=f'{rf_model} [{rf_model_file}]',
+#                              files=files_log)
+#             db.session.add(log)
+#             db.session.commit()
+#             yield f"data:{int(15/total_steps*100)}\tStep 16 - Emailing Results\n\n"
+#         except Exception as exc:
+#             print("ERROR step 15")
+#             yield f"data:0\tStep 15 - Logging Scores - {exc}\n\n"
+#             return
+        
+#         # Step 16: Email Results
+#         yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
+#     # Create response to javascript EventSource with a series of text event-streams providing progress information
+#     return Response(generate(), mimetype='text/event-stream')
+
+#######################################################################
+
+
+# Database Models
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String(200), nullable=False)

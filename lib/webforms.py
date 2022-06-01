@@ -21,3 +21,11 @@ class FileUploadForm(FlaskForm):
     iszip = SelectField("Choose upload type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
     file_submission = FileField("Select a File", validators=[DataRequired()])
     submit = SubmitField('Start Scoring')
+
+class ZDBFileUploadForm(FlaskForm):
+    ann_model = SelectField("Choose an ANN Model", validators=[DataRequired()], validate_choice=False)
+    rf_model = SelectField("Choose an RF Model", validators=[DataRequired()], validate_choice=False)
+    iszip = SelectField("Choose uploads type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
+    data_file = FileField("Select a File", validators=[DataRequired()])
+    zdb_file = FileField("Select a File", validators=[DataRequired()])
+    submit = SubmitField('Start Scoring')

@@ -43,7 +43,16 @@ def unzip_upload(filename, iszip):
     else: 
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/raw/']
         subprocess.run(args, check=True)
-
+def unzip_zdb_upload(filename, iszip):
+    subprocess.run(['mkdir', '-p', 'data/rawZDB'])
+    if iszip:
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/UnscoredZDB.zip']
+        subprocess.run(args, check=True)
+        args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/rawZDB']
+        subprocess.run(args, check=True)        
+    else: 
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/rawZDB/']
+        subprocess.run(args, check=True)
 def move_to_download_folder(new_filename):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} final_ann final_rf"]
@@ -81,8 +90,13 @@ def valid_extension(filename, iszip):
     if iszip:
         return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
     else:
-        return filename.endswith(ALLOWED_EXTENSIONS['XLS']) or filename.endswith(ALLOWED_EXTENSIONS['XLSX'])
-
+        return (filename.endswith(ALLOWED_EXTENSIONS['XLS']) 
+                or filename.endswith(ALLOWED_EXTENSIONS['XLSX']))
+def valid_zdb_extension(filename, iszip):
+    if iszip:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
+    else:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZDB'])  
 def init_dir():
     try:
         subprocess.run(['mkdir', '-p', 'from-client'])
