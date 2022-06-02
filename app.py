@@ -78,7 +78,7 @@ def add_user():
 def logout():
     logout_user()
     flash('Logged out Successfully')
-    return redirect(url_for('login'))
+    return redirect(url_for('index'))
 
 @app.route('/')
 def index():
@@ -90,7 +90,6 @@ def index():
 def dashboard():
     logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
-    print(logs)
     files = []
     for log in logs:
         log.date_scored = str(log.date_scored)[:-7]
