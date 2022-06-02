@@ -249,6 +249,62 @@ class Users(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+# For the Future - not complete
+#######################################################################
+
+@app.route("/score_data_zdb", methods=['GET', 'POST'])
+@login_required
+def score_data_zdb():
+    form = ZDBFileUploadForm()
+    form.model.choices=[(model, model) for model in MODELS]
+    if form.validate_on_submit():
+        model = form.model.data
+        iszip = int(form.iszip.data)
+        data_file = form.data_file.data
+        zdb_file = form.zdb_file.data
+        if data_file and zdb_file:
+            data_filename = secure_filename(data_file.filename)
+            zdb_filename = secure_filename(zdb_file.filename)
+            if (not valid_extension(data_filename, iszip) 
+                    or not valid_zdb_extension(zdb_filename, iszip)):
+                flash('Invalid file extension')
+                return render_template('score-data-zdb.jinja', form=form)
+            data_filename = data_filename.replace(ALLOWED_EXTENSIONS['XLSX'], 
+                                                  ALLOWED_EXTENSIONS['XLS'])
+            data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
+            zdb_file.save(os.path.join(app.config['UPLOAD_FOLDER'], zdb_filename))
+
+            form.model.data = ''
+            form.iszip.data = ''
+            form.data_file.data = None            
+            form.zdb_file.data = None            
+            
+            return redirect(url_for('process_file_zdb',
+                                    model=model,
+                                    iszip=iszip,
+                                    data_filename=data_filename,
+                                    zdb_filename=zdb_filename))
+
+    return render_template('score-data-zdb.jinja', form=form)
+
+@app.route('/process-file-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
+@login_required
+def process_file_zdb(model, iszip, data_filename, zdb_filename):
+    new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
+    return render_template('process-file.jinja',
+                           model=model, 
+                           iszip=iszip, 
+                           data_filename=data_filename, 
+                           zdb_filename=zdb_filename,
+                           new_filename=new_filename, 
+                           email=current_user.email)
+
+# @app.route('/main-score-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
+# @login_required
+# def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
+    # TODO call functions to score zdb file 
+
+#######################################################################
 class ScoringLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(200), nullable=False)

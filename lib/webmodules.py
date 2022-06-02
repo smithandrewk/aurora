@@ -92,3 +92,18 @@ def init_dir(db):
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')
         exit(1)
+def unzip_zdb_upload(filename, iszip):
+    subprocess.run(['mkdir', '-p', 'data/rawZDB'])
+    if iszip:
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/UnscoredZDB.zip']
+        subprocess.run(args, check=True)
+        args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/rawZDB']
+        subprocess.run(args, check=True)        
+    else: 
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/rawZDB/']
+        subprocess.run(args, check=True)
+def valid_zdb_extension(filename, iszip):
+    if iszip:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
+    else:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZDB'])  
