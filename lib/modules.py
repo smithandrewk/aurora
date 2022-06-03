@@ -280,6 +280,7 @@ def zdb_remap():
     print_green("Finished ZDB remapping")
 
 ## New ZDB code for lstm pipeline
+# @print_on_start_on_end
 def rename_zdb_in_raw_zdb():
     """
     For lstm pipeline
@@ -287,24 +288,31 @@ def rename_zdb_in_raw_zdb():
     follows mapping of data files in data/mapping to rename files
     writes mapping of zdb files to data/mapping_zdb
     """
-    raw_dir = '6_raw_zdb'
-    renamed_dir = '7_renamed_zdb'
-    os.system(f'mkdir -p data/{renamed_dir}')
+    import os
+    raw_dir = 'data/6_raw_zdb'
+    renamed_dir = 'data/7_renamed_zdb'
+    
+    if not os.path.isdir(raw_dir):
+        print("No ZDB files")
+        return
+    
+    os.system(f'mkdir -p {renamed_dir}')
     mapping = open('data/mapping').read().splitlines()
     mapping = [name.replace('.xls', '') for name in mapping]
     f = open('data/mapping_zdb','w+')
     i=0
     for name in mapping:
-        for file in os.listdir(f"data/{raw_dir}"):
+        for file in os.listdir(f"{raw_dir}"):
             if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
                 new_name = str(i)+'.zdb'
-                os.system(f"cp data/{raw_dir}/{file}' data/{renamed_dir}/'{new_name}'")
+                os.system(f"cp {raw_dir}/{file}' {renamed_dir}/'{new_name}'")
                 f.write(file+'\n')
                 break
         i+=1
     f.close
     # use code in scripts/unzipAndRenameZDBData.py
 
+# @print_on_start_on_end
 def convert_zdb_in_renamed_zdb():
     """
     For lstm pipeline
@@ -312,53 +320,46 @@ def convert_zdb_in_renamed_zdb():
         in data/7_renamed_zdb
     Saves new files in 8_scored_zdb
     """
-    pass
-    # copy files from 7_renamed_zdb to new dir 8_scored_zdb
-    # pass 8_scored_zdb as dir_zdb
-    # print_yellow("Starting ZDB Conversion")
-    # import os
-    # from lib.submodules import conversion_zdb
+    from lib.submodules import convert_zdb_lstm
+    import os
 
-    # dir_zdb = 'data/renamed_zdb'
-    # dir_scores = 'data/5_final_lstm'
+    old_dir = 'data/7_renamed_zdb'
+    new_dir = 'data/8_scored_zdb'
+    csv_dir = 'data/4_scored'
 
-    # if not os.path.isdir(dir_zdb):
-    #     print("No ZDB files")
-    #     return
-    # for csv in os.listdir(dir_ann):
-    #     name = csv.replace('.csv', '')
-    #     zdb = f'{name}.zdb'
-    #     conversion_zdb(dir_ann, dir_zdb, csv, zdb, 'ann')
-    # for csv in os.listdir(dir_rf):
-    #     name = csv.replace('.csv', '')
-    #     zdb = f'{name}.zdb'
-    #     conversion_zdb(dir_ann, dir_zdb, csv, zdb, 'rf')
-    # print_green("Finishing ZDB Conversion")
-def zdb_remap():
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    
+    os.system(f'mkdir -p {new_dir}')
+
+    for file in os.listdir(old_dir):
+        os.system(f"cp {old_dir}/{file} {new_dir}/{file}")
+
+    for csv in os.listdir(csv_dir):
+        zdb = csv.replace('.csv', '.zdb')
+        # file_index = csv.replace('.csv', '')
+        # zdb = f'{file_index}.zdb'
+        convert_zdb_lstm(csv_dir, new_dir, csv, zdb)
+def remap_zdb_in_scored_zdb():
     """
     For lstm pipeline
     uses data/mapping_zdb to remap scored zdb files in data/8_renamed_zdb to 
         their original names in data/9_final_zdb_lstm
     """
-    pass
-    # print_yellow("Starting ZDB remap names")
-    # import os
-    # dir_ann = "data/ZDB_ann"
-    # dir_rf = "data/ZDB_rf"
-    # if not os.path.isdir(dir_ann) or not os.path.isdir(dir_rf):
-    #     print("No ZDB files")
-    #     return
-    # os.system('mkdir data/ZDB_final_ann')
-    # os.system('mkdir data/ZDB_final_rf')
-    # mapping = open('data/ZDBmapping').read().splitlines()
+    import os
+    old_dir = 'data/8_scored_zdb'
+    new_dir = 'data/9_final_zdb_lstm'
 
-    # for zdb in os.listdir(dir_ann):
-    #     index = int(zdb.replace('.zdb', ''))
-    #     os.system(f'cp {dir_ann}/"{zdb}" data/ZDB_final_ann/"{mapping[index]}"')
-    # for zdb in os.listdir(dir_rf):
-    #     index = int(zdb.replace('.zdb', ''))
-    #     os.system(f'cp {dir_rf}/"{zdb}" data/ZDB_final_rf/"{mapping[index]}"')
-    # print_green("Finished ZDB remapping")
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    os.system(f'mkdir -p {new_dir}')
+    mapping = open('data/mapping_zdb').read().splitlines()
+
+    for zdb in os.listdir(old_dir):
+        index = int(zdb.replace('.zdb', ''))
+        os.system(f"cp {old_dir}/'{zdb}' {new_dir}/'{mapping[index]}'")
 def create_and_check_args():
     import argparse
     import os

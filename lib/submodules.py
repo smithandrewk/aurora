@@ -431,7 +431,7 @@ def convert_zdb_lstm(dir_csv, dir_zdb, csv, zdb):
 
     df = pd.read_csv(csv_filename)
     try:
-        conn = sqlite3.connect(filename)
+        conn = sqlite3.connect(zdb_filename)
     except Error as e:
         print(e)
 
