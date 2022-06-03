@@ -14,9 +14,9 @@ from lib.modules import *
 # window_and_score_files_in_scaled()
 # remap_names_lstm(args.ann_model)
 
-rename_zdb_in_raw_zdb()
-# convert_zdb_in_renamed_zdb()
-# remap_zdb_in_scored_zdb()
+rename_files_in_raw_zdb()
+score_files_in_renamed_zdb()
+remap_files_in_scored_zdb()
 
 # score_ann(args.ann_model)
 # score_rf('rf_model')

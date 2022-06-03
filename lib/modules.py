@@ -281,7 +281,7 @@ def zdb_remap():
 
 ## New ZDB code for lstm pipeline
 # @print_on_start_on_end
-def rename_zdb_in_raw_zdb():
+def rename_files_in_raw_zdb():
     """
     For lstm pipeline
     Rename zdb files in data/6_raw_zdb to data/7_renamed_zdb
@@ -312,7 +312,7 @@ def rename_zdb_in_raw_zdb():
     f.close
 
 # @print_on_start_on_end
-def convert_zdb_in_renamed_zdb():
+def score_files_in_renamed_zdb():
     """
     For lstm pipeline
     Uses scored csv's in data/5_final_lstm to add scores to zdb's 
@@ -342,7 +342,7 @@ def convert_zdb_in_renamed_zdb():
         convert_zdb_lstm(csv_dir, new_dir, csv, zdb)
 
 # @print_on_start_on_end
-def remap_zdb_in_scored_zdb():
+def remap_files_in_scored_zdb():
     """
     For lstm pipeline
     uses data/mapping_zdb to remap scored zdb files in data/8_renamed_zdb to 
