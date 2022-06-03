@@ -289,28 +289,27 @@ def rename_zdb_in_raw_zdb():
     writes mapping of zdb files to data/mapping_zdb
     """
     import os
-    raw_dir = 'data/6_raw_zdb'
-    renamed_dir = 'data/7_renamed_zdb'
+    old_dir = 'data/6_raw_zdb'
+    new_dir = 'data/7_renamed_zdb'
     
-    if not os.path.isdir(raw_dir):
+    if not os.path.isdir(old_dir):
         print("No ZDB files")
         return
     
-    os.system(f'mkdir -p {renamed_dir}')
+    os.system(f'mkdir -p {new_dir}')
     mapping = open('data/mapping').read().splitlines()
     mapping = [name.replace('.xls', '') for name in mapping]
     f = open('data/mapping_zdb','w+')
     i=0
     for name in mapping:
-        for file in os.listdir(f"{raw_dir}"):
+        for file in os.listdir(f"{old_dir}"):
             if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
                 new_name = str(i)+'.zdb'
-                os.system(f"cp {raw_dir}/{file}' {renamed_dir}/'{new_name}'")
+                os.system(f"cp {old_dir}/'{file}' {new_dir}/'{new_name}'")
                 f.write(file+'\n')
                 break
         i+=1
     f.close
-    # use code in scripts/unzipAndRenameZDBData.py
 
 # @print_on_start_on_end
 def convert_zdb_in_renamed_zdb():
