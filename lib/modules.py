@@ -19,7 +19,7 @@ def rename_data_in_raw():
     with open('data/mapping', 'w+') as f:
         system(f'mkdir data/1_renamed')
         for i, file in enumerate(listdir("data/0_raw")):
-            f.write(f'{i},{file}\n')
+            f.write(f'{file}\n')
             command = f'cp \"data/0_raw/{file}\" data/1_renamed/{str(i)}.xls'
             print_yellow(command)
             system(command)
@@ -215,9 +215,11 @@ def remap_names():
         os.system(f"cp data/expanded_renamed_rf/'{file}' data/final_rf/'{newName}'")
         i+=1
     print_green("Finishing Remap Names")
+
+## OLD zdb code
 def zdb_preprocess():
     """
-    zdb_preprocess preprocesses ZDBs
+    zdb_preprocess preprocesses ZDBs for old ann/rf pipeline
     """
     print_yellow("Starting ZDB preprocessing")
     import os
@@ -232,7 +234,7 @@ def zdb_preprocess():
 
 def zdb_conversion():
     """
-    zdb_conversion imports csv into ZDB format.
+    zdb_conversion imports csv into ZDB format. for old ann/rf pipeline
     """
     print_yellow("Starting ZDB Conversion")
     import os
@@ -256,7 +258,7 @@ def zdb_conversion():
     print_green("Finishing ZDB Conversion")
 def zdb_remap():
     """
-    zdb_remap remaps zdb names
+    zdb_remap remaps zdb names for old ann/rf pipeline
     """
     print_yellow("Starting ZDB remap names")
     import os
@@ -277,6 +279,88 @@ def zdb_remap():
         os.system(f'cp {dir_rf}/"{zdb}" data/ZDB_final_rf/"{mapping[index]}"')
     print_green("Finished ZDB remapping")
 
+## New ZDB code for lstm pipeline
+# @print_on_start_on_end
+def rename_files_in_raw_zdb():
+    """
+    For lstm pipeline
+    Rename zdb files in data/6_raw_zdb to data/7_renamed_zdb
+    follows mapping of data files in data/mapping to rename files
+    writes mapping of zdb files to data/mapping_zdb
+    """
+    import os
+    old_dir = 'data/6_raw_zdb'
+    new_dir = 'data/7_renamed_zdb'
+    
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    
+    os.system(f'mkdir -p {new_dir}')
+    mapping = open('data/mapping').read().splitlines()
+    mapping = [name.replace('.xls', '') for name in mapping]
+    f = open('data/mapping_zdb','w+')
+    i=0
+    for name in mapping:
+        for file in os.listdir(f"{old_dir}"):
+            if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
+                new_name = str(i)+'.zdb'
+                os.system(f"cp {old_dir}/'{file}' {new_dir}/'{new_name}'")
+                f.write(file+'\n')
+                break
+        i+=1
+    f.close
+
+# @print_on_start_on_end
+def score_files_in_renamed_zdb():
+    """
+    For lstm pipeline
+    Uses scored csv's in data/5_final_lstm to add scores to zdb's 
+        in data/7_renamed_zdb
+    Saves new files in 8_scored_zdb
+    """
+    from lib.submodules import convert_zdb_lstm
+    import os
+
+    old_dir = 'data/7_renamed_zdb'
+    new_dir = 'data/8_scored_zdb'
+    csv_dir = 'data/4_scored'
+
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    
+    os.system(f'mkdir -p {new_dir}')
+
+    for file in os.listdir(old_dir):
+        os.system(f"cp {old_dir}/{file} {new_dir}/{file}")
+
+    for csv in os.listdir(csv_dir):
+        zdb = csv.replace('.csv', '.zdb')
+        # file_index = csv.replace('.csv', '')
+        # zdb = f'{file_index}.zdb'
+        convert_zdb_lstm(csv_dir, new_dir, csv, zdb)
+
+# @print_on_start_on_end
+def remap_files_in_scored_zdb():
+    """
+    For lstm pipeline
+    uses data/mapping_zdb to remap scored zdb files in data/8_renamed_zdb to 
+        their original names in data/9_final_zdb_lstm
+    """
+    import os
+    old_dir = 'data/8_scored_zdb'
+    new_dir = 'data/9_final_zdb_lstm'
+
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    os.system(f'mkdir -p {new_dir}')
+    mapping = open('data/mapping_zdb').read().splitlines()
+
+    for zdb in os.listdir(old_dir):
+        index = int(zdb.replace('.zdb', ''))
+        os.system(f"cp {old_dir}/'{zdb}' {new_dir}/'{mapping[index]}'")
 def create_and_check_args():
     import argparse
     import os
