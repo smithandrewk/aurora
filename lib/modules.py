@@ -287,15 +287,34 @@ def rename_zdb_in_raw_zdb():
     follows mapping of data files in data/mapping to rename files
     writes mapping of zdb files to data/mapping_zdb
     """
-    pass
+    raw_dir = '6_raw_zdb'
+    renamed_dir = '7_renamed_zdb'
+    os.system(f'mkdir -p data/{renamed_dir}')
+    mapping = open('data/mapping').read().splitlines()
+    mapping = [name.replace('.xls', '') for name in mapping]
+    f = open('data/mapping_zdb','w+')
+    i=0
+    for name in mapping:
+        for file in os.listdir(f"data/{raw_dir}"):
+            if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
+                new_name = str(i)+'.zdb'
+                os.system(f"cp data/{raw_dir}/{file}' data/{renamed_dir}/'{new_name}'")
+                f.write(file+'\n')
+                break
+        i+=1
+    f.close
     # use code in scripts/unzipAndRenameZDBData.py
 
 def convert_zdb_in_renamed_zdb():
     """
     For lstm pipeline
-    Uses scored csv's in data/5_final_lstm to add scores to zdb's in data/7_renamed_zdb
+    Uses scored csv's in data/5_final_lstm to add scores to zdb's 
+        in data/7_renamed_zdb
+    Saves new files in 8_scored_zdb
     """
     pass
+    # copy files from 7_renamed_zdb to new dir 8_scored_zdb
+    # pass 8_scored_zdb as dir_zdb
     # print_yellow("Starting ZDB Conversion")
     # import os
     # from lib.submodules import conversion_zdb
@@ -318,8 +337,8 @@ def convert_zdb_in_renamed_zdb():
 def zdb_remap():
     """
     For lstm pipeline
-    uses data/mapping_zdb to remap scored zdb files in data/7_renamed_zdb to 
-        their original names in data/8_final_zdb_lstm
+    uses data/mapping_zdb to remap scored zdb files in data/8_renamed_zdb to 
+        their original names in data/9_final_zdb_lstm
     """
     pass
     # print_yellow("Starting ZDB remap names")
