@@ -19,7 +19,7 @@ def rename_data_in_raw():
     with open('data/mapping', 'w+') as f:
         system(f'mkdir data/1_renamed')
         for i, file in enumerate(listdir("data/0_raw")):
-            f.write(f'{i},{file}\n')
+            f.write(f'{file}\n')
             command = f'cp \"data/0_raw/{file}\" data/1_renamed/{str(i)}.xls'
             print_yellow(command)
             system(command)
@@ -341,6 +341,8 @@ def convert_zdb_in_renamed_zdb():
         # file_index = csv.replace('.csv', '')
         # zdb = f'{file_index}.zdb'
         convert_zdb_lstm(csv_dir, new_dir, csv, zdb)
+
+# @print_on_start_on_end
 def remap_zdb_in_scored_zdb():
     """
     For lstm pipeline

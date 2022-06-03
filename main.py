@@ -15,8 +15,8 @@ from lib.modules import *
 # remap_names_lstm(args.ann_model)
 
 rename_zdb_in_raw_zdb()
-convert_zdb_in_renamed_zdb()
-remap_zdb_in_scored_zdb()
+# convert_zdb_in_renamed_zdb()
+# remap_zdb_in_scored_zdb()
 
 # score_ann(args.ann_model)
 # score_rf('rf_model')
