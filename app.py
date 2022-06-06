@@ -290,7 +290,7 @@ def score_data_zdb():
 @login_required
 def process_file_zdb(model, iszip, data_filename, zdb_filename):
     new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
-    return render_template('process-file.jinja',
+    return render_template('process-file-zdb.jinja',
                            model=model, 
                            iszip=iszip, 
                            data_filename=data_filename, 
@@ -298,10 +298,63 @@ def process_file_zdb(model, iszip, data_filename, zdb_filename):
                            new_filename=new_filename, 
                            email=current_user.email)
 
-# @app.route('/main-score-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
-# @login_required
-# def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
-    # TODO call functions to score zdb file 
+@app.route('/main-score-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
+@login_required
+def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
+     # This route will be called by javascript in 'process-file.jinja'
+    from datetime import datetime
+    total_steps = 14
+    date = datetime.now().strftime("%m.%d.%Y_%H:%M")
+    new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
+    files = []
+    
+    path_to_model = f"model/{MODELS[model]}"
+    
+    # Generator that runs pipeline and generates progress information
+    def generate():
+        
+        # Step 1: Move files into data/raw directory
+        yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", data_filename, iszip)
+        
+        # Get list of files being scored
+        files.append(os.listdir(f'data/{RAW_DIR}'))
+        
+        # Call each function of the pipeline
+        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")
+        yield score_wrapper(preprocess_data_in_renamed, 3, total_steps, "Scaling")
+        yield score_wrapper(scale_features_in_preprocessed, 4, total_steps, "Scoring Data")
+        yield score_wrapper(window_and_score_files_in_scaled_with_LSTM, 5, total_steps, "Remapping File Names", path_to_model)
+        yield score_wrapper(remap_names_lstm, 6, total_steps, "Renaming ZDB Files", path_to_model)
+
+        yield score_wrapper(rename_files_in_raw_zdb, 7, total_steps, "Converting ZDB Files")
+        yield score_wrapper(score_files_in_renamed_zdb, 8, total_steps, "Remapping ZDB Files")
+        yield score_wrapper(remap_files_in_scored_zdb, 9, total_steps, "Moving Files")
+
+        # Call helper modules
+        yield score_wrapper(move_to_download_folder, 10, total_steps, "Archiving files", new_filename)        
+        yield score_wrapper(archive_files, 11, total_steps, "Cleaning Workspace", date)
+        yield score_wrapper(clean_workspace, 12, total_steps, "Logging Scores", data_filename)
+        # Step 10: Log Scoring
+        try:
+            files_log = json.dumps(files)
+            log = ScoringLog(email=email, 
+                             project_name=data_filename.replace('.xls', '').replace('.zip', ''),
+                             filename=f'{date}.zip',
+                             model=f'{model} [{MODELS[model]}]',
+                             files=files_log)
+            db.session.add(log)
+            db.session.commit()
+            yield f"data:{int(13/total_steps*100)}\tStep 14 - Emailing Results\n\n"
+        except Exception as exc:
+            print("ERROR step 13")
+            yield f"data:0\tStep 13 - Logging Scores - {exc}\n\n"
+            return
+        
+        # Step 11: Email Results
+        yield score_wrapper(email_results, 14, total_steps, "Scoring Complete", email)
+        
+    # Create response to javascript EventSource with a series of text event-streams providing progress information
+    return Response(generate(), mimetype='text/event-stream')
 
 #######################################################################
 class ScoringLog(db.Model):

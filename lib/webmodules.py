@@ -55,7 +55,7 @@ def archive_files(date):
 
 def clean_workspace(filename):
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
-    subprocess.run(args, check=True)
+    # subprocess.run(args, check=True)
 
 def email_results(email):
     import smtplib
