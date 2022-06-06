@@ -123,7 +123,8 @@ def rename_files_in_raw_zdb():
     num_files = len(mapping)
     f = open('data/mapping_zdb','w+')
     i=0
-    for name in mapping:
+    for line in mapping:
+        name = line.split(',')[1]
         for file in os.listdir(f"{old_dir}"):
             if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
                 new_name = str(i)+'.zdb'
@@ -181,6 +182,24 @@ def remap_files_in_scored_zdb(model):
     os.system(f'mkdir -p {new_dir}')
     mapping = open('data/mapping_zdb').read().splitlines()
 
+    animal=''
+    if('mice' in model):
+        animal='mouse'
+    else:
+        animal="rat"
+
     for zdb in os.listdir(old_dir):
         index = int(zdb.replace('.zdb', ''))
-        os.system(f"cp {old_dir}/'{zdb}' {new_dir}/'{mapping[index]}'")
+        new_name = mapping[index].replace('.zdb', f'-lstm-{animal}.zdb')
+        os.system(f"cp {old_dir}/'{zdb}' {new_dir}/'{new_name}'")
+def create_and_check_args():
+    import argparse
+    import os
+    parser = argparse.ArgumentParser(description='Pipeline to Score Data')
+    parser.add_argument('--ann-model', type=str, required=True, dest='ann_model', metavar='[path-to-model]',
+                        help=f'Enter path to ANN model within {bcolors.BOLD}model{bcolors.ENDC} directory')
+    args = parser.parse_args()
+    if not os.path.exists('model/'+args.ann_model) and not os.path.exists(args.ann_model):
+        print(f"{bcolors.FAIL}Invalid path to ANN model{bcolors.ENDC}")
+        exit(1)
+    return args
