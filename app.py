@@ -113,7 +113,7 @@ def score_data():
             filename = secure_filename(file.filename)
             if not valid_extension(filename, iszip):
                 flash('Invalid file extension')
-                return render_template('score-data.jinja', form=form)
+                return render_template('score-data.jinja', form=form,name=f'{current_user.first_name} {current_user.last_name}')
             filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
@@ -123,7 +123,7 @@ def score_data():
             form.file_submission.data = None            
             
             return redirect(url_for('process_file', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename))
-    return render_template('score-data.jinja', form=form)
+    return render_template('score-data.jinja', form=form,name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/process-file/<ann_model>/<rf_model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
 @login_required
