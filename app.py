@@ -136,7 +136,8 @@ def process_file(model, iszip, filename):
                            iszip=iszip, 
                            filename=filename, 
                            new_filename=new_filename, 
-                           email=current_user.email)
+                           email=current_user.email,
+                           name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/main-score/<model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
 @login_required
