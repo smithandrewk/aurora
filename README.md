@@ -1,4 +1,4 @@
-# Aurora Pipeline
+# Aurora Pipeline to be used in Application
 Directory Structure
 ```
 aurora
@@ -6,41 +6,21 @@ aurora
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
-└── utils
+└── lib
 ```
 
 ## Setup
 <br />
-Before starting, rename data archive 
+Before starting, move data files to `data/0_raw'
+And move zdb files to `data/6_raw_zdb`
 
-```Unscored.zip```
-
-And rename ZDB archive
-
-```UnscoredZDB.zip```
-
-<br />
-NOTE:  zdb code has not been completely tested</br>
-<br />
-
-Prepare data for scoring by typing the following in the command line
-
-```make openZIP```
-
-and, if ZBD files are available,
-
-```make renameZDB```
-
-<br />
 
 ## Scoring
-To score data, type the command
+To score data, run the script
 
-```make scoreData```
+```main.py --ann-model [model in model directory]```
 
-or run the script
-
-```main.py```
+run `main.py -h` for help
 
 <br />
 
@@ -48,20 +28,16 @@ or run the script
 
 Final output scorings are in
 
-```data/final_ann```
-
-```data/final_rf```
+```data/5_final_lstn```
 
 Final output scoring in zdb format are in
 
-```data/ZDB_final_ann```
-
-```data/ZDB_final_rf```
+```data/9_final_zdb_lstm```
 
 =======
 1. Raw Data exported from Neuroscore in xlsx format
-2. Run pipeline, scoring raw data with Random Forest and Artificial Neural Network
-3. Add scoring data to raw .zdb file using MATLAB script
+2. Run pipeline, scoring raw data with LSTM Artifical Neural Network
+3. Open scored ZDB files with Neuroscore
 ## Installation
 ## Usage
 ## Contributing
