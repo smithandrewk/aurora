@@ -4,6 +4,7 @@ from subprocess import CalledProcessError
 from lib.webconfig import *
 import json
 
+
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """ Used by generator in 'main_score' to wrap pipeline functions in order to
         generate progress steps
@@ -20,23 +21,26 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """
     try:
         scoring_function(*args)
-    #TODO raise exceptions in functions and use message
+    # TODO raise exceptions in functions and use message
     except Exception as exc:
         print(f'ERROR step {step}')
         # return error message
         return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
-        
+
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
 
 # functions for before and after pipeline
+
+
 def unzip_upload(filename, iszip):
     # remove old files if they exist
     subprocess.run(['rm', '-rf', 'data'])
     os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
     subprocess.run(['mkdir', '-p', f'data/{RAW_DIR}'])
     if iszip:
-        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
+        args = ['cp', os.path.join(
+            UPLOAD_FOLDER, filename), 'data/Unscored.zip']
         subprocess.run(args, check=True)
         args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{RAW_DIR}']
         subprocess.run(args, check=True)        
