@@ -313,9 +313,11 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
     # Generator that runs pipeline and generates progress information
     def generate():
         
-        # Step 1: Move files into data/raw directory
-        yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", data_filename, iszip)
-        
+        yield score_wrapper(unzip_upload, 1, total_steps, "Moving ZDB Files", data_filename, iszip)
+        yield score_wrapper(unzip_zdb_upload, 2, total_steps, "Renaming Data", zdb_filename, iszip)
+
+        # TODO check format of xls and zdb files
+
         # Get list of files being scored
         files.append(os.listdir(f'data/{RAW_DIR}'))
         
@@ -328,7 +330,7 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
 
         yield score_wrapper(rename_files_in_raw_zdb, 7, total_steps, "Converting ZDB Files")
         yield score_wrapper(score_files_in_renamed_zdb, 8, total_steps, "Remapping ZDB Files")
-        yield score_wrapper(remap_files_in_scored_zdb, 9, total_steps, "Moving Files")
+        yield score_wrapper(remap_files_in_scored_zdb, 9, total_steps, "Moving Files", path_to_model)
 
         # Call helper modules
         yield score_wrapper(move_to_download_folder, 10, total_steps, "Archiving files", new_filename)        

@@ -117,10 +117,10 @@ def rename_files_in_raw_zdb():
     if not os.path.isdir(old_dir):
         print("No ZDB files")
         return
-    
     os.system(f'mkdir -p {new_dir}')
     mapping = open('data/mapping').read().splitlines()
     mapping = [name.replace('.xls', '') for name in mapping]
+    num_files = len(mapping)
     f = open('data/mapping_zdb','w+')
     i=0
     for name in mapping:
@@ -129,9 +129,12 @@ def rename_files_in_raw_zdb():
                 new_name = str(i)+'.zdb'
                 os.system(f"cp {old_dir}/'{file}' {new_dir}/'{new_name}'")
                 f.write(file+'\n')
+                i+=1
                 break
-        i+=1
     f.close
+    if i != num_files:
+        print('ERROR: XLS file names do not corrospong to ZDB file names')
+        os.system(f'rm -rf {new_dir}')
 
 @print_on_start_on_end
 def score_files_in_renamed_zdb():
@@ -159,12 +162,10 @@ def score_files_in_renamed_zdb():
 
     for csv in os.listdir(csv_dir):
         zdb = csv.replace('.csv', '.zdb')
-        # file_index = csv.replace('.csv', '')
-        # zdb = f'{file_index}.zdb'
         convert_zdb_lstm(csv_dir, new_dir, csv, zdb)
 
 @print_on_start_on_end
-def remap_files_in_scored_zdb():
+def remap_files_in_scored_zdb(model):
     """
     For lstm pipeline
     uses data/mapping_zdb to remap scored zdb files in data/8_renamed_zdb to 
