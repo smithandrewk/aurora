@@ -101,3 +101,85 @@ def remap_names_lstm(model_name):
         original_name = line.split(',')[1]
         newName = original_name.replace('.xls', f'-lstm-{animal}.csv')
         execute_command_line(f"cp data/4_scored/'{file}' data/5_final_lstm/'{newName}'")
+
+@print_on_start_on_end
+def rename_files_in_raw_zdb():
+    """
+    For lstm pipeline
+    Rename zdb files in data/6_raw_zdb to data/7_renamed_zdb
+    follows mapping of data files in data/mapping to rename files
+    writes mapping of zdb files to data/mapping_zdb
+    """
+    import os
+    old_dir = 'data/6_raw_zdb'
+    new_dir = 'data/7_renamed_zdb'
+    
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    
+    os.system(f'mkdir -p {new_dir}')
+    mapping = open('data/mapping').read().splitlines()
+    mapping = [name.replace('.xls', '') for name in mapping]
+    f = open('data/mapping_zdb','w+')
+    i=0
+    for name in mapping:
+        for file in os.listdir(f"{old_dir}"):
+            if name in file or file.replace('.zdb', '') in name: #check for corrosponding names
+                new_name = str(i)+'.zdb'
+                os.system(f"cp {old_dir}/'{file}' {new_dir}/'{new_name}'")
+                f.write(file+'\n')
+                break
+        i+=1
+    f.close
+
+@print_on_start_on_end
+def score_files_in_renamed_zdb():
+    """
+    For lstm pipeline
+    Uses scored csv's in data/5_final_lstm to add scores to zdb's 
+        in data/7_renamed_zdb
+    Saves new files in 8_scored_zdb
+    """
+    from lib.submodules import convert_zdb_lstm
+    import os
+
+    old_dir = 'data/7_renamed_zdb'
+    new_dir = 'data/8_scored_zdb'
+    csv_dir = 'data/4_scored'
+
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    
+    os.system(f'mkdir -p {new_dir}')
+
+    for file in os.listdir(old_dir):
+        os.system(f"cp {old_dir}/{file} {new_dir}/{file}")
+
+    for csv in os.listdir(csv_dir):
+        zdb = csv.replace('.csv', '.zdb')
+        # file_index = csv.replace('.csv', '')
+        # zdb = f'{file_index}.zdb'
+        convert_zdb_lstm(csv_dir, new_dir, csv, zdb)
+
+@print_on_start_on_end
+def remap_files_in_scored_zdb():
+    """
+    For lstm pipeline
+    uses data/mapping_zdb to remap scored zdb files in data/8_renamed_zdb to 
+        their original names in data/9_final_zdb_lstm
+    """
+    import os
+    old_dir = 'data/8_scored_zdb'
+    new_dir = 'data/9_final_zdb_lstm'
+
+    if not os.path.isdir(old_dir):
+        print("No ZDB files")
+        return
+    os.system(f'mkdir -p {new_dir}')
+    mapping = open('data/mapping_zdb').read().splitlines()
+
+    for zdb in os.listdir(old_dir):
+        index = int(zdb.replace('.zdb', ''))
+        os.system(f"cp {old_dir}/'{zdb}' {new_dir}/'{mapping[index]}'")
