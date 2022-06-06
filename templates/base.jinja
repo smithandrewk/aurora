@@ -4,12 +4,13 @@
 <html>
     <head>
         {% include 'inc/head.jinja' %}
+        <link href="{{ url_for('static',filename='styles/bootstrap-custom.css') }}" rel="stylesheet">
     </head>
     <body>
         {% include 'inc/alerts.jinja' %}
         {% include 'inc/jsbootstrap.jinja' %}
         {% include 'inc/navbar.jinja' %}
-        <div class="container shadow p-3 mb-5 bg-white rounded">
+        <div class="container shadow p-3 mb-5 bg-white rounded" id="base-body">
             {% block body %}{% endblock body %}
         </div>
     </body>

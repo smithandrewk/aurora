@@ -9,10 +9,10 @@
                 <th scope="col"><p class="text-center">#</p></th>
                 <th scope="col"><p class="text-center">Project Name</p></th>
                 <th scope="col"><p class="text-center">Date Scored</p></th>
-                <th scope="col"><p class="text-center">ANN Model Used</p></th>
-                <th scope="col"><p class="text-center">RF Model Used</p></th>
+                <th scope="col"><p class="text-center">Model Used</p></th>
                 <th scope="col"><p class="text-center">Files Scored</p></th>
                 <th scope="col"><p class="text-center">Download Archive</p></th>
+                <th scope="col"><p class="text-center">Delete Log</p></th>
             </tr>
         </thead>
         {% for log in logs %}
@@ -21,8 +21,7 @@
                     <th scope="row"><p class="text-center">{{ log.id }}</p></th>
                     <td><p class="text-center">{{ log.project_name }}</p></td>
                     <td><p class="text-center">{{ log.date_scored }}</p></td>
-                    <td><p class="text-center">{{ log.ann_model }}</p></td>
-                    <td><p class="text-center">{{ log.rf_model }}</p></td>
+                    <td><p class="text-center">{{ log.model }}</p></td>
                     <td>
                         <a href="#collapseFiles{{ log.id }}" data-bs-toggle="collapse">
                         {# <a data-toggle="collapse" href="#collapseFiles" role="button" aria-controls="collapseFiles"> #}
@@ -38,6 +37,15 @@
                         <a href="{{ url_for('download_archive_zip', filename=log.filename) }}">
                             <p class="text-center">Download</p>
                         </a>
+                    </td>
+                    <td>
+                        <div class="text-center">
+                            <a href="{{ url_for('delete_log', log_id=log.id) }}" class="btn btn-sm btn-outline-danger">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                            </svg>
+                            </a>
+                        </div>
                     </td>
                 </tr>
             </tbody>

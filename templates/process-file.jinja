@@ -12,7 +12,7 @@
         {# <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"> #}
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
         <script>
-            var source = new EventSource({{ url_for('main_score', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename, email=email)|tojson }});
+            var source = new EventSource({{ url_for('main_score', model=model, iszip=iszip, filename=filename, email=email)|tojson }});
             source.onmessage = function(event) {
                 const data = event.data.split("\t")
                 let progress = data[0]
