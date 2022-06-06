@@ -18,13 +18,15 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     Returns:
         str: text event stream string providing the progress of the pipeline
     """
-    try:
-        scoring_function(*args)
-    #TODO raise exceptions in functions and use message
-    except Exception as exc:
-        print(f'ERROR step {step}')
-        # return error message
-        return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
+    scoring_function(*args)
+
+    # try:
+    #     scoring_function(*args)
+    # #TODO raise exceptions in functions and use message
+    # except Exception as exc:
+    #     print(f'ERROR step {step}')
+    #     # return error message
+    #     return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
         
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
@@ -32,8 +34,6 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
 # functions for before and after pipeline
 def unzip_upload(filename, iszip):
     # remove old files if they exist
-    subprocess.run(['rm', '-rf', 'data'])
-    os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
     subprocess.run(['mkdir', '-p', f'data/{RAW_DIR}'])
     if iszip:
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/Unscored.zip']
@@ -93,14 +93,14 @@ def init_dir(db):
         print(f'Error initializing directory: {exc}')
         exit(1)
 def unzip_zdb_upload(filename, iszip):
-    subprocess.run(['mkdir', '-p', 'data/rawZDB'])
+    subprocess.run(['mkdir', '-p', f'data/{RAW_ZDB_DIR}'])
     if iszip:
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/UnscoredZDB.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/Unscored.zip', '-d', './data/rawZDB']
+        args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{RAW_ZDB_DIR}']
         subprocess.run(args, check=True)        
     else: 
-        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/rawZDB/']
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
         subprocess.run(args, check=True)
 def valid_zdb_extension(filename, iszip):
     if iszip:
