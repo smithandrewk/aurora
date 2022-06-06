@@ -1,8 +1,14 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        {% include 'inc/head.jinja' %}
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+{% extends 'base-sidebar.jinja' %}
+
+{% block body %}
+<script>
+    console.log(document.getElementById("dashboard").classList)
+    document.getElementById("dashboard").classList.remove('active');
+    document.getElementById("dashboard").classList.add('link-dark');
+    document.getElementById("scoredata").classList.add('link-dark');
+    document.getElementById("scoredata").classList.add('active');
+</script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
         {# <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"> #}
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
         <script>
@@ -29,13 +35,7 @@
                     }
                 }
             }
-        </script>
-    </head>
-    <body>
-        {% include 'inc/alerts.jinja' %}
-        {% include 'inc/jsbootstrap.jinja' %}
-        {% include 'inc/navbar.jinja' %}
-        <div class="container shadow p-3 mb-5 bg-white rounded">
+</script>
             <h1 class="text-center">Scoring Data</h1>
             <p class="text-center">- Do not close page</p>
             <div class="d-flex justify-content-center">
@@ -54,6 +54,4 @@
                     <input type="submit" value="Download Scored files (ZIP)" class="w-100 btn btn-primary">
                 </form>
             </div>
-        </div>
-    </body>
-</html>
+{% endblock body %}

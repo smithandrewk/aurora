@@ -125,7 +125,6 @@ def score_data():
             return redirect(url_for('process_file', ann_model=ann_model, rf_model=rf_model, iszip=iszip, filename=filename))
     return render_template('score-data.jinja', form=form)
 
-
 @app.route('/process-file/<ann_model>/<rf_model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
 @login_required
 def process_file(ann_model, rf_model, iszip, filename):
