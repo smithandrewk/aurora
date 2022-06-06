@@ -425,6 +425,7 @@ def convert_zdb_lstm(dir_csv, dir_zdb, csv, zdb):
     from sqlite3 import Error
     import os
     offset = 10e7       #epoch time period
+    rename_dict = {'W':'Sleep-Wake', 'S':'Sleep-SWS', 'P':'Sleep-Paradoxical', 'X':''}
 
     csv_filename = f'{dir_csv}/{csv}'
     zdb_filename = f'{dir_zdb}/{zdb}'
@@ -435,24 +436,7 @@ def convert_zdb_lstm(dir_csv, dir_zdb, csv, zdb):
     except Error as e:
         print(e)
 
-    #create sqlite table from csv    
-    df.to_sql('raw_csv', conn, if_exists='replace', index=False)
-
-    #copy csv data into formatted table    
     cur = conn.cursor()
-    query = """
-            CREATE TABLE IF NOT EXISTS temp_csv (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                status TEXT
-            );
-            """
-    cur.execute(query)
-
-    query = """
-            INSERT INTO temp_csv (status)
-            SELECT * FROM raw_csv;
-            """
-    cur.execute(query)
 
     #drop this table - creates issues
     query = "DROP TABLE IF EXISTS temporary_scoring_marker;"
@@ -486,32 +470,15 @@ def convert_zdb_lstm(dir_csv, dir_zdb, csv, zdb):
             start_time = stop_time
         stop_time = start_time+offset
 
+        score = rename_dict[df.at[i,'0']]
         #insert epoch
         query = f"""
                 INSERT INTO scoring_marker 
                 (starts_at, ends_at, notes, type, location, is_deleted, key_id)
                 VALUES 
-                ({start_time}, {stop_time}, '', '', '', 0, {keyid});
+                ({start_time}, {stop_time}, '', '{score}', '', 0, {keyid});
                 """ 
         cur.execute(query)
-        
-        #get current id by selecting max id
-        query = "SELECT MAX(id) from scoring_marker"
-        cur.execute(query)
-        currentid = cur.fetchall()[0][0]
-
-        #set score
-        query = f"""
-                UPDATE scoring_marker
-                SET type = (Select status
-                            FROM temp_csv
-                            WHERE id = {i+1})
-                WHERE id = {currentid};
-                """
-        cur.execute(query)
-    
-    cur.execute("DROP TABLE temp_csv;")
-    cur.execute("DROP TABLE raw_csv;")
 
     conn.commit()
     conn.close()
