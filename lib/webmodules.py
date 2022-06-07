@@ -18,15 +18,13 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     Returns:
         str: text event stream string providing the progress of the pipeline
     """
-    scoring_function(*args)
-
-    # try:
-    #     scoring_function(*args)
-    # #TODO raise exceptions in functions and use message
-    # except Exception as exc:
-    #     print(f'ERROR step {step}')
-    #     # return error message
-    #     return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
+    try:
+        scoring_function(*args)
+    #TODO raise exceptions in functions and use message
+    except Exception as exc:
+        print(f'ERROR step {step}')
+        # return error message
+        return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
         
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
@@ -55,7 +53,7 @@ def archive_files(date):
 
 def clean_workspace(filename):
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
-    # subprocess.run(args, check=True)
+    subprocess.run(args, check=True)
 
 def email_results(email):
     import smtplib
