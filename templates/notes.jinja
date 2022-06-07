@@ -1,0 +1,44 @@
+{% extends 'base-sidebar.jinja' %}
+{% block dashboard_class%}
+nav-link link-dark
+{% endblock %}
+{% block score_data_class%}
+nav-link link-dark
+{% endblock %}
+{% block notes_class%}
+nav-link active
+{% endblock %}
+{% block body %}
+    <div class="note-content">
+        <form method="post">
+            <label for="title">Title</label>
+            <br>
+            <input type="text" name="title"
+                placeholder="Message title"
+                value="{{ request.form['title'] }}"></input>
+            <br>
+
+            <label for="content">Message Content</label>
+            <br>
+            <textarea name="content"
+                    placeholder="Message content"
+                    rows="15"
+                    cols="60"
+                    >{{ request.form['content'] }}</textarea>
+            <br>
+            <button type="submit">Submit</button>
+        </form>
+        {% for note in notes %}
+            <h2> {{note.note_name}} at <i>{{note.date_written}}</i></h2>
+            <p>{{note.contents}}</p>
+        {% endfor %}
+    </div>
+    <style>
+        .note-content{
+            width: 60%;
+            padding: 5rem;
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+{% endblock body %}

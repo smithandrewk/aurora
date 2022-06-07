@@ -1,12 +1,14 @@
 {% extends 'base-sidebar.jinja' %}
-
+{% block dashboard_class%}
+nav-link link-dark
+{% endblock %}
+{% block score_data_class%}
+nav-link active
+{% endblock %}
+{% block notes_class%}
+nav-link link-dark
+{% endblock %}
 {% block body %}
-<script>
-    document.getElementById("dashboard").classList.remove('active');
-    document.getElementById("dashboard").classList.add('link-dark');
-    document.getElementById("scoredata").classList.add('link-dark');
-    document.getElementById("scoredata").classList.add('active');
-</script>
     <form method='POST', enctype='multipart/form-data'>
         {{ form.hidden_tag() }}
         <div class="form-group row d-flex justify-content-center">
