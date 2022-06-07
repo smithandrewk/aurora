@@ -289,9 +289,10 @@ def score_data_zdb():
                                     model=model,
                                     iszip=iszip,
                                     data_filename=data_filename,
-                                    zdb_filename=zdb_filename))
+                                    zdb_filename=zdb_filename,
+                                    name=f'{current_user.first_name} {current_user.last_name}'))
 
-    return render_template('score-data-zdb.jinja', form=form)
+    return render_template('score-data-zdb.jinja', form=form, name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/process-file-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
 @login_required
@@ -303,7 +304,8 @@ def process_file_zdb(model, iszip, data_filename, zdb_filename):
                            data_filename=data_filename, 
                            zdb_filename=zdb_filename,
                            new_filename=new_filename, 
-                           email=current_user.email)
+                           email=current_user.email,
+                           name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/main-score-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
 @login_required
