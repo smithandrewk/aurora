@@ -24,7 +24,7 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     except Exception as exc:
         print(f'ERROR step {step}')
         # return error message
-        return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
+        return f"data:0\tStep {step} In Function: {scoring_function.__name__} - {exc}\n\n"
         
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
