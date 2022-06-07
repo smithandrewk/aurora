@@ -16,6 +16,8 @@ from lib.modules import *
 from lib.webconfig import *
 from lib.webmodules import *
 
+# Setup
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = secrets.token_hex()
@@ -28,6 +30,8 @@ migrate = Migrate(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.view ='login'
+
+init_dir(db)
 
 
 @app.errorhandler(401)
@@ -374,5 +378,4 @@ class ScoringLog(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)  
 
 if __name__=='__main__':
-    init_dir(db)
     app.run(debug='True')
