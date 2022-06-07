@@ -45,8 +45,8 @@ def unzip_upload(filename, iszip):
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_DIR}/']
         subprocess.run(args, check=True)
 def check_files():
-    for file in os.listdir(os.path.join('data',RAW_DIR)):
-        if not valid_extension(file, iszip=0):
+    for file in os.listdir(os.path.join('data', RAW_DIR)):
+        if not valid_extension(file, iszip=False):
             raise Exception('Invalid File Format (data files must end with .xls or .xlsx)')
 def move_to_download_folder(new_filename):
     args = ['sh', '-c', 

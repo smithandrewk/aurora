@@ -156,6 +156,9 @@ def main_score(model, iszip, filename, email):
     
     # Generator that runs pipeline and generates progress information
     def generate():
+
+        os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
+        os.system(f'rm -rf data')
         
         # Step 1: Move files into data/raw directory
         yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", filename, iszip)
