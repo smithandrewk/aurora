@@ -161,21 +161,23 @@ def main_score(model, iszip, filename, email):
         # Step 1: Move files into data/raw directory
         yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", filename, iszip)
         
+        yield score_wrapper(check_files, 2, total_steps, "Renaming Data")
         # Get list of files being scored
         files.append(os.listdir(f'data/{RAW_DIR}'))
         
         # Call each function of the pipeline
-        yield score_wrapper(rename_data_in_raw, 2, total_steps, "Preprocessing")
-        yield score_wrapper(preprocess_data_in_renamed, 3, total_steps, "Scaling")
-        yield score_wrapper(scale_features_in_preprocessed, 4, total_steps, "Scoring Data")
-        yield score_wrapper(window_and_score_files_in_scaled_with_LSTM, 5, total_steps, "Remapping File Names", path_to_model)
-        yield score_wrapper(remap_names_lstm, 6, total_steps, "Moving Files", path_to_model)
+        yield score_wrapper(rename_data_in_raw, 3, total_steps, "Preprocessing")
+        yield score_wrapper(preprocess_data_in_renamed, 4, total_steps, "Scaling")
+        yield score_wrapper(scale_features_in_preprocessed, 5, total_steps, "Scoring Data")
+        yield score_wrapper(window_and_score_files_in_scaled_with_LSTM, 6, total_steps, "Remapping File Names", path_to_model)
+        yield score_wrapper(remap_names_lstm, 7, total_steps, "Moving Files", path_to_model)
 
         # Call helper modules
-        yield score_wrapper(move_to_download_folder, 7, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_files, 8, total_steps, "Cleaning Workspace", date)
-        yield score_wrapper(clean_workspace, 9, total_steps, "Logging Scores", filename)
-        # Step 10: Log Scoring
+        yield score_wrapper(move_to_download_folder, 8, total_steps, "Archiving files", new_filename)        
+        yield score_wrapper(archive_files, 9, total_steps, "Cleaning Workspace", date)
+        yield score_wrapper(clean_workspace, 10, total_steps, "Logging Scores", filename)
+        # Step 11: Log Scoring
+        step = 11
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
@@ -185,10 +187,10 @@ def main_score(model, iszip, filename, email):
                              files=files_log)
             db.session.add(log)
             db.session.commit()
-            yield f"data:{int(10/total_steps*100)}\tStep 11 - Emailing Results\n\n"
+            yield f"data:{int(step/total_steps*100)}\tStep {step+1} - Emailing Results\n\n"
         except Exception as exc:
-            print("ERROR step 10")
-            yield f"data:0\tStep 10 - Logging Scores - {exc}\n\n"
+            print("ERROR step "+step)
+            yield f"data:0\tStep {step} - Logging Scores - {exc}\n\n"
             return
         
         # Step 11: Email Results
@@ -353,7 +355,7 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
                              files=files_log)
             db.session.add(log)
             db.session.commit()
-            yield f"data:{int(14/total_steps*100)}\tStep {step+1} - Emailing Results\n\n"
+            yield f"data:{int(step/total_steps*100)}\tStep {step+1} - Emailing Results\n\n"
         except Exception as exc:
             print(f"ERROR step {step}")
             yield f"data:0\tStep {step} - Logging Scores - {exc}\n\n"
