@@ -252,9 +252,7 @@ class Users(db.Model, UserMixin):
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-# For the Future - not complete
-#######################################################################
-
+# ZDB scoring route
 @app.route("/score_data_zdb", methods=['GET', 'POST'])
 @login_required
 def score_data_zdb():
@@ -340,10 +338,10 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
         yield score_wrapper(remap_files_in_scored_zdb, 10, total_steps, "Moving Files", path_to_model)
 
         # Call helper modules
-        # TODO move zdb files to download folder
         yield score_wrapper(move_zdb_to_download_folder, 11, total_steps, "Archiving files", new_filename)        
         yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", date)
         yield score_wrapper(clean_workspace, 13, total_steps, "Logging Scores", data_filename)
+
         # Step 10: Log Scoring
         try:
             files_log = json.dumps(files)
@@ -366,7 +364,6 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
 
-#######################################################################
 class ScoringLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(200), nullable=False)

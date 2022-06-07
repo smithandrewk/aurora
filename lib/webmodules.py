@@ -107,6 +107,8 @@ def unzip_zdb_upload(filename, iszip):
     else: 
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
         subprocess.run(args, check=True)
+def check_zdb_files():
+    pass
 def move_zdb_to_download_folder(new_filename):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
