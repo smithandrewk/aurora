@@ -108,7 +108,29 @@ def unzip_zdb_upload(filename, iszip):
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
         subprocess.run(args, check=True)
 def check_zdb_files():
-    pass
+    import sqlite3
+
+    data_files = []
+    for csv in os.listdir(os.path.join('data', RAW_DIR)):
+        data_files.append(csv.replace('.xls', '').replace('.xlsx', ''))
+        if not valid_extension(csv, iszip=False):
+            raise Exception('Invalid File Format in Data Archive (files must be XLS or XLSX)')
+    for zdb in os.listdir(os.path.join('data', RAW_ZDB_DIR)):
+        if not valid_zdb_extension('zdb', iszip=False):
+            raise Exception('Invalid File Format in ZDB Archive (files must be ZDB)')
+        # check if names of zdb and data files corrospond
+        valid = False
+        for data_file in data_files:
+            if data_file in zdb:
+                valid = True
+        if not valid:
+            raise Exception(f'ZDB file ({zdb}) does not have a corrosponding data file')
+
+        # check if zdb files are correctly formatted
+        conn = sqlite3.connect(zdb)
+        cur = conn.cursor()
+        
+
 def move_zdb_to_download_folder(new_filename):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
