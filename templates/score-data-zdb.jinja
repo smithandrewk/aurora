@@ -2,12 +2,7 @@
 
 {% block body %}
 <script>
-    document.getElementById("dashboard").classList.remove('active');
-    document.getElementById("dashboard").classList.add('link-dark');
-    document.getElementById("scoredata").classList.remove('active');
-    document.getElementById("scoredata").classList.add('link-dark');
     document.getElementById("scoredatazdb").classList.add('active');
-    document.getElementById("scoredatazdb").classList.add('link-dark');
 </script>
     <form method='POST', enctype='multipart/form-data'>
         {{ form.hidden_tag() }}
