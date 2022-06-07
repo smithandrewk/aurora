@@ -6,7 +6,7 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>
-    var source = new EventSource({{ url_for('main_score_zdb', model=model, iszip=iszip, data_filename=data_filename, zdb_filename=zdb_filename, email=email)|tojson }});
+    var source = new EventSource({{ url_for('main_score_zdb', project_name=project_name, model=model, iszip=iszip, data_filename=data_filename, zdb_filename=zdb_filename, email=email)|tojson }});
     source.onmessage = function(event) {
         const data = event.data.split("\t")
         let progress = data[0]

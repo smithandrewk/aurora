@@ -264,6 +264,7 @@ def score_data_zdb():
     form = ZDBFileUploadForm()
     form.model.choices=[(model, model) for model in MODELS]
     if form.validate_on_submit():
+        project_name = form.project_name.data
         model = form.model.data
         iszip = int(form.iszip.data)
         data_file = form.data_file.data
@@ -280,12 +281,14 @@ def score_data_zdb():
             data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
             zdb_file.save(os.path.join(app.config['UPLOAD_FOLDER'], zdb_filename))
 
+            form.project_name.data = ''
             form.model.data = ''
             form.iszip.data = ''
             form.data_file.data = None            
             form.zdb_file.data = None            
             
             return redirect(url_for('process_file_zdb',
+                                    project_name=project_name,
                                     model=model,
                                     iszip=iszip,
                                     data_filename=data_filename,
@@ -294,11 +297,12 @@ def score_data_zdb():
 
     return render_template('score-data-zdb.jinja', form=form, name=f'{current_user.first_name} {current_user.last_name}')
 
-@app.route('/process-file-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
+@app.route('/process-file-zdb/<project_name>/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
 @login_required
-def process_file_zdb(model, iszip, data_filename, zdb_filename):
+def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
     new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
     return render_template('process-file-zdb.jinja',
+                           project_name=project_name,
                            model=model, 
                            iszip=iszip, 
                            data_filename=data_filename, 
@@ -307,9 +311,9 @@ def process_file_zdb(model, iszip, data_filename, zdb_filename):
                            email=current_user.email,
                            name=f'{current_user.first_name} {current_user.last_name}')
 
-@app.route('/main-score-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
+@app.route('/main-score-zdb/<project_name>/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
 @login_required
-def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
+def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, email):
      # This route will be called by javascript in 'process-file.jinja'
     from datetime import datetime
     total_steps = 14
@@ -318,6 +322,8 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
+    if not project_name:
+        project_name = new_filename.replace('.xls', '').replace('.zip', '')
     
     # Generator that runs pipeline and generates progress information
     def generate():
@@ -354,7 +360,7 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
-                             project_name=data_filename.replace('.xls', '').replace('.zip', ''),
+                             project_name=project_name,
                              filename=f'{date}.zip',
                              model=f'{model} [{MODELS[model]}]',
                              files=files_log)

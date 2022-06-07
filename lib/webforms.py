@@ -22,6 +22,7 @@ class FileUploadForm(FlaskForm):
     submit = SubmitField('Start Scoring')
 
 class ZDBFileUploadForm(FlaskForm):
+    project_name = StringField("Enter Project Name", default=None)
     model = SelectField("Choose a Model", validators=[DataRequired()], validate_choice=False)
     iszip = SelectField("Choose uploads type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
     data_file = FileField("Select a File", validators=[DataRequired()])
