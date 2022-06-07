@@ -13,3 +13,4 @@ wtforms
 flask-sqlalchemy
 flask-login
 werkzeug
+flask-migrate
