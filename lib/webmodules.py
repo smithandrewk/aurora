@@ -102,7 +102,7 @@ def unzip_zdb_upload(filename, iszip):
     if iszip:
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/UnscoredZDB.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{RAW_ZDB_DIR}']
+        args = ['unzip', '-j', 'data/UnscoredZDB.zip', '-d', f'./data/{RAW_ZDB_DIR}']
         subprocess.run(args, check=True)        
     else: 
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
