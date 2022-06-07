@@ -11,14 +11,14 @@
         {{ form.hidden_tag() }}
         <div class="form-group row d-flex justify-content-center">
             <label for="model" class="col-sm-3 col-form-label">Choose a Model</label>
-            <div class="col-sm-2">
+            <div class="col-sm-3">
                 {{ form.model(class="form-control", id='model') }}
             </div>
         </div>
         <fieldset class="form-group" required>
             <div class="row d-flex justify-content-center">
                 <legend class="col-form-label col-sm-3 pt-0">Choose Upload Type</legend>
-                <div class="col-sm-2">
+                <div class="col-sm-3">
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="iszip" id="is-zip" value="1" required>
                         <label class="form-check-label" for="is-zip">
@@ -36,7 +36,7 @@
         </fieldset>   
         <div class="form-group row d-flex justify-content-center">
             <label for="file-sub" class="col-sm-3 col-form-label">Select a File</label>
-            <div class="col-sm-2">
+            <div class="col-sm-3">
                 {{ form.file_submission(class="form-control-file", id="file-sub") }}
             </div>
         </div>
