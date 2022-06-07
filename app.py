@@ -86,7 +86,7 @@ def logout():
 
 @app.route('/')
 def index():
-    return render_template('index.jinja')
+    return render_template('home.jinja')
 
 # @app.route('/dashboard/<log_id>', defaults={'log_id': None}, methods=['GET', 'POST'])
 @app.route('/dashboard')
@@ -116,20 +116,19 @@ def score_data():
             filename = secure_filename(file.filename)
             if not valid_extension(filename, iszip):
                 flash('Invalid file extension')
-                return render_template('score-data.jinja', form=form)
+                return render_template('score-data.jinja', form=form,name=f'{current_user.first_name} {current_user.last_name}')
             filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
             file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
             form.model.data = ''
             form.iszip.data = ''
             form.file_submission.data = None            
-            
+
             return redirect(url_for('process_file', 
                                     model=model, 
                                     iszip=iszip,
                                     filename=filename))
-    return render_template('score-data.jinja', form=form)
-
+    return render_template('score-data.jinja', form=form,name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/process-file/<model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
 @login_required
