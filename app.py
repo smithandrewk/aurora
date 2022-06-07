@@ -55,7 +55,7 @@ def login():
             else:
                 flash('Invalid Password')
         else:
-            flash('Invlid Email Address')
+            flash('Invalid Email Address')
     return render_template('login.jinja', form=form)
 
 @app.route('/add_user', methods=['GET', 'POST'])
