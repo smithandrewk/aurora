@@ -318,8 +318,8 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
         os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
         os.system(f'rm -rf data')
         
-        yield score_wrapper(unzip_upload, 1, total_steps, "Moving ZDB Files", data_filename, iszip)
-        yield score_wrapper(unzip_zdb_upload, 2, total_steps, "Renaming Data", zdb_filename, iszip)
+        yield score_wrapper(unzip_upload, 1, total_steps, "Unzipping Files", data_filename, iszip)
+        yield score_wrapper(unzip_zdb_upload, 1, total_steps, "Checking File Format", zdb_filename, iszip)
 
         yield score_wrapper(check_zdb_files, 2, total_steps, "Renaming Data")
 
@@ -342,7 +342,8 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
         yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", date)
         yield score_wrapper(clean_workspace, 13, total_steps, "Logging Scores", data_filename)
 
-        # Step 10: Log Scoring
+        # Step 14: Log Scoring
+        step = 14
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
@@ -352,10 +353,10 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
                              files=files_log)
             db.session.add(log)
             db.session.commit()
-            yield f"data:{int(14/total_steps*100)}\tStep 15 - Emailing Results\n\n"
+            yield f"data:{int(14/total_steps*100)}\tStep {step+1} - Emailing Results\n\n"
         except Exception as exc:
-            print("ERROR step 14")
-            yield f"data:0\tStep 14 - Logging Scores - {exc}\n\n"
+            print(f"ERROR step {step}")
+            yield f"data:0\tStep {step} - Logging Scores - {exc}\n\n"
             return
         
         # Step 11: Email Results
