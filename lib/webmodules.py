@@ -114,10 +114,10 @@ def check_zdb_files():
     for csv in os.listdir(os.path.join('data', RAW_DIR)):
         data_files.append(csv.replace('.xls', '').replace('.xlsx', ''))
         if not valid_extension(csv, iszip=False):
-            raise Exception('Invalid File Format in Data Archive (files must be XLS or XLSX)')
+            raise Exception('Invalid File Format (data files must end with .xls or .xlsx)')
     for zdb in os.listdir(os.path.join('data', RAW_ZDB_DIR)):
-        if not valid_zdb_extension('zdb', iszip=False):
-            raise Exception('Invalid File Format in ZDB Archive (files must be ZDB)')
+        if not valid_zdb_extension(zdb, iszip=False):
+            raise Exception('Invalid File Format (zdb files must end with .zdb)')
         # check if names of zdb and data files corrospond
         valid = False
         for data_file in data_files:
@@ -127,9 +127,14 @@ def check_zdb_files():
             raise Exception(f'ZDB file ({zdb}) does not have a corrosponding data file')
 
         # check if zdb files are correctly formatted
-        conn = sqlite3.connect(zdb)
+        conn = sqlite3.connect(os.path.join('data', RAW_ZDB_DIR, zdb))
         cur = conn.cursor()
-        
+        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='scoring_marker';"
+        cur.execute(query)
+        name = cur.fetchall()
+        print(name)
+        if not name:
+            raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
 
 def move_zdb_to_download_folder(new_filename):
     args = ['sh', '-c', 

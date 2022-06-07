@@ -321,7 +321,7 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
         yield score_wrapper(unzip_upload, 1, total_steps, "Moving ZDB Files", data_filename, iszip)
         yield score_wrapper(unzip_zdb_upload, 2, total_steps, "Renaming Data", zdb_filename, iszip)
 
-        # TODO check format of xls and zdb files
+        yield score_wrapper(check_zdb_files, 2, total_steps, "Renaming Data")
 
         # Get list of files being scored
         files.append(os.listdir(f'data/{RAW_DIR}'))
