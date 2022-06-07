@@ -90,6 +90,13 @@ def init_dir(db):
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')
         exit(1)
+def valid_zdb_extension(filename, iszip):
+    if iszip:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
+    else:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZDB'])  
+
+#zdb helper modules
 def unzip_zdb_upload(filename, iszip):
     subprocess.run(['mkdir', '-p', f'data/{RAW_ZDB_DIR}'])
     if iszip:
@@ -100,8 +107,11 @@ def unzip_zdb_upload(filename, iszip):
     else: 
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
         subprocess.run(args, check=True)
-def valid_zdb_extension(filename, iszip):
-    if iszip:
-        return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
-    else:
-        return filename.endswith(ALLOWED_EXTENSIONS['ZDB'])  
+def move_zdb_to_download_folder(new_filename):
+    args = ['sh', '-c', 
+            f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
+    subprocess.run(args, check=True)
+def archive_zdb_files(date):
+    args = ['sh', '-c', 
+            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip {FINAL_SCORED_ZDB_DIR} {FINAL_SCORED_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
+    subprocess.run(args, check=True)

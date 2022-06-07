@@ -341,8 +341,8 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
 
         # Call helper modules
         # TODO move zdb files to download folder
-        yield score_wrapper(move_to_download_folder, 11, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_files, 12, total_steps, "Cleaning Workspace", date)
+        yield score_wrapper(move_zdb_to_download_folder, 11, total_steps, "Archiving files", new_filename)        
+        yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", date)
         yield score_wrapper(clean_workspace, 13, total_steps, "Logging Scores", data_filename)
         # Step 10: Log Scoring
         try:
