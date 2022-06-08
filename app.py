@@ -91,6 +91,7 @@ def index():
 @app.route('/dashboard/<int:edit_id>', methods=['GET', 'POST'])
 @login_required
 def dashboard(edit_id=None):
+    form = EditProjectNameForm()
     logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
     files = []
@@ -98,7 +99,9 @@ def dashboard(edit_id=None):
         log.date_scored = str(log.date_scored)[:-7]
         files.append(json.loads(log.files)[0])
     # if form.validate_on_submit():
-        # new_name = 
+    #     new_name = form.new_name.data
+    #     print(new_name, edit_id)
+    #     log = 
     if not edit_id:
         return render_template('dashboard.jinja', 
                                 name=f'{current_user.first_name} {current_user.last_name}',
@@ -106,7 +109,6 @@ def dashboard(edit_id=None):
                                 files=files,
                                 edit_id=edit_id)
     else:
-        form = EditProjectNameForm()
         return render_template('dashboard.jinja', 
                                 name=f'{current_user.first_name} {current_user.last_name}',
                                 logs=logs,
@@ -147,27 +149,6 @@ def restore_log(log_id):
     log.is_deleted = False
     db.session.commit()
     return redirect(url_for('dashboard'))
-
-# Database Models
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(200), nullable=False)
-    last_name = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(200), nullable=False, unique=True)
-    date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    password_hash = db.Column(db.String(2000))
-    
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-    
-    @password.setter
-    def password(self, password):
-        # Set password_hash with hashed value of password
-        self.password_hash = generate_password_hash(password)
-    
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
 
 # ZDB scoring route
 @app.route("/score_data_zdb", methods=['GET', 'POST'])
@@ -291,6 +272,26 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
 
+# Database Models
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(200), nullable=False)
+    last_name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(200), nullable=False, unique=True)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(2000))
+    
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+    
+    @password.setter
+    def password(self, password):
+        # Set password_hash with hashed value of password
+        self.password_hash = generate_password_hash(password)
+    
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 class ScoringLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(200), nullable=False)
