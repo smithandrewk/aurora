@@ -195,7 +195,9 @@ def score_data_zdb():
 @app.route('/process-file-zdb/<project_name>/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
 @login_required
 def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
-    new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
+    if project_name == 'None':
+        project_name = data_filename.replace('.xls', '').replace('.zip', '')
+    new_filename = f"scored_{project_name.replace(' ','_')}.zip"
     return render_template('process-file-zdb.jinja',
                            project_name=project_name,
                            model=model, 
@@ -213,13 +215,11 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     from datetime import datetime
     total_steps = 14
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
-    new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
-    if project_name == 'None':
-        project_name = new_filename.replace('.xls', '').replace('.zip', '')
-    
+    new_filename = f"scored_{project_name.replace(' ','_')}.zip"
+    archive_name = f"{date}_{new_filename}.zip"
     # Generator that runs pipeline and generates progress information
     def generate():
 
@@ -247,7 +247,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 
         # Call helper modules
         yield score_wrapper(move_zdb_to_download_folder, 11, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", date)
+        yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", archive_name)
         yield score_wrapper(clean_workspace, 13, total_steps, "Logging Scores", data_filename)
 
         # Step 14: Log Scoring
@@ -256,7 +256,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
                              project_name=project_name,
-                             filename=f'{date}.zip',
+                             filename=archive_name,
                              model=f'{model} [{MODELS[model]}]',
                              files=files_log)
             db.session.add(log)

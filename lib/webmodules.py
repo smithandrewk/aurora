@@ -134,9 +134,9 @@ def move_zdb_to_download_folder(new_filename):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
     subprocess.run(args, check=True)
-def archive_zdb_files(date):
+def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip {FINAL_SCORED_ZDB_DIR} {FINAL_SCORED_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
+            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
     subprocess.run(args, check=True)
 
 class dashboard_log():
