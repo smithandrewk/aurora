@@ -43,10 +43,6 @@ def custom_401(error):
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
-@app.route('/test')
-def test():
-    return render_template('test.jinja')
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
