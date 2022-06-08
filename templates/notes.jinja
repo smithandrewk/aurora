@@ -9,30 +9,42 @@ nav-link link-dark
 nav-link active
 {% endblock %}
 {% block body %}
-    <div class="note-content">
-        <form method="post">
-            <label for="title">Title</label>
-            <br>
-            <input type="text" name="title"
-                placeholder="Message title"
-                value="{{ request.form['title'] }}"></input>
-            <br>
 
-            <label for="content">Message Content</label>
-            <br>
-            <textarea name="content"
-                    placeholder="Message content"
-                    rows="15"
-                    cols="60"
-                    >{{ request.form['content'] }}</textarea>
-            <br>
-            <button type="submit">Submit</button>
-        </form>
+<div class="note-content">
+
+    <div class="list-group">
+        <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+            <form method="post">
+            <div class="form-group">
+                <label for="formGroupExampleInput"><b>Title</b></label>
+                <input type="text" name="title" class="form-control" id="formGroupExampleInput" placeholder="Put the title of your note here" value="{{ request.form['title'] }}">
+            </div>
+            <div class="form-group">
+                <label for="exampleFormControlTextarea1"><b>Content</b></label>
+                <textarea class="form-control" name="content" placeholder="Write the content of your note here. The date and time will be automatically saved when you submit your note. Only you can see your notes!" id="exampleFormControlTextarea1" rows="3" value="{{ request.form['content'] }}"></textarea>
+            </div>
+            <div class="form-group">
+                    <button type="submit" class="btn btn-primary mb-2 mt-2">Submit</button>
+            </div>
+
+            </form>
+        </a>
+        <br>
         {% for note in notes %}
-            <h2> {{note.note_name}} at <i>{{note.date_written}}</i></h2>
-            <p>{{note.contents}}</p>
+        <a href="#" class="list-group-item list-group-item-action d-flex gap-3 py-3" aria-current="true">
+            <div class="d-flex gap-2 w-100 justify-content-between">
+            <div>
+                <h6 class="mb-0">{{note.note_name}}</h6>
+                <p class="mb-0 opacity-75">{{note.contents}}</p>
+            </div>
+            <small class="opacity-50 text-nowrap">{{note.date_written}}</small>
+            </div>
+        </a>
         {% endfor %}
+
     </div>
+
+</div>
     <style>
         .note-content{
             width: 60%;
