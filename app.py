@@ -197,8 +197,7 @@ def score_data_zdb():
                                     model=model,
                                     iszip=iszip,
                                     data_filename=data_filename,
-                                    zdb_filename=zdb_filename,
-                                    name=f'{current_user.first_name} {current_user.last_name}'))
+                                    zdb_filename=zdb_filename))
 
     return render_template('score-data-zdb.jinja', form=form, name=f'{current_user.first_name} {current_user.last_name}')
 
