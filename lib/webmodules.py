@@ -25,8 +25,7 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     except Exception as exc:
         print(f'ERROR step {step}')
         # return error message
-        return f"data:0\tStep {step} - {scoring_function.__name__} - {exc}\n\n"
-
+        return f"data:0\tStep {step} In Function: {scoring_function.__name__} - {exc}\n\n"
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
 
@@ -35,8 +34,6 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
 
 def unzip_upload(filename, iszip):
     # remove old files if they exist
-    subprocess.run(['rm', '-rf', 'data'])
-    os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
     subprocess.run(['mkdir', '-p', f'data/{RAW_DIR}'])
     if iszip:
         args = ['cp', os.path.join(
@@ -47,15 +44,6 @@ def unzip_upload(filename, iszip):
     else: 
         args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_DIR}/']
         subprocess.run(args, check=True)
-def move_to_download_folder(new_filename):
-    args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_DIR}"]
-    subprocess.run(args, check=True)
-    
-def archive_files(date):
-    args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip {FINAL_SCORED_DIR} {RAW_DIR}"]
-    subprocess.run(args, check=True)
 
 def clean_workspace(filename):
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
@@ -96,3 +84,66 @@ def init_dir(db):
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')
         exit(1)
+def valid_zdb_extension(filename, iszip):
+    if iszip:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
+    else:
+        return filename.endswith(ALLOWED_EXTENSIONS['ZDB'])  
+
+#zdb helper modules
+def unzip_zdb_upload(filename, iszip):
+    subprocess.run(['mkdir', '-p', f'data/{RAW_ZDB_DIR}'])
+    if iszip:
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/UnscoredZDB.zip']
+        subprocess.run(args, check=True)
+        args = ['unzip', '-j', 'data/UnscoredZDB.zip', '-d', f'./data/{RAW_ZDB_DIR}']
+        subprocess.run(args, check=True)        
+    else: 
+        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
+        subprocess.run(args, check=True)
+def check_zdb_files():
+    import sqlite3
+
+    data_files = []
+    for csv in os.listdir(os.path.join('data', RAW_DIR)):
+        data_files.append(csv.replace('.xls', '').replace('.xlsx', ''))
+        if not valid_extension(csv, iszip=False):
+            raise Exception('Invalid File Format (data files must end with .xls or .xlsx)')
+    for zdb in os.listdir(os.path.join('data', RAW_ZDB_DIR)):
+        if not valid_zdb_extension(zdb, iszip=False):
+            raise Exception('Invalid File Format (zdb files must end with .zdb)')
+        # check if names of zdb and data files corrospond
+        valid = False
+        for data_file in data_files:
+            if data_file in zdb:
+                valid = True
+        if not valid:
+            raise Exception(f'ZDB file ({zdb}) does not have a corrosponding data file')
+
+        # check if zdb files are correctly formatted
+        conn = sqlite3.connect(os.path.join('data', RAW_ZDB_DIR, zdb))
+        cur = conn.cursor()
+        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='scoring_marker';"
+        cur.execute(query)
+        name = cur.fetchall()
+        print(name)
+        if not name:
+            raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
+
+def move_zdb_to_download_folder(new_filename):
+    args = ['sh', '-c', 
+            f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
+    subprocess.run(args, check=True)
+def archive_zdb_files(archive_name):
+    args = ['sh', '-c', 
+            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
+    subprocess.run(args, check=True)
+
+class dashboard_log():
+    def __init__(self, id, project_name, date_scored, model, files, filename):
+        self.id = id
+        self.project_name = project_name
+        self.date_scored = date_scored
+        self.model = model
+        self.files = files
+        self.filename = filename

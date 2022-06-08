@@ -1,0 +1,60 @@
+{% extends 'base-sidebar.jinja' %}
+{% block dashboard_class%}
+nav-link link-dark
+{% endblock %}
+{% block score_data_class%}
+nav-link active
+{% endblock %}
+{% block notes_class%}
+nav-link link-dark
+{% endblock %}
+{% block body %}
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script>
+    var source = new EventSource({{ url_for('main_score_zdb', project_name=project_name, model=model, iszip=iszip, data_filename=data_filename, zdb_filename=zdb_filename, email=email)|tojson }});
+    source.onmessage = function(event) {
+        const data = event.data.split("\t")
+        let progress = data[0]
+        let msg = data[1]
+        if(progress == 0){
+            source.close()
+            $("#step-message").addClass('d-none')
+            $("#error-message").removeClass('d-none');
+            $("#error-message").text("ERROR: " + msg)
+            $('.progress-bar').css('background-color', '#ff3333');
+        }
+        else{
+            $('.progress-bar').css('width', progress+'%').attr('aria-valuenow', progress);
+            $('.progress-bar-label').text(progress+'%');
+            $("#step-message").text(msg)
+            if(progress == 100){
+                source.close()
+                $('.progress-bar').css('background-color', '#198754');
+                $("#download-button").removeClass('d-none');
+            }
+        }
+    }
+</script>
+<main>
+    <h1 class="text-center">Scoring Data</h1>
+    <p class="text-center">- Do not close page</p>
+    <div class="d-flex justify-content-center">
+        <div id="progress-bar" class="progress" style="width: 50%; margin: 50px;">
+            <div class="progress-bar progress-bar-striped active progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+                <span class="progress-bar-label">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <p id="step-message" class="text-center"></p>
+    <p id="error-message" class="d-none text-center"></p>
+
+    <div class="d-flex justify-content-center">
+        <form id='download-button' class='d-none' method='POST' action="{{ url_for('download_zip', filename=new_filename) }}">
+            <input type="submit" value="Download Scored ZDB files (ZIP)" class="w-100 btn btn-primary">
+        </form>
+    </div>
+</main>
+
+{% endblock body%}
