@@ -22,3 +22,7 @@ class ZDBFileUploadForm(FlaskForm):
     data_file = FileField("Select a File", validators=[DataRequired()])
     zdb_file = FileField("Select a File", validators=[DataRequired()])
     submit = SubmitField('Start Scoring')
+
+class EditProjectNameForm(FlaskForm):
+    new_name = StringField("", validators=[DataRequired()])
+    submit = SubmitField("Save")

@@ -88,20 +88,28 @@ def logout():
 def index():
     return render_template('home.jinja')
 
-# @app.route('/dashboard/<log_id>', defaults={'log_id': None}, methods=['GET', 'POST'])
-@app.route('/dashboard', methods=['GET', 'POST'])
+@app.route('/dashboard')
+@app.route('/dashboard/<int:edit_log>', methods=['GET', 'POST'])
 @login_required
-def dashboard():
+def dashboard(edit_log=None):
     logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
     files = []
     for log in logs:
         log.date_scored = str(log.date_scored)[:-7]
         files.append(json.loads(log.files)[0])
-    return render_template('dashboard.jinja', 
-                           name=f'{current_user.first_name} {current_user.last_name}',
-                           logs=logs,
-                           files=files)
+    if not edit_log:
+        return render_template('dashboard.jinja', 
+                                name=f'{current_user.first_name} {current_user.last_name}',
+                                logs=logs,
+                                files=files,
+                                edit_log=edit_log)
+    else:
+        return render_template('dashboard.jinja', 
+                                name=f'{current_user.first_name} {current_user.last_name}',
+                                logs=logs,
+                                files=files,
+                                edit_log=edit_log)
 
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required

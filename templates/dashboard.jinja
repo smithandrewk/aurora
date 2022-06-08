@@ -24,7 +24,15 @@
             <tbody>
                 <tr >
                     <th scope="row"><p class="text-center">{{ log.id }}</p></th>
-                    <td><p class="text-center">{{ log.project_name }}</p></td>
+                    {% if not edit_log or log.id != edit_log %}
+                        <td><p class="text-center">{{ log.project_name }}</p></td>
+                    {% else %}
+                        <td>
+                            <div class="text-center">
+                                edit name
+                            </div>
+                        </td>
+                    {% endif %}
                     <td><p class="text-center">{{ log.date_scored }}</p></td>
                     <td><p class="text-center">{{ log.model }}</p></td>
                     <td>
