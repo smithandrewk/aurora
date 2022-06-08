@@ -43,6 +43,10 @@ def custom_401(error):
 def load_user(user_id):
     return Users.query.get(int(user_id))
 
+@app.route('/test')
+def test():
+    return render_template('test.jinja')
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
@@ -89,7 +93,7 @@ def index():
     return render_template('home.jinja')
 
 # @app.route('/dashboard/<log_id>', defaults={'log_id': None}, methods=['GET', 'POST'])
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET', 'POST'])
 @login_required
 def dashboard():
     logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
