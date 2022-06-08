@@ -108,19 +108,11 @@
                     </a>
                     </li>
                     <li>
-                    <a id="scoredata" href="/score_data" class="nav-link link-dark">
-                        <svg class="bi me-2" width="16" height="16">
-                        <use xlink:href="#speedometer2" />
-                        </svg>
-                        Score Data
-                    </a>
-                    </li>
-                    <li>
                     <a id="scoredatazdb" href="{{ url_for('score_data_zdb')}}" class="nav-link link-dark">
                         <svg class="bi me-2" width="16" height="16">
                         <use xlink:href="#speedometer2" />
                         </svg>
-                        Score Data ZDB
+                        Score Data
                     </a>
                     </li>
                 </ul>
@@ -145,8 +137,6 @@
             <script>
                 document.getElementById("dashboard").classList.remove('active');
                 document.getElementById("dashboard").classList.add('link-dark');
-                document.getElementById("scoredata").classList.remove('active');
-                document.getElementById("scoredata").classList.add('link-dark');
                 document.getElementById("scoredatazdb").classList.remove('active');
                 document.getElementById("scoredatazdb").classList.add('link-dark');
             </script>
