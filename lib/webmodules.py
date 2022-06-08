@@ -138,3 +138,12 @@ def archive_zdb_files(date):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{date}.zip {FINAL_SCORED_ZDB_DIR} {FINAL_SCORED_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
     subprocess.run(args, check=True)
+
+class dashboard_log():
+    def __init__(self, id, project_name, date_scored, model, files, filename):
+        self.id = id
+        self.project_name = project_name
+        self.date_scored = date_scored
+        self.model = model
+        self.files = files
+        self.filename = filename
