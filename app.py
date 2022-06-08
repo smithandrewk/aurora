@@ -33,7 +33,6 @@ login_manager.view ='login'
 
 init_dir(db)
 
-
 @app.errorhandler(401)
 def custom_401(error):
     flash('Login Required')
@@ -89,27 +88,29 @@ def index():
     return render_template('home.jinja')
 
 @app.route('/dashboard')
-@app.route('/dashboard/<int:edit_log>', methods=['GET', 'POST'])
+@app.route('/dashboard/<int:edit_id>', methods=['GET', 'POST'])
 @login_required
-def dashboard(edit_log=None):
+def dashboard(edit_id=None):
     logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
     files = []
     for log in logs:
         log.date_scored = str(log.date_scored)[:-7]
         files.append(json.loads(log.files)[0])
-    if not edit_log:
+    if not edit_id:
         return render_template('dashboard.jinja', 
                                 name=f'{current_user.first_name} {current_user.last_name}',
                                 logs=logs,
                                 files=files,
-                                edit_log=edit_log)
+                                edit_id=edit_id)
     else:
+        form = EditProjectNameForm()
         return render_template('dashboard.jinja', 
                                 name=f'{current_user.first_name} {current_user.last_name}',
                                 logs=logs,
                                 files=files,
-                                edit_log=edit_log)
+                                edit_id=edit_id,
+                                form=form)
 
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required
