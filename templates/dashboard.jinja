@@ -29,7 +29,14 @@
                     {% else %}
                         <td>
                             <div class="text-center">
-                                {% include 'inc/edit-project-name.jinja' %}
+                                <form method='POST'>
+                                    {{ form.hidden_tag() }}
+                                    <div class="form-floating">
+                                        {{ form.new_name(class="form-control", id="floatingInput", placeholder=" ") }}
+                                        <label for="floatingInput">Enter Name</label>
+                                    </div>
+                                    {{ form.submit(class="w-100 btn btn-sm btn-primary") }}
+                                </form>
                             </div>
                         </td>
                     {% endif %}

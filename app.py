@@ -97,6 +97,8 @@ def dashboard(edit_id=None):
     for log in logs:
         log.date_scored = str(log.date_scored)[:-7]
         files.append(json.loads(log.files)[0])
+    # if form.validate_on_submit():
+        # new_name = 
     if not edit_id:
         return render_template('dashboard.jinja', 
                                 name=f'{current_user.first_name} {current_user.last_name}',
