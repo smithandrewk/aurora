@@ -33,7 +33,6 @@ login_manager.view ='login'
 
 init_dir(db)
 
-
 @app.errorhandler(401)
 def custom_401(error):
     flash('Login Required')
@@ -55,7 +54,7 @@ def login():
             else:
                 flash('Invalid Password')
         else:
-            flash('Invlid Email Address')
+            flash('Invalid Email Address')
     return render_template('login.jinja', form=form)
 
 @app.route('/add_user', methods=['GET', 'POST'])
@@ -88,120 +87,36 @@ def logout():
 def index():
     return render_template('home.jinja')
 
-# @app.route('/dashboard/<log_id>', defaults={'log_id': None}, methods=['GET', 'POST'])
 @app.route('/dashboard')
+@app.route('/dashboard/<int:edit_id>', methods=['GET', 'POST'])
 @login_required
-def dashboard():
+def dashboard(edit_id=None):
+    form = EditProjectNameForm()
     logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
-    files = []
+    dash_logs = []
+    num_logs = 0
     for log in logs:
-        log.date_scored = str(log.date_scored)[:-7]
-        files.append(json.loads(log.files)[0])
-    return render_template('dashboard.jinja', 
-                           name=f'{current_user.first_name} {current_user.last_name}',
-                           logs=logs,
-                           files=files)
-
-@app.route("/score_data", methods=['GET', 'POST'])
-@login_required
-def score_data():
-    form = FileUploadForm()
-    form.model.choices=[(model, model) for model in MODELS]
+        dash_logs.append(dashboard_log(log.id,
+                                       log.project_name,
+                                       str(log.date_scored)[:-7],
+                                       log.model,
+                                       json.loads(log.files)[0],
+                                       log.filename))
+        num_logs += 1
     if form.validate_on_submit():
-        model = form.model.data
-        iszip = int(form.iszip.data)
-        file = form.file_submission.data
-        if file:
-            filename = secure_filename(file.filename)
-            if not valid_extension(filename, iszip):
-                flash('Invalid file extension')
-                return render_template('score-data.jinja', form=form,name=f'{current_user.first_name} {current_user.last_name}')
-            filename = filename.replace(ALLOWED_EXTENSIONS['XLSX'], ALLOWED_EXTENSIONS['XLS'])
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-
-            form.model.data = ''
-            form.iszip.data = ''
-            form.file_submission.data = None            
-
-            return redirect(url_for('process_file', 
-                                    model=model, 
-                                    iszip=iszip,
-                                    filename=filename))
-    return render_template('score-data.jinja', form=form,name=f'{current_user.first_name} {current_user.last_name}')
-
-@app.route('/process-file/<model>/<int:iszip>/<filename>', methods=['GET', 'POST'])
-@login_required
-def process_file(model, iszip, filename):
-    new_filename = f"scored_{filename.replace('.xls','.zip')}"
-    return render_template('process-file.jinja', 
-                           model=model,
-                           iszip=iszip, 
-                           filename=filename, 
-                           new_filename=new_filename, 
-                           email=current_user.email,
-                           name=f'{current_user.first_name} {current_user.last_name}')
-
-@app.route('/main-score/<model>/<int:iszip>/<filename>/<email>', methods=['GET', 'POST'])
-@login_required
-def main_score(model, iszip, filename, email):
-    
-    # This route will be called by javascript in 'process-file.jinja'
-    from datetime import datetime
-    total_steps = 11
-    date = datetime.now().strftime("%m.%d.%Y_%H:%M")
-    new_filename = f"scored_{filename.replace('.xls','.zip')}"
-    files = []
-    
-    path_to_model = f"model/{MODELS[model]}"
-    
-    # Generator that runs pipeline and generates progress information
-    def generate():
-
-        os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
-        os.system(f'rm -rf data')
-        
-        # Step 1: Move files into data/raw directory
-        yield score_wrapper(unzip_upload, 1, total_steps, "Renaming Data", filename, iszip)
-        
-        yield score_wrapper(check_files, 2, total_steps, "Renaming Data")
-        # Get list of files being scored
-        files.append(os.listdir(f'data/{RAW_DIR}'))
-        
-        # Call each function of the pipeline
-        yield score_wrapper(rename_data_in_raw, 3, total_steps, "Preprocessing")
-        yield score_wrapper(preprocess_data_in_renamed, 4, total_steps, "Scaling")
-        yield score_wrapper(scale_features_in_preprocessed, 5, total_steps, "Scoring Data")
-        yield score_wrapper(window_and_score_files_in_scaled_with_LSTM, 6, total_steps, "Remapping File Names", path_to_model)
-        yield score_wrapper(remap_names_lstm, 7, total_steps, "Moving Files", path_to_model)
-
-        # Call helper modules
-        yield score_wrapper(move_to_download_folder, 8, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_files, 9, total_steps, "Cleaning Workspace", date)
-        yield score_wrapper(clean_workspace, 10, total_steps, "Logging Scores", filename)
-        # Step 11: Log Scoring
-        step = 11
-        try:
-            files_log = json.dumps(files)
-            log = ScoringLog(email=email, 
-                             project_name=filename.replace('.xls', '').replace('.zip', ''),
-                             filename=f'{date}.zip',
-                             model=f'{model} [{MODELS[model]}]',
-                             files=files_log)
-            db.session.add(log)
-            db.session.commit()
-            yield f"data:{int(step/total_steps*100)}\tStep {step+1} - Emailing Results\n\n"
-        except Exception as exc:
-            print("ERROR step "+step)
-            yield f"data:0\tStep {step} - Logging Scores - {exc}\n\n"
-            return
-        
-        # Step 11: Email Results
-        yield score_wrapper(email_results, 11, total_steps, "Scoring Complete", email)
-        
-    # Create response to javascript EventSource with a series of text event-streams providing progress information
-    return Response(generate(), mimetype='text/event-stream')
-    
+        new_name = form.new_name.data
+        print(new_name, edit_id)
+        log = ScoringLog.query.filter_by(id=edit_id).first()
+        log.project_name = new_name
+        db.session.commit()
+        return redirect(url_for('dashboard'))
+    return render_template('dashboard.jinja', 
+                            name=f'{current_user.first_name} {current_user.last_name}',
+                            logs=dash_logs,
+                            num_logs=num_logs,
+                            edit_id=edit_id)
+                            
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required
 def download_zip(filename):
@@ -218,11 +133,11 @@ def download_archive_zip(filename):
         return redirect(url_for('dashboard'))
     return send_from_directory(DOWNLOAD_FOLDER, filename)
 
-@app.route("/delete_log/<log_id>")
+@app.route("/delete_log/<log_id>/<table_num>")
 @login_required
-def delete_log(log_id):
+def delete_log(log_id, table_num):
     url = url_for('restore_log', log_id=log_id)
-    flash(Markup(f"Log {log_id} deleted <a href='{url}'>Undo?</a>"))
+    flash(Markup(f"Log {table_num} deleted <a href='{url}'>Undo?</a>"))
     log = ScoringLog.query.filter_by(id=log_id).first()
     log.is_deleted = True
     db.session.commit()
@@ -236,27 +151,6 @@ def restore_log(log_id):
     db.session.commit()
     return redirect(url_for('dashboard'))
 
-# Database Models
-class Users(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(200), nullable=False)
-    last_name = db.Column(db.String(200), nullable=False)
-    email = db.Column(db.String(200), nullable=False, unique=True)
-    date_added = db.Column(db.DateTime, default=datetime.utcnow)
-    password_hash = db.Column(db.String(2000))
-    
-    @property
-    def password(self):
-        raise AttributeError('password is not a readable attribute')
-    
-    @password.setter
-    def password(self, password):
-        # Set password_hash with hashed value of password
-        self.password_hash = generate_password_hash(password)
-    
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
 # ZDB scoring route
 @app.route("/score_data_zdb", methods=['GET', 'POST'])
 @login_required
@@ -264,10 +158,13 @@ def score_data_zdb():
     form = ZDBFileUploadForm()
     form.model.choices=[(model, model) for model in MODELS]
     if form.validate_on_submit():
+        project_name = form.project_name.data
         model = form.model.data
         iszip = int(form.iszip.data)
         data_file = form.data_file.data
         zdb_file = form.zdb_file.data
+        if not project_name:
+            project_name = 'None'
         if data_file and zdb_file:
             data_filename = secure_filename(data_file.filename)
             zdb_filename = secure_filename(zdb_file.filename)
@@ -280,43 +177,49 @@ def score_data_zdb():
             data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
             zdb_file.save(os.path.join(app.config['UPLOAD_FOLDER'], zdb_filename))
 
+            form.project_name.data = ''
             form.model.data = ''
             form.iszip.data = ''
             form.data_file.data = None            
             form.zdb_file.data = None            
             
             return redirect(url_for('process_file_zdb',
+                                    project_name=project_name,
                                     model=model,
                                     iszip=iszip,
                                     data_filename=data_filename,
                                     zdb_filename=zdb_filename))
 
-    return render_template('score-data-zdb.jinja', form=form)
+    return render_template('score-data-zdb.jinja', form=form, name=f'{current_user.first_name} {current_user.last_name}')
 
-@app.route('/process-file-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
+@app.route('/process-file-zdb/<project_name>/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
 @login_required
-def process_file_zdb(model, iszip, data_filename, zdb_filename):
-    new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
+def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
+    if project_name == 'None':
+        project_name = data_filename.replace('.xls', '').replace('.zip', '')
+    new_filename = f"scored_{project_name.replace(' ','_')}.zip"
     return render_template('process-file-zdb.jinja',
+                           project_name=project_name,
                            model=model, 
                            iszip=iszip, 
                            data_filename=data_filename, 
                            zdb_filename=zdb_filename,
                            new_filename=new_filename, 
-                           email=current_user.email)
+                           email=current_user.email,
+                           name=f'{current_user.first_name} {current_user.last_name}')
 
-@app.route('/main-score-zdb/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
+@app.route('/main-score-zdb/<project_name>/<model>/<int:iszip>/<data_filename>/<zdb_filename>/<email>', methods=['GET', 'POST'])
 @login_required
-def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
+def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, email):
      # This route will be called by javascript in 'process-file.jinja'
     from datetime import datetime
     total_steps = 14
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
-    new_filename = f"scored_{data_filename.replace('.xls','.zip')}"
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
-    
+    new_filename = f"scored_{project_name.replace(' ','_')}.zip"
+    archive_name = f"{date}_{new_filename}.zip"
     # Generator that runs pipeline and generates progress information
     def generate():
 
@@ -344,7 +247,7 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
 
         # Call helper modules
         yield score_wrapper(move_zdb_to_download_folder, 11, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", date)
+        yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", archive_name)
         yield score_wrapper(clean_workspace, 13, total_steps, "Logging Scores", data_filename)
 
         # Step 14: Log Scoring
@@ -352,8 +255,8 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
-                             project_name=data_filename.replace('.xls', '').replace('.zip', ''),
-                             filename=f'{date}.zip',
+                             project_name=project_name,
+                             filename=archive_name,
                              model=f'{model} [{MODELS[model]}]',
                              files=files_log)
             db.session.add(log)
@@ -370,6 +273,26 @@ def main_score_zdb(model, iszip, data_filename, zdb_filename, email):
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
 
+# Database Models
+class Users(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(200), nullable=False)
+    last_name = db.Column(db.String(200), nullable=False)
+    email = db.Column(db.String(200), nullable=False, unique=True)
+    date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    password_hash = db.Column(db.String(2000))
+    
+    @property
+    def password(self):
+        raise AttributeError('password is not a readable attribute')
+    
+    @password.setter
+    def password(self, password):
+        # Set password_hash with hashed value of password
+        self.password_hash = generate_password_hash(password)
+    
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 class ScoringLog(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(200), nullable=False)

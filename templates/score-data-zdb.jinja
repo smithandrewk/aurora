@@ -1,8 +1,20 @@
-{% extends 'base.jinja' %}
+{% extends 'base-sidebar.jinja' %}
 
 {% block body %}
+<script>
+    document.getElementById("dashboard").classList.remove('active');
+    document.getElementById("dashboard").classList.add('link-dark');
+    document.getElementById("scoredatazdb").classList.add('link-dark');
+    document.getElementById("scoredatazdb").classList.add('active');
+</script>
     <form method='POST', enctype='multipart/form-data'>
         {{ form.hidden_tag() }}
+        <div class="form-group row d-flex justify-content-center">
+            <label for="project_name" class="col-sm-3 col-form-label">Enter Project Name (Optional)</label>
+            <div class="col-sm-2">
+                {{ form.project_name(class="form-control", id="project_name") }}
+            </div>
+        </div>
         <div class="form-group row d-flex justify-content-center">
             <label for="model" class="col-sm-3 col-form-label">Choose a Model</label>
             <div class="col-sm-2">

@@ -15,15 +15,14 @@ class SignupForm(FlaskForm):
     password_confirm = PasswordField("Confirm Password", validators=[DataRequired()])
     submit = SubmitField("Create User")
 
-class FileUploadForm(FlaskForm):
-    model = SelectField("Choose a Model", validators=[DataRequired()], validate_choice=False)
-    iszip = SelectField("Choose upload type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
-    file_submission = FileField("Select a File", validators=[DataRequired()])
-    submit = SubmitField('Start Scoring')
-
 class ZDBFileUploadForm(FlaskForm):
+    project_name = StringField("Enter Project Name", default='')
     model = SelectField("Choose a Model", validators=[DataRequired()], validate_choice=False)
     iszip = SelectField("Choose uploads type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
     data_file = FileField("Select a File", validators=[DataRequired()])
     zdb_file = FileField("Select a File", validators=[DataRequired()])
     submit = SubmitField('Start Scoring')
+
+class EditProjectNameForm(FlaskForm):
+    new_name = StringField("", validators=[DataRequired()])
+    submit = SubmitField("Save")
