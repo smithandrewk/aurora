@@ -16,7 +16,7 @@ class SignupForm(FlaskForm):
     submit = SubmitField("Create User")
 
 class ZDBFileUploadForm(FlaskForm):
-    project_name = StringField("Enter Project Name", default=None)
+    project_name = StringField("Enter Project Name", default='')
     model = SelectField("Choose a Model", validators=[DataRequired()], validate_choice=False)
     iszip = SelectField("Choose uploads type", choices=[(1, 'Zip Archive'), (0, 'Individual File')], validators=[DataRequired()])
     data_file = FileField("Select a File", validators=[DataRequired()])

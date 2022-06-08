@@ -174,6 +174,8 @@ def score_data_zdb():
         iszip = int(form.iszip.data)
         data_file = form.data_file.data
         zdb_file = form.zdb_file.data
+        if not project_name:
+            project_name = 'None'
         if data_file and zdb_file:
             data_filename = secure_filename(data_file.filename)
             zdb_filename = secure_filename(zdb_file.filename)
@@ -226,7 +228,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
-    if not project_name:
+    if project_name == 'None':
         project_name = new_filename.replace('.xls', '').replace('.zip', '')
     
     # Generator that runs pipeline and generates progress information
