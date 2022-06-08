@@ -1,5 +1,13 @@
 {% extends 'base-sidebar.jinja' %}
-
+{% block dashboard_class%}
+nav-link active
+{% endblock %}
+{% block score_data_class%}
+nav-link link-dark
+{% endblock %}
+{% block notes_class%}
+nav-link link-dark
+{% endblock %}
 {% block body %}
     <main>
     <h4 class="text-center">Scoring History</h4>

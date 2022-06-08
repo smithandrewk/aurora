@@ -1,12 +1,14 @@
 {% extends 'base-sidebar.jinja' %}
+{% block dashboard_class%}
+nav-link link-dark
+{% endblock %}
+{% block score_data_class%}
+nav-link active
+{% endblock %}
+{% block notes_class%}
+nav-link link-dark
+{% endblock %}
 {% block body %}
-<script>
-    console.log(document.getElementById("dashboard").classList)
-    document.getElementById("dashboard").classList.remove('active');
-    document.getElementById("dashboard").classList.add('link-dark');
-    document.getElementById("scoredatazdb").classList.add('link-dark');
-    document.getElementById("scoredatazdb").classList.add('active');
-</script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 <script>

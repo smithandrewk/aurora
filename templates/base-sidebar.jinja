@@ -100,7 +100,7 @@
                 <hr>
                 <ul class="nav nav-pills flex-column mb-auto">
                     <li class="nav-item">
-                    <a id="dashboard" href="/dashboard" class="nav-link active" aria-current="page">
+                    <a id="dashboard" href="/dashboard" class="{% block dashboard_class%}{% endblock %}" aria-current="page">
                         <svg class="bi me-2" width="16" height="16">
                         <use xlink:href="#home" />
                         </svg>
@@ -108,11 +108,19 @@
                     </a>
                     </li>
                     <li>
-                    <a id="scoredatazdb" href="{{ url_for('score_data_zdb')}}" class="nav-link link-dark">
+                    <a id="scoredatazdb" href="{{ url_for('score_data_zdb')}}" class="{% block score_data_class%}{% endblock %}">
                         <svg class="bi me-2" width="16" height="16">
                         <use xlink:href="#speedometer2" />
                         </svg>
                         Score Data
+                    </a>
+                    </li>
+                    <li>
+                    <a id="notes" href="/notes" class="{% block notes_class%}{% endblock %}">
+                        <svg class="bi me-2" width="16" height="16">
+                        <use xlink:href="#chat-quote-fill" />
+                        </svg>
+                        Notes
                     </a>
                     </li>
                 </ul>
@@ -153,6 +161,11 @@
             flex-direction: column;
             align-items: center;
             padding: 1rem;
+            /*
+            fix sidebar and let this div scroll
+            */
+            overflow: auto;
+            height: 100;
         }
         form {
             width: 80%;
