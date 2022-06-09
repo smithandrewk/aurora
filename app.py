@@ -226,7 +226,7 @@ def score_data_zdb():
 def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
     if project_name == 'None':
         project_name = data_filename.replace('.xls', '').replace('.zip', '')
-    new_filename = f"scored_{project_name.replace(' ','_')}.zip"
+    new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
     return render_template('process-file-zdb.jinja',
                            project_name=project_name,
                            model=model, 
@@ -247,7 +247,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
-    new_filename = f"scored_{project_name.replace(' ','_')}.zip"
+    new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
     archive_name = f"{date}_{new_filename}.zip"
     # Generator that runs pipeline and generates progress information
     def generate():

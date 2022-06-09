@@ -131,8 +131,9 @@ def check_zdb_files():
             raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
 
 def move_zdb_to_download_folder(new_filename):
-    args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
+    args = ['zip', '-rj', os.path.join(DOWNLOAD_FOLDER, new_filename), os.path.join('data', FINAL_SCORED_ZDB_DIR)]
+    # args = ['sh', '-c', 
+            # f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
     subprocess.run(args, check=True)
 def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
