@@ -115,7 +115,8 @@ def dashboard(edit_id=None):
                             name=f'{current_user.first_name} {current_user.last_name}',
                             logs=dash_logs,
                             num_logs=num_logs,
-                            edit_id=edit_id)
+                            edit_id=edit_id,
+                            form=form)
 
 @app.route('/notes', methods=['GET', 'POST'])
 @login_required
@@ -241,7 +242,7 @@ def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
 def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, email):
      # This route will be called by javascript in 'process-file.jinja'
     from datetime import datetime
-    total_steps = 14
+    total_steps = 15
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     files = []
     
