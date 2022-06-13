@@ -242,7 +242,7 @@ def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
 def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, email):
      # This route will be called by javascript in 'process-file.jinja'
     from datetime import datetime
-    total_steps = 15
+    total_steps = 16
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     files = []
     
@@ -272,15 +272,16 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 
         yield score_wrapper(rename_files_in_raw_zdb, 8, total_steps, "Converting ZDB Files")
         yield score_wrapper(score_files_in_renamed_zdb, 9, total_steps, "Remapping ZDB Files")
-        yield score_wrapper(remap_files_in_scored_zdb, 10, total_steps, "Moving Files", path_to_model)
+        yield score_wrapper(remap_files_in_scored_zdb, 10, total_steps, "Generating Images", path_to_model)
 
         # Call helper modules
-        yield score_wrapper(move_zdb_to_download_folder, 11, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_zdb_files, 12, total_steps, "Cleaning Workspace", archive_name)
-        yield score_wrapper(clean_workspace, 13, total_steps, "Logging Scores", data_filename)
+        yield score_wrapper(generate_images, 11, total_steps, "Moving files")
+        yield score_wrapper(move_zdb_to_download_folder, 12, total_steps, "Archiving files", new_filename)        
+        yield score_wrapper(archive_zdb_files, 13, total_steps, "Cleaning Workspace", archive_name)
+        yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", data_filename)
 
-        # Step 14: Log Scoring
-        step = 14
+        # Step 15: Log Scoring
+        step = 15
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
@@ -296,8 +297,8 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
             yield f"data:0\tStep {step} - Logging Scores - {exc}\n\n"
             return
         
-        # Step 11: Email Results
-        yield score_wrapper(email_results, 15, total_steps, "Scoring Complete", email)
+        # Step 16: Email Results
+        yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')

@@ -47,7 +47,7 @@ def unzip_upload(filename, iszip):
 
 def clean_workspace(filename):
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
-    subprocess.run(args, check=True)
+    # subprocess.run(args, check=True)
 
 def email_results(email):
     import smtplib
@@ -139,6 +139,28 @@ def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
     subprocess.run(args, check=True)
+
+def generate_images():
+    import pandas as pd
+    import numpy as np
+    import seaborn as sns
+    import matplotlib.pyplot as plt
+    for file in os.listdir('data/4_scored'):
+        index = file.replace('.csv', '')
+        df = pd.read_csv(f'data/4_scored/{file}')
+        df[df['0']=='P'] = 0
+        df[df['0']=='S'] = 1
+        df[df['0']=='W'] = 2
+        df = df[df['0'] != 'X']
+        s = sns.lineplot(data=df, palette='tab10', linewidth=2.5)
+        s.set(xlabel=None, ylabel=None)
+        s.set_xticks([])
+        s.set_yticks([0,1,2],['P', 'S', 'W'])
+        plt.legend([],[], frameon=False)
+
+        subprocess.run(['mkdir', '-p', 'data/10_images'], check=True)
+        plt.savefig(f'data/10_images/{index}.jpg')
+        plt.close()
 
 class dashboard_log():
     def __init__(self, id, project_name, date_scored, model, files, filename):
