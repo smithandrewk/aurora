@@ -1,6 +1,7 @@
 UPLOAD_FOLDER = "from-client"
 DOWNLOAD_FOLDER = "to-client"
 ARCHIVE_FOLDER = "data-archive"
+GRAPH_FOLDER = "static/graphs"
 RAW_DIR = "0_raw"
 RAW_ZDB_DIR = "6_raw_zdb"
 FINAL_SCORED_DIR = "5_final_lstm/"

@@ -252,8 +252,8 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     # Generator that runs pipeline and generates progress information
     def generate():
 
-        os.system(f'rm -rf {DOWNLOAD_FOLDER}/*')
-        os.system(f'rm -rf data')
+        os.system(f'rm -rf {DOWNLOAD_FOLDER}/* data {GRAPH_FOLDER}')
+        # os.system(f'rm -rf data')
         
         yield score_wrapper(unzip_upload, 1, total_steps, "Unzipping Files", data_filename, iszip)
         yield score_wrapper(unzip_zdb_upload, 1, total_steps, "Checking File Format", zdb_filename, iszip)
@@ -302,6 +302,11 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
+
+@app.route("/graphs/<new_filename>", methods=['GET', 'POST'])
+def graphs(new_filename):
+    files = os.listdir(f'{GRAPH_FOLDER}')
+    return render_template('graphs.jinja', new_filename=new_filename, files=files)
 
 # Database Models
 class Users(db.Model, UserMixin):

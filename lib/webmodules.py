@@ -126,7 +126,6 @@ def check_zdb_files():
         query = "SELECT name FROM sqlite_master WHERE type='table' AND name='scoring_marker';"
         cur.execute(query)
         name = cur.fetchall()
-        print(name)
         if not name:
             raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
 
@@ -145,22 +144,29 @@ def generate_images():
     import numpy as np
     import seaborn as sns
     import matplotlib.pyplot as plt
-    for file in os.listdir('data/4_scored'):
-        index = file.replace('.csv', '')
-        df = pd.read_csv(f'data/4_scored/{file}')
+    subprocess.run(['mkdir', '-p', GRAPH_FOLDER], check=True)
+    for file in os.listdir(f'data/{FINAL_SCORED_DIR}'):
+        new_filename = file.replace('.csv', '.png')
+        df = pd.read_csv(f'data/{FINAL_SCORED_DIR}/{file}')
+
+        # TODO create better graphs ######################################
         df[df['0']=='P'] = 0
         df[df['0']=='S'] = 1
         df[df['0']=='W'] = 2
         df = df[df['0'] != 'X']
         s = sns.lineplot(data=df, palette='tab10', linewidth=2.5)
-        s.set(xlabel=None, ylabel=None)
+        s.set(xlabel="Time", ylabel=None)
         s.set_xticks([])
         s.set_yticks([0,1,2],['P', 'S', 'W'])
+        plt.title(new_filename.replace('.png', ''))
         plt.legend([],[], frameon=False)
+        #################################################################
 
         subprocess.run(['mkdir', '-p', 'data/10_images'], check=True)
-        plt.savefig(f'data/10_images/{index}.jpg')
+        plt.savefig(f'data/10_images/{new_filename}')
         plt.close()
+
+        subprocess.run(['cp', f'data/10_images/{new_filename}', GRAPH_FOLDER], check=True)
 
 class dashboard_log():
     def __init__(self, id, project_name, date_scored, model, files, filename):
