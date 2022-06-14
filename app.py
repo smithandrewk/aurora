@@ -92,17 +92,24 @@ def index():
 @login_required
 def dashboard(edit_id=None):
     form = EditProjectNameForm()
-    logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
+    admin = False
+    if current_user.email in ADMIN_USERS:
+        logs = list(ScoringLog.query)
+        admin = True
+    else:
+        logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
     logs.reverse()
     dash_logs = []
     num_logs = 0
     for log in logs:
         dash_logs.append(dashboard_log(log.id,
+                                       log.email,
                                        log.project_name,
                                        str(log.date_scored)[:-7],
                                        log.model,
                                        json.loads(log.files)[0],
-                                       log.filename))
+                                       log.filename,
+                                       log.is_deleted))
         num_logs += 1
     if form.validate_on_submit():
         new_name = form.new_name.data
@@ -111,7 +118,8 @@ def dashboard(edit_id=None):
         log.project_name = new_name
         db.session.commit()
         return redirect(url_for('dashboard'))
-    return render_template('dashboard.jinja', 
+    return render_template('dashboard.jinja',
+                            admin=admin,
                             name=f'{current_user.first_name} {current_user.last_name}',
                             logs=dash_logs,
                             num_logs=num_logs,

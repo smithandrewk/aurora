@@ -171,10 +171,12 @@ def generate_images():
         subprocess.run(['cp', f'data/10_images/{new_filename}', GRAPH_FOLDER], check=True)
 
 class dashboard_log():
-    def __init__(self, id, project_name, date_scored, model, files, filename):
+    def __init__(self, id, email, project_name, date_scored, model, files, filename, is_deleted):
         self.id = id
+        self.email = email
         self.project_name = project_name
         self.date_scored = date_scored
         self.model = model
         self.files = files
         self.filename = filename
+        self.is_deleted = is_deleted
