@@ -143,6 +143,8 @@ def generate_images():
     import pandas as pd
     import numpy as np
     import seaborn as sns
+    import matplotlib
+    matplotlib.use('Agg')
     import matplotlib.pyplot as plt
     subprocess.run(['mkdir', '-p', GRAPH_FOLDER], check=True)
     for file in os.listdir(f'data/{FINAL_SCORED_DIR}'):
