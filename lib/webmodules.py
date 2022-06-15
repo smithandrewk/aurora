@@ -52,8 +52,8 @@ def clean_workspace(filename):
 def email_results(email):
     import smtplib
 
-    SENDER = 'AuroraProjectEmail@gmail.com'
-    PASSWORD = 'kxfiusttkwlwneii'
+    SENDER = MAIL_FROM
+    PASSWORD = MAIL_PASSWORD
     RECIEVER = email
 
     with smtplib.SMTP('smtp.gmail.com', 587) as s:
