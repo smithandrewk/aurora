@@ -11,9 +11,8 @@ from flask import (
 from app import app, login_manager, db
 from lib.webmodels import Users, ScoringLog, Notes
 from lib.webconfig import (
-    UPLOAD_FOLDER, DOWNLOAD_FOLDER, ARCHIVE_FOLDER, GRAPH_FOLDER,
-    RAW_DIR, RAW_ZDB_DIR, FINAL_SCORED_DIR, FINAL_SCORED_ZDB_DIR,
-    ALLOWED_EXTENSIONS, MODELS, ADMIN_USERS, MAIL_FROM, MAIL_PASSWORD
+    DOWNLOAD_FOLDER, ARCHIVE_FOLDER, GRAPH_FOLDER,
+    RAW_DIR, ALLOWED_EXTENSIONS, MODELS, ADMIN_USERS
 )
 from lib.webforms import (
     LoginForm, SignupForm, ZDBFileUploadForm, EditProjectNameForm

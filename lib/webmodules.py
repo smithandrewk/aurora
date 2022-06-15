@@ -1,7 +1,11 @@
 import subprocess
 import os
 from subprocess import CalledProcessError
-from lib.webconfig import *
+from lib.webconfig import(
+    UPLOAD_FOLDER, RAW_DIR, RAW_ZDB_DIR, MAIL_PASSWORD, MAIL_FROM,
+    ALLOWED_EXTENSIONS, ARCHIVE_FOLDER, DOWNLOAD_FOLDER, GRAPH_FOLDER,
+    FINAL_SCORED_DIR, FINAL_SCORED_ZDB_DIR
+)
 import json
 
 
@@ -130,8 +134,6 @@ def check_zdb_files():
 
 def move_zdb_to_download_folder(new_filename):
     args = ['zip', '-rj', os.path.join(DOWNLOAD_FOLDER, new_filename), os.path.join('data', FINAL_SCORED_ZDB_DIR)]
-    # args = ['sh', '-c', 
-            # f"cd data/ && zip -r ../{DOWNLOAD_FOLDER}/{new_filename} {FINAL_SCORED_ZDB_DIR}"]
     subprocess.run(args, check=True)
 def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
