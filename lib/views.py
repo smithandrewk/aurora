@@ -12,7 +12,7 @@ from app import app, login_manager, db
 from lib.webmodels import Users, ScoringLog, Notes
 from lib.webconfig import (
     DOWNLOAD_FOLDER, ARCHIVE_FOLDER, GRAPH_FOLDER,
-    RAW_DIR, ALLOWED_EXTENSIONS, MODELS, ADMIN_USERS
+    RAW_DIR, ALLOWED_EXTENSIONS, MODELS, ADMIN_USERS, UPLOAD_FOLDER
 )
 from lib.webforms import (
     LoginForm, SignupForm, ZDBFileUploadForm, EditProjectNameForm
@@ -29,6 +29,7 @@ from lib.webmodules import (
     check_zdb_files, move_zdb_to_download_folder, archive_zdb_files, 
     generate_images, DashboardLog
 )
+from lib.utils import execute_command_line
 
 @app.errorhandler(401)
 def custom_401(error):
@@ -257,9 +258,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     # Generator that runs pipeline and generates progress information
     def generate():
 
-        os.system(f'rm -rf {DOWNLOAD_FOLDER}/* data {GRAPH_FOLDER}')
-        # os.system(f'rm -rf data')
-        
+        execute_command_line(f'rm -rf {DOWNLOAD_FOLDER}/* data {GRAPH_FOLDER}')
         yield score_wrapper(unzip_upload, 1, total_steps, "Unzipping Files", data_filename, iszip)
         yield score_wrapper(unzip_zdb_upload, 1, total_steps, "Checking File Format", zdb_filename, iszip)
 

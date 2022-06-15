@@ -6,8 +6,6 @@ from lib.webconfig import(
     ALLOWED_EXTENSIONS, ARCHIVE_FOLDER, DOWNLOAD_FOLDER, GRAPH_FOLDER,
     FINAL_SCORED_DIR, FINAL_SCORED_ZDB_DIR
 )
-import json
-
 
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """ Used by generator in 'main_score' to wrap pipeline functions in order to
@@ -51,7 +49,7 @@ def unzip_upload(filename, iszip):
 
 def clean_workspace(filename):
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
-    # subprocess.run(args, check=True)
+    subprocess.run(args, check=True)
 
 def email_results(email):
     import smtplib
