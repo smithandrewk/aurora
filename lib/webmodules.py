@@ -74,8 +74,7 @@ def valid_extension(filename, iszip):
     else:
         return (filename.endswith(ALLOWED_EXTENSIONS['XLS']) 
                 or filename.endswith(ALLOWED_EXTENSIONS['XLSX']))
-def init_dir(db):
-    db.create_all()
+def init_dir():
     try:
         subprocess.run(['mkdir', '-p', UPLOAD_FOLDER])
         subprocess.run(['mkdir', '-p', DOWNLOAD_FOLDER])
@@ -170,7 +169,7 @@ def generate_images():
 
         subprocess.run(['cp', f'data/10_images/{new_filename}', GRAPH_FOLDER], check=True)
 
-class dashboard_log():
+class DashboardLog():
     def __init__(self, id, email, project_name, date_scored, model, files, filename, is_deleted):
         self.id = id
         self.email = email
