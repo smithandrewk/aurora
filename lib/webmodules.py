@@ -130,9 +130,18 @@ def check_zdb_files():
         if not name:
             raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
 
-def move_zdb_to_download_folder(new_filename):
-    args = ['zip', '-rj', os.path.join(DOWNLOAD_FOLDER, new_filename), os.path.join('data', FINAL_SCORED_ZDB_DIR)]
+def move_to_download_folder(new_filename):
+    args = ['zip', '-rj', 
+            os.path.join(DOWNLOAD_FOLDER, new_filename),
+            os.path.join('data', FINAL_SCORED_ZDB_DIR)]
     subprocess.run(args, check=True)
+
+    graphs_filename = new_filename.replace('.zip', '-graphs.zip')
+    args = ['zip', '-rj', 
+            os.path.join(DOWNLOAD_FOLDER, graphs_filename), 
+            'data/10_images']
+    subprocess.run(args, check=True)
+
 def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
             f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
@@ -140,12 +149,14 @@ def archive_zdb_files(archive_name):
 
 def generate_images():
     import pandas as pd
-    import numpy as np
     import seaborn as sns
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
+
     subprocess.run(['mkdir', '-p', GRAPH_FOLDER], check=True)
+    subprocess.run(['mkdir', '-p', 'data/10_images'], check=True)
+
     for file in os.listdir(f'data/{FINAL_SCORED_DIR}'):
         new_filename = file.replace('.csv', '.png')
         df = pd.read_csv(f'data/{FINAL_SCORED_DIR}/{file}')
@@ -163,7 +174,6 @@ def generate_images():
         plt.legend([],[], frameon=False)
         #################################################################
 
-        subprocess.run(['mkdir', '-p', 'data/10_images'], check=True)
         plt.savefig(f'data/10_images/{new_filename}')
         plt.close()
 

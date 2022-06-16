@@ -21,7 +21,7 @@ from lib.modules import (
 from lib.webmodules import (
     score_wrapper, unzip_upload, clean_workspace, email_results, 
     valid_extension, valid_zdb_extension, unzip_zdb_upload, 
-    check_zdb_files, move_zdb_to_download_folder, archive_zdb_files, 
+    check_zdb_files, move_to_download_folder, archive_zdb_files, 
     generate_images
 )
 from lib.utils import execute_command_line
@@ -120,7 +120,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 
         # Call helper modules
         yield score_wrapper(generate_images, 11, total_steps, "Moving files")
-        yield score_wrapper(move_zdb_to_download_folder, 12, total_steps, "Archiving files", new_filename)        
+        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)        
         yield score_wrapper(archive_zdb_files, 13, total_steps, "Cleaning Workspace", archive_name)
         yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename)
 
@@ -146,6 +146,11 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
+
+@app.route("/graphs/<new_filename>", methods=['GET', 'POST'])
+def graphs(new_filename):
+    files = os.listdir(f'{GRAPH_FOLDER}')
+    return render_template('graphs.jinja', new_filename=new_filename, files=files)
 
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required
