@@ -11,9 +11,8 @@ app = Flask(__name__)
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = secrets.token_hex()
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Aurora-Data.db'
 db = SQLAlchemy(app)
-db.create_all()
 
 
 migrate = Migrate(app, db)
@@ -30,6 +29,7 @@ from lib.views.scoring import *
 from lib.views.notes import *
 from lib.views.graphs import *
 
+db.create_all()
 
 if __name__=="__main__":
     app.run()
