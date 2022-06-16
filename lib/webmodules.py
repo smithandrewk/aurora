@@ -1,8 +1,10 @@
 import subprocess
 import os
 from subprocess import CalledProcessError
+
+from tensorboard import program
 from lib.webconfig import(
-    UPLOAD_FOLDER, RAW_DIR, RAW_ZDB_DIR, MAIL_PASSWORD, MAIL_FROM,
+    DATA_DIRS, UPLOAD_FOLDER, RAW_DIR, RAW_ZDB_DIR, MAIL_PASSWORD, MAIL_FROM,
     ALLOWED_EXTENSIONS, ARCHIVE_FOLDER, DOWNLOAD_FOLDER, GRAPH_FOLDER,
     FINAL_SCORED_DIR, FINAL_SCORED_ZDB_DIR
 )
@@ -143,7 +145,7 @@ def move_to_download_folder(filenames):
 
 def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR}"]
+            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR} {DATA_DIRS['GRAPHS']}"]
     subprocess.run(args, check=True)
 
 def generate_images():
@@ -181,10 +183,10 @@ def generate_images():
 def generate_filenames(project_name):
     from datetime import datetime
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
-
-    new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
-    graphs_filename = new_filename.replace('.zip', '-graphs.zip')
-    archive_name = f"{date}_{new_filename}.zip"
+    project_name = project_name.replace(' ', '_')
+    new_filename = f"scored-lstm_{project_name}.zip"
+    graphs_filename = f"{project_name}-graphs.zip"
+    archive_name = f"{date}_{project_name}.zip"
 
     return {'FILES': new_filename, 
             'GRAPHS': graphs_filename, 

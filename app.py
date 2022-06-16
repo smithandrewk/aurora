@@ -27,7 +27,6 @@ from lib.views.accounts import *
 from lib.views.dashboard import *
 from lib.views.scoring import *
 from lib.views.notes import *
-from lib.views.graphs import *
 
 db.create_all()
 
