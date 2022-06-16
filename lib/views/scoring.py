@@ -22,7 +22,7 @@ from lib.webmodules import (
     score_wrapper, unzip_upload, clean_workspace, email_results, 
     valid_extension, valid_zdb_extension, unzip_zdb_upload, 
     check_zdb_files, move_to_download_folder, archive_zdb_files, 
-    generate_images
+    generate_images, generate_filenames
 )
 from lib.utils import execute_command_line
 
@@ -72,14 +72,17 @@ def score_data_zdb():
 def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
     if project_name == 'None':
         project_name = data_filename.replace('.xls', '').replace('.zip', '')
-    new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
+    # new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
+    filenames = generate_filenames(project_name)
+
     return render_template('process-file-zdb.jinja',
                            project_name=project_name,
                            model=model, 
                            iszip=iszip, 
                            data_filename=data_filename, 
                            zdb_filename=zdb_filename,
-                           new_filename=new_filename, 
+                           new_filename=filenames['FILES'],
+                           graphs_filename=filenames['GRAPHS'],
                            email=current_user.email,
                            name=f'{current_user.first_name} {current_user.last_name}')
 
@@ -87,14 +90,16 @@ def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
 @login_required
 def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, email):
      # This route will be called by javascript in 'process-file.jinja'
-    from datetime import datetime
+    # from datetime import datetime
     total_steps = 16
-    date = datetime.now().strftime("%m.%d.%Y_%H:%M")
+    # date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
-    new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
-    archive_name = f"{date}_{new_filename}.zip"
+    filenames = generate_filenames(project_name)
+    # new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
+    # archive_name = f"{date}_{new_filename}.zip"
+
     # Generator that runs pipeline and generates progress information
     def generate():
 
@@ -120,8 +125,8 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 
         # Call helper modules
         yield score_wrapper(generate_images, 11, total_steps, "Moving files")
-        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", new_filename)        
-        yield score_wrapper(archive_zdb_files, 13, total_steps, "Cleaning Workspace", archive_name)
+        yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", filenames)        
+        yield score_wrapper(archive_zdb_files, 13, total_steps, "Cleaning Workspace", filenames['ARCHIVE'])
         yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename)
 
         # Step 15: Email Result
@@ -133,7 +138,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
                              project_name=project_name,
-                             filename=archive_name,
+                             filename=filenames['ARCHIVE'],
                              model=f'{model} [{MODELS[model]}]',
                              files=files_log)
             db.session.add(log)
@@ -147,10 +152,13 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
 
-@app.route("/graphs/<new_filename>", methods=['GET', 'POST'])
-def graphs(new_filename):
+@app.route("/graphs/<new_filename>/<graphs_filename>", methods=['GET', 'POST'])
+def graphs(new_filename, graphs_filename):
     files = os.listdir(f'{GRAPH_FOLDER}')
-    return render_template('graphs.jinja', new_filename=new_filename, files=files)
+    return render_template('graphs.jinja', 
+                            new_filename=new_filename,
+                            graphs_filename=graphs_filename, 
+                            files=files)
 
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required

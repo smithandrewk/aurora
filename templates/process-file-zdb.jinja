@@ -32,6 +32,7 @@ nav-link link-dark
                 source.close()
                 $('.progress-bar').css('background-color', '#198754');
                 $("#download-button").removeClass('d-none');
+                $("#download-graph-button").removeClass('d-none');
                 $("#graph-button").removeClass('d-none');
             }
         }
@@ -58,7 +59,13 @@ nav-link link-dark
     </div>
     <br>
     <div class="d-flex justify-content-center">
-        <form id='graph-button' class='d-none' method='POST' action="{{ url_for('graphs', new_filename=new_filename) }}">
+        <form id='download-graph-button' class='d-none' method='POST' action="{{ url_for('download_zip', filename=graphs_filename) }}">
+            <input type="submit" value="Download Graphs (ZIP)" class="w-100 btn btn-primary">
+        </form>
+    </div>
+    <br>
+    <div class="d-flex justify-content-center">
+        <form id='graph-button' class='d-none' method='POST' action="{{ url_for('graphs', new_filename=new_filename, graphs_filename=graphs_filename) }}">
             <input type="submit" value="View Graphs" class="w-100 btn btn-primary">
         </form>
     </div>

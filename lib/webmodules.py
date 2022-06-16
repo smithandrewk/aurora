@@ -130,15 +130,14 @@ def check_zdb_files():
         if not name:
             raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
 
-def move_to_download_folder(new_filename):
+def move_to_download_folder(filenames):
     args = ['zip', '-rj', 
-            os.path.join(DOWNLOAD_FOLDER, new_filename),
+            os.path.join(DOWNLOAD_FOLDER, filenames['FILES']),
             os.path.join('data', FINAL_SCORED_ZDB_DIR)]
     subprocess.run(args, check=True)
-
-    graphs_filename = new_filename.replace('.zip', '-graphs.zip')
+    # graphs_filename = new_filename.replace('.zip', '-graphs.zip')
     args = ['zip', '-rj', 
-            os.path.join(DOWNLOAD_FOLDER, graphs_filename), 
+            os.path.join(DOWNLOAD_FOLDER, filenames['GRAPHS']), 
             'data/10_images']
     subprocess.run(args, check=True)
 
@@ -178,6 +177,18 @@ def generate_images():
         plt.close()
 
         subprocess.run(['cp', f'data/10_images/{new_filename}', GRAPH_FOLDER], check=True)
+
+def generate_filenames(project_name):
+    from datetime import datetime
+    date = datetime.now().strftime("%m.%d.%Y_%H:%M")
+
+    new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
+    graphs_filename = new_filename.replace('.zip', '-graphs.zip')
+    archive_name = f"{date}_{new_filename}.zip"
+
+    return {'FILES': new_filename, 
+            'GRAPHS': graphs_filename, 
+            'ARCHIVE': archive_name}
 
 class DashboardLog():
     def __init__(self, id, email, project_name, date_scored, model, files, filename, is_deleted):
