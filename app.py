@@ -24,7 +24,7 @@ login_manager.view ='login'
 
 init_dir()
 
-if __name__=="__main__":
-    from lib.views import *
+from lib.views import *
 
+if __name__=="__main__":
     app.run()
