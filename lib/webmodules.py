@@ -23,16 +23,13 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """
     try:
         scoring_function(*args)
-    # TODO raise exceptions in functions and use message
     except Exception as exc:
         print(f'ERROR step {step}')
         # return error message
-        return f"data:0\tStep {step} In Function: {scoring_function.__name__} - {exc}\n\n"
+        return (f"data:0\tStep {step} " 
+                f"In Function: {scoring_function.__name__} - {exc}\n\n")
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
-
-# functions for before and after pipeline
-
 
 def unzip_upload(filename, iszip):
     # remove old files if they exist
@@ -41,10 +38,16 @@ def unzip_upload(filename, iszip):
         args = ['cp', os.path.join(
             FOLDERS['UPLOAD'], filename), 'data/Unscored.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{DATA_DIRS["RAW"]}']
+        args = ['unzip', 
+                '-j', 
+                'data/Unscored.zip', 
+                '-d', 
+                f'./data/{DATA_DIRS["RAW"]}']
         subprocess.run(args, check=True)        
     else: 
-        args = ['cp', os.path.join(FOLDERS['UPLOAD'], filename), f'data/{DATA_DIRS["RAW"]}/']
+        args = ['cp', 
+                os.path.join(FOLDERS['UPLOAD'], filename), 
+                f'data/{DATA_DIRS["RAW"]}/']
         subprocess.run(args, check=True)
 
 def clean_workspace(filename):
@@ -95,12 +98,20 @@ def valid_zdb_extension(filename, iszip):
 def unzip_zdb_upload(filename, iszip):
     subprocess.run(['mkdir', '-p', f'data/{DATA_DIRS["RAW_ZDB"]}'])
     if iszip:
-        args = ['cp', os.path.join(FOLDERS['UPLOAD'], filename), 'data/UnscoredZDB.zip']
+        args = ['cp', 
+                os.path.join(FOLDERS['UPLOAD'], filename), 
+                'data/UnscoredZDB.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/UnscoredZDB.zip', '-d', f'./data/{DATA_DIRS["RAW_ZDB"]}']
+        args = ['unzip', 
+                '-j', 
+                'data/UnscoredZDB.zip', 
+                '-d', 
+                f'./data/{DATA_DIRS["RAW_ZDB"]}']
         subprocess.run(args, check=True)        
     else: 
-        args = ['cp', os.path.join(FOLDERS['UPLOAD'], filename), f'data/{DATA_DIRS["RAW_ZDB"]}']
+        args = ['cp', 
+                os.path.join(FOLDERS['UPLOAD'], filename), 
+                f'data/{DATA_DIRS["RAW_ZDB"]}']
         subprocess.run(args, check=True)
 def check_zdb_files():
     import sqlite3
@@ -109,26 +120,35 @@ def check_zdb_files():
     for csv in os.listdir(os.path.join('data', DATA_DIRS["RAW"])):
         data_files.append(csv.replace('.xls', '').replace('.xlsx', ''))
         if not valid_extension(csv, iszip=False):
-            raise Exception('Invalid File Format (data files must end with .xls or .xlsx)')
+            raise Exception('Invalid File Format ' +
+                            '(data files must end with .xls or .xlsx)')
     for zdb in os.listdir(os.path.join('data', DATA_DIRS["RAW_ZDB"])):
         if not valid_zdb_extension(zdb, iszip=False):
-            raise Exception('Invalid File Format (zdb files must end with .zdb)')
+            raise Exception('Invalid File Format' + 
+                            '(zdb files must end with .zdb)')
         # check if names of zdb and data files corrospond
         valid = False
         for data_file in data_files:
             if data_file in zdb:
                 valid = True
         if not valid:
-            raise Exception(f'ZDB file ({zdb}) does not have a corrosponding data file')
+            raise Exception(f'ZDB file [{zdb}] does not have'+
+                            ' a corrosponding data file')
 
         # check if zdb files are correctly formatted
-        conn = sqlite3.connect(os.path.join('data', DATA_DIRS["RAW_ZDB"], zdb))
+        conn = sqlite3.connect(os.path.join('data', DATA_DIRS["RAW_ZDB"], 
+                               zdb))
         cur = conn.cursor()
-        query = "SELECT name FROM sqlite_master WHERE type='table' AND name='scoring_marker';"
+        query = """
+                SELECT name FROM sqlite_master 
+                WHERE type='table' 
+                AND name='scoring_marker';
+                """
         cur.execute(query)
         name = cur.fetchall()
         if not name:
-            raise Exception(f'ZDB file ({zdb}) is not formatted. It must be scored once in NeuroScore')
+            raise Exception(f'ZDB file ({zdb}) is not formatted. '
+                            'It must be scored once in NeuroScore')
 
 def move_to_download_folder(filenames):
     args = ['zip', '-rj', 
@@ -143,7 +163,12 @@ def move_to_download_folder(filenames):
 
 def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{FOLDERS['ARCHIVE']}/{archive_name} {DATA_DIRS['FINAL_ZDB']} {DATA_DIRS['RAW_ZDB']} {DATA_DIRS['RAW']} {DATA_DIRS['GRAPHS']}"]
+            ("cd data/ && zip -r "
+            f"../{FOLDERS['ARCHIVE']}/{archive_name} "
+            f"{DATA_DIRS['FINAL_ZDB']} "
+            f"{DATA_DIRS['RAW_ZDB']} "
+            f"{DATA_DIRS['RAW']} "
+            f"{DATA_DIRS['GRAPHS']}")]
     subprocess.run(args, check=True)
 
 def generate_images():
@@ -154,7 +179,8 @@ def generate_images():
     import matplotlib.pyplot as plt
 
     subprocess.run(['mkdir', '-p', FOLDERS['GRAPHS']], check=True)
-    subprocess.run(['mkdir', '-p', os.path.join('data', DATA_DIRS['GRAPHS'])], check=True)
+    subprocess.run(['mkdir', '-p', os.path.join('data', DATA_DIRS['GRAPHS'])], 
+                   check=True)
 
     for file in os.listdir(f'data/{DATA_DIRS["FINAL"]}'):
         new_filename = file.replace('.csv', '.png')
@@ -194,7 +220,8 @@ def generate_filenames(project_name):
             'ARCHIVE': archive_name}
 
 class DashboardLog():
-    def __init__(self, id, email, project_name, date_scored, model, files, filename, is_deleted):
+    def __init__(self, id, email, project_name, date_scored, model, 
+                 files, filename, is_deleted):
         self.id = id
         self.email = email
         self.project_name = project_name

@@ -27,7 +27,8 @@ def dashboard(edit_id=None):
         logs = list(ScoringLog.query)
         admin = True
     else:
-        logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
+        logs = list(ScoringLog.query.filter_by(email=current_user.email, 
+                                               is_deleted=False))
     logs.reverse()
     dash_logs = []
     num_logs = 0

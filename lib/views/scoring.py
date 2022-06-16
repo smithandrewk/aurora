@@ -49,8 +49,10 @@ def score_data_zdb():
                 return render_template('score-data-zdb.jinja', form=form)
             data_filename = data_filename.replace(ALLOWED_EXTENSIONS['XLSX'], 
                                                   ALLOWED_EXTENSIONS['XLS'])
-            data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], data_filename))
-            zdb_file.save(os.path.join(app.config['UPLOAD_FOLDER'], zdb_filename))
+            data_file.save(os.path.join(app.config['UPLOAD_FOLDER'], 
+                                        data_filename))
+            zdb_file.save(os.path.join(app.config['UPLOAD_FOLDER'], 
+                                       zdb_filename))
 
             form.project_name.data = ''
             form.model.data = ''
@@ -65,14 +67,15 @@ def score_data_zdb():
                                     data_filename=data_filename,
                                     zdb_filename=zdb_filename))
 
-    return render_template('score-data-zdb.jinja', form=form, name=f'{current_user.first_name} {current_user.last_name}')
+    return render_template('score-data-zdb.jinja', 
+                           form=form, 
+                           name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/process-file-zdb/<project_name>/<model>/<int:iszip>/<data_filename>/<zdb_filename>', methods=['GET', 'POST'])
 @login_required
 def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
     if project_name == 'None':
         project_name = data_filename.replace('.xls', '').replace('.zip', '')
-    # new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
     filenames = generate_filenames(project_name)
 
     return render_template('process-file-zdb.jinja',
@@ -90,15 +93,11 @@ def process_file_zdb(project_name, model, iszip, data_filename, zdb_filename):
 @login_required
 def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, email):
      # This route will be called by javascript in 'process-file.jinja'
-    # from datetime import datetime
     total_steps = 16
-    # date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     files = []
     
     path_to_model = f"model/{MODELS[model]}"
     filenames = generate_filenames(project_name)
-    # new_filename = f"scored-lstm_{project_name.replace(' ','_')}.zip"
-    # archive_name = f"{date}_{new_filename}.zip"
 
     # Generator that runs pipeline and generates progress information
     def generate():

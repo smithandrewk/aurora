@@ -34,7 +34,10 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()     #query database - get all users with submitted email address - should be none
         if user is None:    # user does not already exist
-            user = Users(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data, password=form.password.data)
+            user = Users(first_name=form.first_name.data, 
+                         last_name=form.last_name.data, 
+                         email=form.email.data, 
+                         password=form.password.data)
             db.session.add(user)
             db.session.commit()
             form.first_name.data = ''
