@@ -24,7 +24,12 @@ login_manager.view ='login'
 
 init_dir()
 
-from lib.views import *
+from lib.views.accounts import *
+from lib.views.dashboard import *
+from lib.views.scoring import *
+from lib.views.notes import *
+from lib.views.graphs import *
+
 
 if __name__=="__main__":
     app.run()

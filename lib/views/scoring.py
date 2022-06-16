@@ -1,22 +1,17 @@
 import os
 import json
-import subprocess
-from subprocess import CalledProcessError
 from werkzeug.utils import secure_filename
-from flask_login import login_user, login_required, logout_user, current_user
+from flask_login import login_required, current_user
 from flask import (
-    render_template, request, redirect, url_for, flash, 
-    Response, send_from_directory, Markup
+    render_template, redirect, url_for, flash, 
+    Response, send_from_directory
 )
-from app import app, login_manager, db
-from lib.webmodels import Users, ScoringLog, Notes
+from app import app, db
+from lib.webmodels import ScoringLog
 from lib.webconfig import (
-    DOWNLOAD_FOLDER, ARCHIVE_FOLDER, GRAPH_FOLDER,
-    RAW_DIR, ALLOWED_EXTENSIONS, MODELS, ADMIN_USERS, UPLOAD_FOLDER
+    DOWNLOAD_FOLDER, GRAPH_FOLDER, RAW_DIR, ALLOWED_EXTENSIONS, MODELS
 )
-from lib.webforms import (
-    LoginForm, SignupForm, ZDBFileUploadForm, EditProjectNameForm
-)
+from lib.webforms import ZDBFileUploadForm
 from lib.modules import (
     rename_data_in_raw, preprocess_data_in_renamed,
     scale_features_in_preprocessed, window_and_score_files_in_scaled_with_LSTM,
@@ -27,164 +22,9 @@ from lib.webmodules import (
     score_wrapper, unzip_upload, clean_workspace, email_results, 
     valid_extension, valid_zdb_extension, unzip_zdb_upload, 
     check_zdb_files, move_zdb_to_download_folder, archive_zdb_files, 
-    generate_images, DashboardLog
+    generate_images
 )
 from lib.utils import execute_command_line
-
-@app.errorhandler(401)
-def custom_401(error):
-    flash('Login Required')
-    return redirect(url_for('login'))
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Users.query.get(int(user_id))
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()
-        if user:
-            if user.verify_password(form.password.data):
-                login_user(user)
-                return redirect(url_for('dashboard'))
-            else:
-                flash('Invalid Password')
-        else:
-            flash('Invalid Email Address')
-    return render_template('login.jinja', form=form)
-
-@app.route('/add_user', methods=['GET', 'POST'])
-def add_user():
-    form = SignupForm()
-    if form.validate_on_submit():
-        user = Users.query.filter_by(email=form.email.data).first()     #query database - get all users with submitted email address - should be none
-        if user is None:    # user does not already exist
-            user = Users(first_name=form.first_name.data, last_name=form.last_name.data, email=form.email.data, password=form.password.data)
-            db.session.add(user)
-            db.session.commit()
-            form.first_name.data = ''
-            form.last_name.data = ''
-            form.email.data = ''
-            form.password = ''
-            flash('User created Successfully. ')
-            return redirect(url_for('login'))
-        else:
-            flash('User with that email already exists')
-    return render_template('add-user.jinja', form=form)
-
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    flash('Logged out Successfully')
-    return redirect(url_for('index'))
-
-@app.route('/')
-def index():
-    return render_template('home.jinja')
-
-@app.route('/dashboard')
-@app.route('/dashboard/<int:edit_id>', methods=['GET', 'POST'])
-@login_required
-def dashboard(edit_id=None):
-    form = EditProjectNameForm()
-    admin = False
-    if current_user.email in ADMIN_USERS:
-        logs = list(ScoringLog.query)
-        admin = True
-    else:
-        logs = list(ScoringLog.query.filter_by(email=current_user.email, is_deleted=False))
-    logs.reverse()
-    dash_logs = []
-    num_logs = 0
-    for log in logs:
-        dash_logs.append(DashboardLog(log.id,
-                                      log.email,
-                                      log.project_name,
-                                      str(log.date_scored)[:-7],
-                                      log.model,
-                                      json.loads(log.files)[0],
-                                      log.filename,
-                                      log.is_deleted))
-        num_logs += 1
-    if form.validate_on_submit():
-        new_name = form.new_name.data
-        print(new_name, edit_id)
-        log = ScoringLog.query.filter_by(id=edit_id).first()
-        log.project_name = new_name
-        db.session.commit()
-        return redirect(url_for('dashboard'))
-    return render_template('dashboard.jinja',
-                            admin=admin,
-                            name=f'{current_user.first_name} {current_user.last_name}',
-                            logs=dash_logs,
-                            num_logs=num_logs,
-                            edit_id=edit_id,
-                            form=form)
-
-@app.route('/notes', methods=['GET', 'POST'])
-@login_required
-def notes():
-    if request.method == 'POST':
-        title = request.form['title']
-        content = request.form['content']
-
-        if not title:
-            flash('Title is required!')
-        elif not content:
-            flash('Content is required!')
-        else:
-            from datetime import datetime
-            date = datetime.now()
-            print({'title': title, 'content': content})
-            note = Notes(email=current_user.email, 
-                             note_name=title,
-                             date_written=date,
-                             contents=content)
-            db.session.add(note)
-            db.session.commit()
-            return redirect(url_for('notes'))
-
-    notes = list(Notes.query.filter_by(email=current_user.email))
-    notes.reverse()
-    return render_template('notes.jinja', 
-                           name=f'{current_user.first_name} {current_user.last_name}',notes=notes)
-
-@app.route("/download-zip/<filename>", methods=['GET', 'POST'])
-@login_required
-def download_zip(filename):
-    return send_from_directory(DOWNLOAD_FOLDER, filename)
-
-@app.route("/download-archive-zip/<filename>", methods=['GET', 'POST'])
-@login_required
-def download_archive_zip(filename):
-    try:
-        args = ['cp', os.path.join(ARCHIVE_FOLDER, filename), DOWNLOAD_FOLDER]
-        subprocess.run(args, check=True)
-    except CalledProcessError as exp:
-        flash('Archive no longer available')
-        return redirect(url_for('dashboard'))
-    return send_from_directory(DOWNLOAD_FOLDER, filename)
-
-@app.route("/delete_log/<log_id>/<table_num>")
-@login_required
-def delete_log(log_id, table_num):
-    url = url_for('restore_log', log_id=log_id)
-    flash(Markup(f"Log {table_num} deleted <a href='{url}'>Undo?</a>"))
-    log = ScoringLog.query.filter_by(id=log_id).first()
-    log.is_deleted = True
-    db.session.commit()
-    return redirect(url_for('dashboard'))
-
-@app.route("/restore_log/<log_id>")
-@login_required
-def restore_log(log_id):
-    log = ScoringLog.query.filter_by(id=log_id).first()
-    log.is_deleted = False
-    db.session.commit()
-    return redirect(url_for('dashboard'))
 
 # ZDB scoring route
 @app.route("/score_data_zdb", methods=['GET', 'POST'])
@@ -307,7 +147,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
 
-@app.route("/graphs/<new_filename>", methods=['GET', 'POST'])
-def graphs(new_filename):
-    files = os.listdir(f'{GRAPH_FOLDER}')
-    return render_template('graphs.jinja', new_filename=new_filename, files=files)
+@app.route("/download-zip/<filename>", methods=['GET', 'POST'])
+@login_required
+def download_zip(filename):
+    return send_from_directory(DOWNLOAD_FOLDER, filename)
