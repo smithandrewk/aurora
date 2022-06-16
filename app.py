@@ -4,12 +4,12 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 import secrets
 from lib.webmodules import init_dir
-from lib.webconfig import UPLOAD_FOLDER
+from lib.webconfig import FOLDERS
 
 
 app = Flask(__name__)
 
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = FOLDERS['UPLOAD']
 app.secret_key = secrets.token_hex()
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///Aurora-Data.db'
 db = SQLAlchemy(app)

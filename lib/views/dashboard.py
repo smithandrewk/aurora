@@ -9,7 +9,7 @@ from flask import (
 )
 from app import app, db
 from lib.webmodels import ScoringLog
-from lib.webconfig import DOWNLOAD_FOLDER, ARCHIVE_FOLDER, ADMIN_USERS
+from lib.webconfig import FOLDERS, ADMIN_USERS
 from lib.webforms import EditProjectNameForm
 from lib.webmodules import DashboardLog
 
@@ -60,12 +60,12 @@ def dashboard(edit_id=None):
 @login_required
 def download_archive_zip(filename):
     try:
-        args = ['cp', os.path.join(ARCHIVE_FOLDER, filename), DOWNLOAD_FOLDER]
+        args = ['cp', os.path.join(FOLDERS['ARCHIVE'], filename), FOLDERS['DOWNLOAD']]
         subprocess.run(args, check=True)
     except CalledProcessError as exp:
         flash('Archive no longer available')
         return redirect(url_for('dashboard'))
-    return send_from_directory(DOWNLOAD_FOLDER, filename)
+    return send_from_directory(FOLDERS['DOWNLOAD'], filename)
 
 @app.route("/delete_log/<log_id>/<table_num>")
 @login_required

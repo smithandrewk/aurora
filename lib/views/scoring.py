@@ -9,7 +9,7 @@ from flask import (
 from app import app, db
 from lib.webmodels import ScoringLog
 from lib.webconfig import (
-    DOWNLOAD_FOLDER, GRAPH_FOLDER, RAW_DIR, ALLOWED_EXTENSIONS, MODELS
+    FOLDERS, DATA_DIRS, ALLOWED_EXTENSIONS, MODELS
 )
 from lib.webforms import ZDBFileUploadForm
 from lib.modules import (
@@ -103,14 +103,14 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     # Generator that runs pipeline and generates progress information
     def generate():
 
-        execute_command_line(f'rm -rf {DOWNLOAD_FOLDER}/* data {GRAPH_FOLDER}')
+        execute_command_line(f'rm -rf {FOLDERS["DOWNLOAD"]}/* data {FOLDERS["GRAPHS"]}')
         yield score_wrapper(unzip_upload, 1, total_steps, "Unzipping Files", data_filename, iszip)
         yield score_wrapper(unzip_zdb_upload, 1, total_steps, "Checking File Format", zdb_filename, iszip)
 
         yield score_wrapper(check_zdb_files, 2, total_steps, "Renaming Data")
 
         # Get list of files being scored
-        files.append(os.listdir(f'data/{RAW_DIR}'))
+        files.append(os.listdir(f'data/{DATA_DIRS["RAW"]}'))
         
         # Call each function of the pipeline
         yield score_wrapper(rename_data_in_raw, 3, total_steps, "Preprocessing")
@@ -154,7 +154,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 
 @app.route("/graphs/<new_filename>/<graphs_filename>", methods=['GET', 'POST'])
 def graphs(new_filename, graphs_filename):
-    files = os.listdir(f'{GRAPH_FOLDER}')
+    files = os.listdir(f'{FOLDERS["GRAPHS"]}')
     return render_template('graphs.jinja', 
                             new_filename=new_filename,
                             graphs_filename=graphs_filename, 
@@ -163,4 +163,4 @@ def graphs(new_filename, graphs_filename):
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required
 def download_zip(filename):
-    return send_from_directory(DOWNLOAD_FOLDER, filename)
+    return send_from_directory(FOLDERS['DOWNLOAD'], filename)

@@ -4,9 +4,7 @@ from subprocess import CalledProcessError
 
 from tensorboard import program
 from lib.webconfig import(
-    DATA_DIRS, UPLOAD_FOLDER, RAW_DIR, RAW_ZDB_DIR, MAIL_PASSWORD, MAIL_FROM,
-    ALLOWED_EXTENSIONS, ARCHIVE_FOLDER, DOWNLOAD_FOLDER, GRAPH_FOLDER,
-    FINAL_SCORED_DIR, FINAL_SCORED_ZDB_DIR
+    DATA_DIRS, FOLDERS, MAIL_PASSWORD, MAIL_FROM, ALLOWED_EXTENSIONS
 )
 
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
@@ -38,15 +36,15 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
 
 def unzip_upload(filename, iszip):
     # remove old files if they exist
-    subprocess.run(['mkdir', '-p', f'data/{RAW_DIR}'])
+    subprocess.run(['mkdir', '-p', f'data/{DATA_DIRS["RAW"]}'])
     if iszip:
         args = ['cp', os.path.join(
-            UPLOAD_FOLDER, filename), 'data/Unscored.zip']
+            FOLDERS['UPLOAD'], filename), 'data/Unscored.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{RAW_DIR}']
+        args = ['unzip', '-j', 'data/Unscored.zip', '-d', f'./data/{DATA_DIRS["RAW"]}']
         subprocess.run(args, check=True)        
     else: 
-        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_DIR}/']
+        args = ['cp', os.path.join(FOLDERS['UPLOAD'], filename), f'data/{DATA_DIRS["RAW"]}/']
         subprocess.run(args, check=True)
 
 def clean_workspace(filename):
@@ -80,9 +78,9 @@ def valid_extension(filename, iszip):
                 or filename.endswith(ALLOWED_EXTENSIONS['XLSX']))
 def init_dir():
     try:
-        subprocess.run(['mkdir', '-p', UPLOAD_FOLDER])
-        subprocess.run(['mkdir', '-p', DOWNLOAD_FOLDER])
-        subprocess.run(['mkdir', '-p', ARCHIVE_FOLDER])
+        subprocess.run(['mkdir', '-p', FOLDERS['UPLOAD']])
+        subprocess.run(['mkdir', '-p', FOLDERS['DOWNLOAD']])
+        subprocess.run(['mkdir', '-p', FOLDERS['ARCHIVE']])
 
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')
@@ -95,24 +93,24 @@ def valid_zdb_extension(filename, iszip):
 
 #zdb helper modules
 def unzip_zdb_upload(filename, iszip):
-    subprocess.run(['mkdir', '-p', f'data/{RAW_ZDB_DIR}'])
+    subprocess.run(['mkdir', '-p', f'data/{DATA_DIRS["RAW_ZDB"]}'])
     if iszip:
-        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), 'data/UnscoredZDB.zip']
+        args = ['cp', os.path.join(FOLDERS['UPLOAD'], filename), 'data/UnscoredZDB.zip']
         subprocess.run(args, check=True)
-        args = ['unzip', '-j', 'data/UnscoredZDB.zip', '-d', f'./data/{RAW_ZDB_DIR}']
+        args = ['unzip', '-j', 'data/UnscoredZDB.zip', '-d', f'./data/{DATA_DIRS["RAW_ZDB"]}']
         subprocess.run(args, check=True)        
     else: 
-        args = ['cp', os.path.join(UPLOAD_FOLDER, filename), f'data/{RAW_ZDB_DIR}']
+        args = ['cp', os.path.join(FOLDERS['UPLOAD'], filename), f'data/{DATA_DIRS["RAW_ZDB"]}']
         subprocess.run(args, check=True)
 def check_zdb_files():
     import sqlite3
 
     data_files = []
-    for csv in os.listdir(os.path.join('data', RAW_DIR)):
+    for csv in os.listdir(os.path.join('data', DATA_DIRS["RAW"])):
         data_files.append(csv.replace('.xls', '').replace('.xlsx', ''))
         if not valid_extension(csv, iszip=False):
             raise Exception('Invalid File Format (data files must end with .xls or .xlsx)')
-    for zdb in os.listdir(os.path.join('data', RAW_ZDB_DIR)):
+    for zdb in os.listdir(os.path.join('data', DATA_DIRS["RAW_ZDB"])):
         if not valid_zdb_extension(zdb, iszip=False):
             raise Exception('Invalid File Format (zdb files must end with .zdb)')
         # check if names of zdb and data files corrospond
@@ -124,7 +122,7 @@ def check_zdb_files():
             raise Exception(f'ZDB file ({zdb}) does not have a corrosponding data file')
 
         # check if zdb files are correctly formatted
-        conn = sqlite3.connect(os.path.join('data', RAW_ZDB_DIR, zdb))
+        conn = sqlite3.connect(os.path.join('data', DATA_DIRS["RAW_ZDB"], zdb))
         cur = conn.cursor()
         query = "SELECT name FROM sqlite_master WHERE type='table' AND name='scoring_marker';"
         cur.execute(query)
@@ -134,18 +132,18 @@ def check_zdb_files():
 
 def move_to_download_folder(filenames):
     args = ['zip', '-rj', 
-            os.path.join(DOWNLOAD_FOLDER, filenames['FILES']),
-            os.path.join('data', FINAL_SCORED_ZDB_DIR)]
+            os.path.join(FOLDERS['DOWNLOAD'], filenames['FILES']),
+            os.path.join('data', DATA_DIRS["FINAL_ZDB"])]
     subprocess.run(args, check=True)
     # graphs_filename = new_filename.replace('.zip', '-graphs.zip')
     args = ['zip', '-rj', 
-            os.path.join(DOWNLOAD_FOLDER, filenames['GRAPHS']), 
-            'data/10_images']
+            os.path.join(FOLDERS['DOWNLOAD'], filenames['GRAPHS']), 
+            os.path.join('data', DATA_DIRS['GRAPHS'])]
     subprocess.run(args, check=True)
 
 def archive_zdb_files(archive_name):
     args = ['sh', '-c', 
-            f"cd data/ && zip -r ../{ARCHIVE_FOLDER}/{archive_name} {FINAL_SCORED_ZDB_DIR} {RAW_ZDB_DIR} {RAW_DIR} {DATA_DIRS['GRAPHS']}"]
+            f"cd data/ && zip -r ../{FOLDERS['ARCHIVE']}/{archive_name} {DATA_DIRS['FINAL_ZDB']} {DATA_DIRS['RAW_ZDB']} {DATA_DIRS['RAW']} {DATA_DIRS['GRAPHS']}"]
     subprocess.run(args, check=True)
 
 def generate_images():
@@ -155,12 +153,12 @@ def generate_images():
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
-    subprocess.run(['mkdir', '-p', GRAPH_FOLDER], check=True)
-    subprocess.run(['mkdir', '-p', 'data/10_images'], check=True)
+    subprocess.run(['mkdir', '-p', FOLDERS['GRAPHS']], check=True)
+    subprocess.run(['mkdir', '-p', os.path.join('data', DATA_DIRS['GRAPHS'])], check=True)
 
-    for file in os.listdir(f'data/{FINAL_SCORED_DIR}'):
+    for file in os.listdir(f'data/{DATA_DIRS["FINAL"]}'):
         new_filename = file.replace('.csv', '.png')
-        df = pd.read_csv(f'data/{FINAL_SCORED_DIR}/{file}')
+        df = pd.read_csv(f'data/{DATA_DIRS["FINAL"]}/{file}')
 
         # TODO create better graphs ######################################
         df[df['0']=='P'] = 0
@@ -175,10 +173,13 @@ def generate_images():
         plt.legend([],[], frameon=False)
         #################################################################
 
-        plt.savefig(f'data/10_images/{new_filename}')
+        plt.savefig(os.path.join('data', DATA_DIRS['GRAPHS'], new_filename))
         plt.close()
 
-        subprocess.run(['cp', f'data/10_images/{new_filename}', GRAPH_FOLDER], check=True)
+        args = ['cp',
+                 os.path.join('data', DATA_DIRS['GRAPHS'], new_filename),
+                 FOLDERS['GRAPHS']]
+        subprocess.run(args, check=True)
 
 def generate_filenames(project_name):
     from datetime import datetime
