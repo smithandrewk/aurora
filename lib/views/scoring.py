@@ -122,10 +122,13 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         yield score_wrapper(generate_images, 11, total_steps, "Moving files")
         yield score_wrapper(move_zdb_to_download_folder, 12, total_steps, "Archiving files", new_filename)        
         yield score_wrapper(archive_zdb_files, 13, total_steps, "Cleaning Workspace", archive_name)
-        yield score_wrapper(clean_workspace, 14, total_steps, "Logging Scores", data_filename)
+        yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename)
 
-        # Step 15: Log Scoring
-        step = 15
+        # Step 15: Email Result
+        yield score_wrapper(email_results, 15, total_steps, "Logging Scores", email)
+
+        # Step 16: Logging Scores
+        step = 16
         try:
             files_log = json.dumps(files)
             log = ScoringLog(email=email, 
@@ -135,14 +138,11 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
                              files=files_log)
             db.session.add(log)
             db.session.commit()
-            yield f"data:{int(step/total_steps*100)}\tStep {step+1} - Emailing Results\n\n"
+            yield f"data:{int(step/total_steps*100)}\tStep {step+1} - Scoring Complete\n\n"
         except Exception as exc:
             print(f"ERROR step {step}")
             yield f"data:0\tStep {step} - Logging Scores - {exc}\n\n"
             return
-        
-        # Step 16: Email Results
-        yield score_wrapper(email_results, 16, total_steps, "Scoring Complete", email)
         
     # Create response to javascript EventSource with a series of text event-streams providing progress information
     return Response(generate(), mimetype='text/event-stream')
