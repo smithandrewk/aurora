@@ -1,4 +1,5 @@
 import subprocess
+import json
 from lib.webconfig import FOLDERS, ALLOWED_EXTENSIONS
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """
@@ -104,18 +105,37 @@ def generate_filenames(project_name):
     return {'FILES': new_filename, 
             'GRAPHS': graphs_filename, 
             'ARCHIVE': archive_name}
-
 class DashboardLog():
     """
-    Simple class to hold all the data needed to display on the dashboard
+    Simple class to hold all information needed to display on dashboard
+
+    Attributes
+    ----------
+        id (int): id of log in database
+        email (str): email of user that created log
+        project_name (str): Name of project
+        date_scored (str): Formatted date string of when files were scored
+        model (str): Model used in scoring
+        files (list): list of files scored
+        filename (str): Name of archive file with scored files
+        is_deleted (bool): True if log has been deleted
     """    
-    def __init__(self, id, email, project_name, date_scored, model, 
-                 files, filename, is_deleted):
-        self.id = id
-        self.email = email
-        self.project_name = project_name
-        self.date_scored = date_scored
-        self.model = model
-        self.files = files
-        self.filename = filename
-        self.is_deleted = is_deleted
+    def __init__(self, log):
+        """
+        Assigns values to each attribute using their corrosponding value in
+            database log
+        Special:
+            log.date_scored is formatted to keep only up to second precision
+            log.files is converted from json to list
+
+        Args:
+            log (webmodels.ScoringLog): A scoring log queried from database
+        """        
+        self.id = log.id
+        self.email = log.email
+        self.project_name = log.project_name
+        self.date_scored = str(log.date_scored)[:-7]
+        self.model = log.model
+        self.files = json.loads(log.files)[0]
+        self.filename = log.filename
+        self.is_deleted = log.is_deleted

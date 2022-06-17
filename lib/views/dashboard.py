@@ -33,14 +33,8 @@ def dashboard(edit_id=None):
     dash_logs = []
     num_logs = 0
     for log in logs:
-        dash_logs.append(DashboardLog(log.id,
-                                      log.email,
-                                      log.project_name,
-                                      str(log.date_scored)[:-7],
-                                      log.model,
-                                      json.loads(log.files)[0],
-                                      log.filename,
-                                      log.is_deleted))
+        print(type(log))
+        dash_logs.append(DashboardLog(log))
         num_logs += 1
     if form.validate_on_submit():
         new_name = form.new_name.data
