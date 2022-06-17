@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 import secrets
-from lib.webmodules import init_dir
+from lib.webmodules.webutils import init_dir
 from lib.webconfig import FOLDERS
 
 

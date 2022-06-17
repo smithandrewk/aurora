@@ -8,9 +8,7 @@ from flask import (
 )
 from app import app, db
 from lib.webmodels import ScoringLog
-from lib.webconfig import (
-    FOLDERS, DATA_DIRS, ALLOWED_EXTENSIONS, MODELS
-)
+from lib.webconfig import FOLDERS, DATA_DIRS, ALLOWED_EXTENSIONS, MODELS
 from lib.webforms import ZDBFileUploadForm
 from lib.modules import (
     rename_data_in_raw, preprocess_data_in_renamed,
@@ -18,15 +16,15 @@ from lib.modules import (
     remap_names_lstm, rename_files_in_raw_zdb, score_files_in_renamed_zdb,
     remap_files_in_scored_zdb
 )
-from lib.webmodules import (
-    score_wrapper, unzip_upload, clean_workspace, email_results, 
-    valid_extension, valid_zdb_extension, unzip_zdb_upload, 
-    check_files, move_to_download_folder, archive_files, 
-    generate_images, generate_filenames
+from lib.webmodules.webutils import (
+    score_wrapper, valid_extension, valid_zdb_extension, generate_filenames
+)
+from lib.webmodules.webpipeline import (
+    unzip_upload, unzip_zdb_upload, check_files, generate_images, 
+    move_to_download_folder, archive_files, clean_workspace, email_results
 )
 from lib.utils import execute_command_line
 
-# ZDB scoring route
 @app.route("/score_data_zdb", methods=['GET', 'POST'])
 @login_required
 def score_data_zdb():
