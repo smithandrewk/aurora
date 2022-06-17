@@ -8,33 +8,47 @@ from lib.webconfig import(
 )
 
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
-    """ Used by generator in 'main_score' to wrap pipeline functions in order to
-        generate progress steps
+    """
+    Wraps functions in order to generate progress steps in 
+    text event-stream format
 
     Args:
-        scoring_function (function): pipeline function to call
-        step (int): step number of this function
-        total_steps (int): total number of steps in current pipeline
-        msg (str): Message to display when function completes (display msg for next step)
-        model (str, optional): If scoring with a model, provide which model to use. Defaults to None.
+        scoring_function (function): function to execute
+        step (int): current step in scoring pipeline
+        total_steps (int): total number of steps in pipeline
+        msg (str): message to display during next step
+        *args: Variable length argument list to pass to scoring_function
 
     Returns:
-        str: text event stream string providing the progress of the pipeline
+        str: text event-stream string indicating success of function and 
+        the current progress of the pipeline
     """
     try:
         scoring_function(*args)
     except Exception as exc:
         print(f'ERROR step {step}')
-        # return error message
+        # return 0 as progress and the error message
         return (f"data:0\tStep {step} " 
                 f"In Function: {scoring_function.__name__} - {exc}\n\n")
     # return progress and the message for next step
     return f'data:{int(step/total_steps*100)}\tStep {step+1} - {msg}\n\n'
 
 def unzip_upload(filename, iszip):
-    # remove old files if they exist
+    """
+    Moves files uploaded by client to the data folder 
+    (from-client --> data/raw)
+    If file was a zip archive, it unzips them as well
+
+    Args:
+        filename (str): Name of file uploaded by client
+        iszip (bool): True if the file uploaded is a zip archive
+    """  
+
+    # create data/raw directory where data will be moved to
     subprocess.run(['mkdir', '-p', f'data/{DATA_DIRS["RAW"]}'])
+
     if iszip:
+        # Move zip archive to data dir, and unzip it into data/raw directory
         args = ['cp', os.path.join(
             FOLDERS['UPLOAD'], filename), 'data/Unscored.zip']
         subprocess.run(args, check=True)
@@ -45,16 +59,31 @@ def unzip_upload(filename, iszip):
                 f'./data/{DATA_DIRS["RAW"]}']
         subprocess.run(args, check=True)        
     else: 
+        # Move uploaded file to data/raw directory
         args = ['cp', 
                 os.path.join(FOLDERS['UPLOAD'], filename), 
                 f'data/{DATA_DIRS["RAW"]}/']
         subprocess.run(args, check=True)
 
 def clean_workspace(filename):
+    """
+    Once scroing completes, remove folders and files that are no longer needed
+
+    Args:
+        filename (str): Name of file uploaded by client
+    """    
+
+    # Remove data directory and the uploaded file from 'to-client' directory
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
     subprocess.run(args, check=True)
 
 def email_results(email):
+    """
+    Emails client when scoring is complete
+
+    Args:
+        email (str): current user's email address
+    """    
     import smtplib
 
     SENDER = MAIL_FROM
@@ -79,7 +108,7 @@ def valid_extension(filename, iszip):
     else:
         return (filename.endswith(ALLOWED_EXTENSIONS['XLS']) 
                 or filename.endswith(ALLOWED_EXTENSIONS['XLSX']))
-def init_dir():
+def init_dir():        
     try:
         subprocess.run(['mkdir', '-p', FOLDERS['UPLOAD']])
         subprocess.run(['mkdir', '-p', FOLDERS['DOWNLOAD']])
