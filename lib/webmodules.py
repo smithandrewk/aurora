@@ -35,7 +35,7 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
 
 def unzip_upload(filename, iszip):
     """
-    Moves files uploaded by client to the data folder 
+    Moves data files uploaded by client to the data folder 
     (from-client --> data/raw)
     If file was a zip archive, it unzips them as well
 
@@ -103,12 +103,29 @@ def email_results(email):
         s.sendmail(SENDER, RECIEVER, msg)
         
 def valid_extension(filename, iszip):
+    """
+    Checks if the uploaded data file ends with the correct extension
+
+    Args:
+        filename (str): Name of uploaded file
+        iszip (bool): True if uploaded file should be a zip archive
+
+    Returns:
+        bool: True if file ends with the correct extension 
+    """    
+
     if iszip:
+        # If zip archive, file must end with .zip
         return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
     else:
+        # If individual file, file must end with .xls or xlsx
         return (filename.endswith(ALLOWED_EXTENSIONS['XLS']) 
                 or filename.endswith(ALLOWED_EXTENSIONS['XLSX']))
-def init_dir():        
+def init_dir():
+    """
+    Initializes directory for flask app
+    Creates upload, download, and archive folders
+    """    
     try:
         subprocess.run(['mkdir', '-p', FOLDERS['UPLOAD']])
         subprocess.run(['mkdir', '-p', FOLDERS['DOWNLOAD']])
@@ -117,16 +134,40 @@ def init_dir():
     except CalledProcessError as exc:
         print(f'Error initializing directory: {exc}')
         exit(1)
+
 def valid_zdb_extension(filename, iszip):
+    """
+    Checks if the uploaded zdb file ends with the correct extension
+
+    Args:
+        filename (str): Name of uploaded file
+        iszip (bool): True if uploaded file should be a zip archive
+
+    Returns:
+        bool: True if file ends with the correct extension 
+    """    
     if iszip:
+        # If zip archive, file must end with .zip
         return filename.endswith(ALLOWED_EXTENSIONS['ZIP'])
     else:
+        # If individual file, file must end with .zdb
         return filename.endswith(ALLOWED_EXTENSIONS['ZDB'])  
 
-#zdb helper modules
 def unzip_zdb_upload(filename, iszip):
+    """
+    Moves zdb files uploaded by client to the data folder 
+    (from-client --> data/raw_zdb)
+    If file was a zip archive, it unzips them as well
+
+    Args:
+        filename (str): Name of file uploaded by client
+        iszip (bool): True if the file uploaded is a zip archive
+    """  
+
+    # make data/raw_zdb dir where files will be moved to
     subprocess.run(['mkdir', '-p', f'data/{DATA_DIRS["RAW_ZDB"]}'])
     if iszip:
+        # Move zip archive to data dir, and unzip it into data/raw_zdb directory
         args = ['cp', 
                 os.path.join(FOLDERS['UPLOAD'], filename), 
                 'data/UnscoredZDB.zip']
@@ -138,24 +179,43 @@ def unzip_zdb_upload(filename, iszip):
                 f'./data/{DATA_DIRS["RAW_ZDB"]}']
         subprocess.run(args, check=True)        
     else: 
+        # Move uploaded file to data/raw_zdb directory
         args = ['cp', 
                 os.path.join(FOLDERS['UPLOAD'], filename), 
                 f'data/{DATA_DIRS["RAW_ZDB"]}']
         subprocess.run(args, check=True)
-def check_zdb_files():
+
+def check_files():
+    """
+    Checks if uploaded files are correctly formatted
+    If the initial upload was a zip, checks that all files in
+        data/raw and data/raw_zdb end with the correct extension
+    Also checks that all zdb files have a corrosponding data file
+    Lastly, checks that zdb files have been scored once in NeuroScore
+
+    Raises:
+        Exception: If data files in data/raw end in invalid extension
+        Exception: If zdb files in data/raw_zdb end in invalid extension
+        Exception: If a zdb file does not have a corrosponding data file
+        Exception: If a zdb file has not been scored once in NeuroScore
+    """    
     import sqlite3
 
     data_files = []
     for csv in os.listdir(os.path.join('data', DATA_DIRS["RAW"])):
+        # Check each data file in data/raw
+        # append each filename to data_files to check with zdb files later
         data_files.append(csv.replace('.xls', '').replace('.xlsx', ''))
         if not valid_extension(csv, iszip=False):
             raise Exception('Invalid File Format ' +
                             '(data files must end with .xls or .xlsx)')
     for zdb in os.listdir(os.path.join('data', DATA_DIRS["RAW_ZDB"])):
+        # check each zdb file in data/raw_zdb
         if not valid_zdb_extension(zdb, iszip=False):
             raise Exception('Invalid File Format' + 
                             '(zdb files must end with .zdb)')
-        # check if names of zdb and data files corrospond
+        # Check if names of zdb and data files corrospond
+        # The name of a data file must be present in the name of the zdb file
         valid = False
         for data_file in data_files:
             if data_file in zdb:
@@ -164,7 +224,7 @@ def check_zdb_files():
             raise Exception(f'ZDB file [{zdb}] does not have'+
                             ' a corrosponding data file')
 
-        # check if zdb files are correctly formatted
+        # Check if zdb files are correctly formatted using sqlite query
         conn = sqlite3.connect(os.path.join('data', DATA_DIRS["RAW_ZDB"], 
                                zdb))
         cur = conn.cursor()
@@ -175,6 +235,7 @@ def check_zdb_files():
                 """
         cur.execute(query)
         name = cur.fetchall()
+        # If "scoring_marker" table is not present, zdb file has not been scored
         if not name:
             raise Exception(f'ZDB file ({zdb}) is not formatted. '
                             'It must be scored once in NeuroScore')

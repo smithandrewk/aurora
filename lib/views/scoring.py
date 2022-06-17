@@ -21,7 +21,7 @@ from lib.modules import (
 from lib.webmodules import (
     score_wrapper, unzip_upload, clean_workspace, email_results, 
     valid_extension, valid_zdb_extension, unzip_zdb_upload, 
-    check_zdb_files, move_to_download_folder, archive_zdb_files, 
+    check_files, move_to_download_folder, archive_zdb_files, 
     generate_images, generate_filenames
 )
 from lib.utils import execute_command_line
@@ -106,7 +106,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         yield score_wrapper(unzip_upload, 1, total_steps, "Unzipping Files", data_filename, iszip)
         yield score_wrapper(unzip_zdb_upload, 1, total_steps, "Checking File Format", zdb_filename, iszip)
 
-        yield score_wrapper(check_zdb_files, 2, total_steps, "Renaming Data")
+        yield score_wrapper(check_files, 2, total_steps, "Renaming Data")
 
         # Get list of files being scored
         files.append(os.listdir(f'data/{DATA_DIRS["RAW"]}'))
