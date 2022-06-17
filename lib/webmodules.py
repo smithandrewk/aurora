@@ -9,8 +9,8 @@ from lib.webconfig import(
 
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """
-    Wraps functions in order to generate progress steps in 
-    text event-stream format
+    Wraps functions in order to generate progress steps in text event-stream 
+        format
 
     Args:
         scoring_function (function): function to execute
@@ -20,8 +20,8 @@ def score_wrapper(scoring_function, step, total_steps, msg, *args):
         *args: Variable length argument list to pass to scoring_function
 
     Returns:
-        str: text event-stream string indicating success of function and 
-        the current progress of the pipeline
+        str: text event-stream string indicating success of function and the 
+            current progress of the pipeline
     """
     try:
         scoring_function(*args)
@@ -188,8 +188,8 @@ def unzip_zdb_upload(filename, iszip):
 def check_files():
     """
     Checks if uploaded files are correctly formatted
-    If the initial upload was a zip, checks that all files in
-        data/raw and data/raw_zdb end with the correct extension
+    If the initial upload was a zip, checks that all files in data/raw and 
+        data/raw_zdb end with the correct extension
     Also checks that all zdb files have a corrosponding data file
     Lastly, checks that zdb files have been scored once in NeuroScore
 
@@ -241,18 +241,37 @@ def check_files():
                             'It must be scored once in NeuroScore')
 
 def move_to_download_folder(filenames):
+    """
+    Zips and moves final files to download folder to go to client
+
+    Args:
+        filenames (dict[str, str]): holds the new filenames to name the new 
+            zip archives
+    """    
+    # Zip data/9_final_zdb_lstm and move to to-client/<new_filename>
     args = ['zip', '-rj', 
             os.path.join(FOLDERS['DOWNLOAD'], filenames['FILES']),
             os.path.join('data', DATA_DIRS["FINAL_ZDB"])]
     subprocess.run(args, check=True)
-    # graphs_filename = new_filename.replace('.zip', '-graphs.zip')
+
+    # Zip data/10_images and move to to-client/<new_graphs_filename>
     args = ['zip', '-rj', 
             os.path.join(FOLDERS['DOWNLOAD'], filenames['GRAPHS']), 
             os.path.join('data', DATA_DIRS['GRAPHS'])]
     subprocess.run(args, check=True)
 
-def archive_zdb_files(archive_name):
-    args = ['sh', '-c', 
+def archive_files(archive_name):
+    """
+    Adds folders to zip archive to be stored in data-archive
+    Archived folders include data/9_final_zdb_lstm, data/6_raw_zdb,
+        data/0_raw, and data/10_images
+
+    Args:
+        archive_name (str): filename of the new archive
+    """
+
+    # first sh into data directory to preserve directory structure in archive
+    args = ['sh', '-c',
             ("cd data/ && zip -r "
             f"../{FOLDERS['ARCHIVE']}/{archive_name} "
             f"{DATA_DIRS['FINAL_ZDB']} "
@@ -262,16 +281,23 @@ def archive_zdb_files(archive_name):
     subprocess.run(args, check=True)
 
 def generate_images():
+    """
+    Generates graphs based on scorings in 5_final_lstm
+    Saved graphs in data/10_images, as well as static/graphs to be displayed
+    """    
+
     import pandas as pd
     import seaborn as sns
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
 
+    # Create new directories
     subprocess.run(['mkdir', '-p', FOLDERS['GRAPHS']], check=True)
     subprocess.run(['mkdir', '-p', os.path.join('data', DATA_DIRS['GRAPHS'])], 
                    check=True)
 
+    # Generate graph for each file in data/5_final_lstm
     for file in os.listdir(f'data/{DATA_DIRS["FINAL"]}'):
         new_filename = file.replace('.csv', '.png')
         df = pd.read_csv(f'data/{DATA_DIRS["FINAL"]}/{file}')
@@ -289,15 +315,32 @@ def generate_images():
         plt.legend([],[], frameon=False)
         #################################################################
 
+        # Save image in data/10_images
         plt.savefig(os.path.join('data', DATA_DIRS['GRAPHS'], new_filename))
         plt.close()
 
+        # Copy image to static/graphs for jinja template to display
         args = ['cp',
                  os.path.join('data', DATA_DIRS['GRAPHS'], new_filename),
                  FOLDERS['GRAPHS']]
         subprocess.run(args, check=True)
 
 def generate_filenames(project_name):
+    """
+    Generates new filenames based on project name
+
+    Args:
+        project_name (str): Name of current scoring project
+
+    Returns:
+        dict[str, str]: Three filenames to be used in the future
+            FILES: Name of zdb file zip archive that client can download when
+                scoring is complete
+            GRAPHS: Name of graph png file zip archive that client can 
+                download when scoring is complete
+            ARCHIVE: Name of file zip archive to be stored in 'data-archive'
+                for the future
+    """    
     from datetime import datetime
     date = datetime.now().strftime("%m.%d.%Y_%H:%M")
     project_name = project_name.replace(' ', '_')
@@ -310,6 +353,9 @@ def generate_filenames(project_name):
             'ARCHIVE': archive_name}
 
 class DashboardLog():
+    """
+    Simple class to hold all the data needed to display on the dashboard
+    """    
     def __init__(self, id, email, project_name, date_scored, model, 
                  files, filename, is_deleted):
         self.id = id

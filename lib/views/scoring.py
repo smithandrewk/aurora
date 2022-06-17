@@ -21,7 +21,7 @@ from lib.modules import (
 from lib.webmodules import (
     score_wrapper, unzip_upload, clean_workspace, email_results, 
     valid_extension, valid_zdb_extension, unzip_zdb_upload, 
-    check_files, move_to_download_folder, archive_zdb_files, 
+    check_files, move_to_download_folder, archive_files, 
     generate_images, generate_filenames
 )
 from lib.utils import execute_command_line
@@ -125,7 +125,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         # Call helper modules
         yield score_wrapper(generate_images, 11, total_steps, "Moving files")
         yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", filenames)        
-        yield score_wrapper(archive_zdb_files, 13, total_steps, "Cleaning Workspace", filenames['ARCHIVE'])
+        yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", filenames['ARCHIVE'])
         yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename)
 
         # Step 15: Email Result
