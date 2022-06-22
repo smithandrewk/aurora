@@ -11,7 +11,13 @@ nav-link link-dark
 {% block body %}
     <main>
     {% if show_user_requests %}
-        <a href="{{ url_for('requested_users') }}"><p> New User Requests </p></a>
+        <div class="alert alert-warning fade show" role="alert">
+            <strong>
+                <a href="{{ url_for('requested_users') }}">
+                    <h5 class='text-center'> New User Requests </h5>
+                </a>
+            </strong>
+        </div>
     {% endif %}
     <h4 class="text-center">Scoring History</h4>
     <br>

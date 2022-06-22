@@ -1,6 +1,6 @@
 from app import app, login_manager, db
 from flask_login import login_user, login_required, logout_user, current_user
-from flask import render_template, redirect, url_for, flash
+from flask import render_template, redirect, url_for, flash, Markup
 from lib.webmodels import Users
 from lib.webforms import LoginForm, SignupForm
 from lib.webconfig import ADMIN_USERS
@@ -20,9 +20,9 @@ def login():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user:
-            # if not user.approved:
-                # flash('New user not yet approved. Please standby')
-                # return render_template(url_for('index'))
+            if not user.approved:
+                flash('New user not yet approved. Please wait for approval')
+                return redirect(url_for('index'))
             if user.verify_password(form.password.data):
                 login_user(user)
                 return redirect(url_for('dashboard'))
@@ -48,7 +48,7 @@ def add_user():
             form.last_name.data = ''
             form.email.data = ''
             form.password = ''
-            flash('User created Successfully. ')
+            flash('User created Successfully. Please wait for approval')
             return redirect(url_for('login'))
         else:
             flash('User with that email already exists')
@@ -61,11 +61,31 @@ def logout():
     flash('Logged out Successfully')
     return redirect(url_for('index'))
 
-@app.route('/requested_users', methods=['GET', 'POST'])
+@app.route('/requested_users')
+@app.route('/requested_users/<int:id>')
 @login_required
-def requested_users():
+def requested_users(id=None):
     if current_user.email not in ADMIN_USERS:
         flash('Not allowed!')
         return render_template(url_for('dashboard'))
-    user_requests = Users.query.filter_by(approved=False)
-    return "k"
+    if id:
+        url = url_for('delete_user', id=id)
+        flash(Markup(f"<a href='{url}'>Confirm Delete?</a>"))
+    user_requests = list(Users.query.filter_by(approved=False))
+    db.session.commit()
+    return render_template('requested_users.jinja', user_requests=user_requests)
+
+@app.route('/approve_user/<int:id>')
+@login_required
+def approve_user(id):
+    user = Users.query.filter_by(id=id).first()
+    user.approved = True
+    db.session.commit()
+    return redirect(url_for('requested_users'))
+
+@app.route('/delete_user/<int:id>')
+@login_required
+def delete_user(id):
+    Users.query.filter_by(id=id).delete()
+    db.session.commit()
+    return redirect(url_for('requested_users'))
