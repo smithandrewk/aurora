@@ -219,7 +219,7 @@ def clean_workspace(filename):
     args = ['rm', '-rf', 'data', f'from-client/{filename}']
     subprocess.run(args, check=True)
 
-def email_results(email):
+def email_results(email, project_name):
     """
     Emails client when scoring is complete
 
@@ -239,7 +239,7 @@ def email_results(email):
 
         s.login(SENDER, PASSWORD)  # app password
         subject = 'Data Scoring Complete'
-        body = 'Your data has been successfully scored'
+        body = f'Your data for "{project_name}" has been successfully scored'
         msg = f'Subject: {subject}\n\n{body}'
 
         s.sendmail(SENDER, RECIEVER, msg)
