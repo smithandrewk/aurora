@@ -1,9 +1,11 @@
 from app import app, login_manager, db
 from flask_login import login_user, login_required, logout_user, current_user
 from flask import render_template, redirect, url_for, flash, Markup
+from smtplib import SMTPRecipientsRefused
 from lib.webmodels import Users
 from lib.webforms import LoginForm, SignupForm
 from lib.webconfig import ADMIN_USERS
+from lib.webmodules.webutils import send_email
 
 @app.errorhandler(401)
 def custom_401(error):
@@ -73,7 +75,9 @@ def requested_users(id=None):
         flash(Markup(f"<a href='{url}'>Confirm Delete?</a>"))
     user_requests = list(Users.query.filter_by(approved=False))
     db.session.commit()
-    return render_template('requested_users.jinja', user_requests=user_requests)
+    return render_template('requested_users.jinja', 
+                           user_requests=user_requests,
+                           name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route('/approve_user/<int:id>')
 @login_required
@@ -81,11 +85,35 @@ def approve_user(id):
     user = Users.query.filter_by(id=id).first()
     user.approved = True
     db.session.commit()
+    try:
+        send_email(user.email, 
+                   'Aurora User Approved',
+                   'Your user has been approved for sleepyrats.com')
+        flash("User successfully approved")
+    except SMTPRecipientsRefused:
+        url = url_for('undo_approve_user', id=id)
+        flash(Markup(f"<p>User Had Invalid Email <a href='{url}'>Undo Approval?</a>"))
+    return redirect(url_for('requested_users'))
+
+@app.route('/undo_approve_user/<int:id>')
+def undo_approve_user(id):
+    user = Users.query.filter_by(id=id).first()
+    user.approved = False
+    db.session.commit()
+    flash('User successfully un-approved')
     return redirect(url_for('requested_users'))
 
 @app.route('/delete_user/<int:id>')
 @login_required
 def delete_user(id):
+    email = Users.query.filter_by(id=id).first().email
     Users.query.filter_by(id=id).delete()
+    try:
+        send_email(email, 
+                   'Aurora User Rejected',
+                   'Your user has been rejected for sleepyrats.com')
+    except SMTPRecipientsRefused:
+        pass
     db.session.commit()
+    flash('User successfully deleted')
     return redirect(url_for('requested_users'))

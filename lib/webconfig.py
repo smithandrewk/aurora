@@ -1,5 +1,5 @@
 ADMIN_USERS = ['andrewsmith1025@gmail.com', 'musa.mazeem@gmail.com']
-MAIL_FROM = 'AuroraProjectEmail@gmail.com'
+MAIL_SENDER = 'AuroraProjectEmail@gmail.com'
 MAIL_PASSWORD = 'kxfiusttkwlwneii'
 FOLDERS = {'UPLOAD': 'from-client', 
            'DOWNLOAD': 'to-client', 

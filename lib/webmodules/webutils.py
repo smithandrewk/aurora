@@ -1,6 +1,6 @@
 import subprocess
 import json
-from lib.webconfig import FOLDERS, ALLOWED_EXTENSIONS
+from lib.webconfig import FOLDERS, ALLOWED_EXTENSIONS, MAIL_SENDER, MAIL_PASSWORD
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """
     Wraps functions in order to generate progress steps in text event-stream 
@@ -105,6 +105,18 @@ def generate_filenames(project_name):
     return {'FILES': new_filename, 
             'GRAPHS': graphs_filename, 
             'ARCHIVE': archive_name}
+
+def send_email(reciever, subject, body):
+    import smtplib
+
+    with smtplib.SMTP('smtp.gmail.com', 587) as s:
+        s.ehlo()
+        s.starttls()
+        s.ehlo()
+        s.login(MAIL_SENDER, MAIL_PASSWORD)  # app password
+        msg = f'Subject: {subject}\n\n{body}'
+        s.sendmail(MAIL_SENDER, reciever, msg)
+
 class DashboardLog():
     """
     Simple class to hold all information needed to display on dashboard

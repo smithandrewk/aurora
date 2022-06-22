@@ -1,7 +1,7 @@
 import subprocess
 import os
-from lib.webconfig import DATA_DIRS, FOLDERS, MAIL_PASSWORD, MAIL_FROM
-from .webutils import valid_extension, valid_zdb_extension
+from lib.webconfig import DATA_DIRS, FOLDERS
+from .webutils import valid_extension, valid_zdb_extension, send_email
 
 def unzip_upload(filename, iszip):
     """
@@ -225,21 +225,8 @@ def email_results(email, project_name):
 
     Args:
         email (str): current user's email address
-    """    
-    import smtplib
-
-    SENDER = MAIL_FROM
-    PASSWORD = MAIL_PASSWORD
-    RECIEVER = email
-
-    with smtplib.SMTP('smtp.gmail.com', 587) as s:
-        s.ehlo()
-        s.starttls()
-        s.ehlo()
-
-        s.login(SENDER, PASSWORD)  # app password
-        subject = 'Data Scoring Complete'
-        body = f'Your data for "{project_name}" has been successfully scored'
-        msg = f'Subject: {subject}\n\n{body}'
-
-        s.sendmail(SENDER, RECIEVER, msg)
+    """
+    subject = 'Data Scoring Complete'
+    body = f'Your data for "{project_name}" has been successfully scored'
+    
+    send_email(email, subject, body)
