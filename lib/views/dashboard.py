@@ -8,7 +8,7 @@ from flask import (
     send_from_directory, Markup
 )
 from app import app, db
-from lib.webmodels import ScoringLog
+from lib.webmodels import ScoringLog, Users
 from lib.webconfig import FOLDERS, ADMIN_USERS
 from lib.webforms import EditProjectNameForm
 from lib.webmodules.webutils import DashboardLog
@@ -23,7 +23,10 @@ def index():
 def dashboard(edit_id=None):
     form = EditProjectNameForm()
     admin = False
+    show_user_requests=False
     if current_user.email in ADMIN_USERS:
+        if list(Users.query.filter_by(approved=False)):
+            show_user_requests = True
         logs = list(ScoringLog.query)
         admin = True
     else:
@@ -47,7 +50,8 @@ def dashboard(edit_id=None):
                             logs=dash_logs,
                             num_logs=num_logs,
                             edit_id=edit_id,
-                            form=form)
+                            form=form,
+                            show_user_requests=show_user_requests)
 
 @app.route("/download-archive-zip/<filename>", methods=['GET', 'POST'])
 @login_required
