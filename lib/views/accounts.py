@@ -1,8 +1,9 @@
 from app import app, login_manager, db
-from flask_login import login_user, login_required, logout_user
+from flask_login import login_user, login_required, logout_user, current_user
 from flask import render_template, redirect, url_for, flash
 from lib.webmodels import Users
 from lib.webforms import LoginForm, SignupForm
+from lib.webconfig import ADMIN_USERS
 
 @app.errorhandler(401)
 def custom_401(error):
@@ -19,6 +20,9 @@ def login():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user:
+            # if not user.approved:
+                # flash('New user not yet approved. Please standby')
+                # return render_template(url_for('index'))
             if user.verify_password(form.password.data):
                 login_user(user)
                 return redirect(url_for('dashboard'))
@@ -56,3 +60,12 @@ def logout():
     logout_user()
     flash('Logged out Successfully')
     return redirect(url_for('index'))
+
+@app.route('/requested_users', methods=['GET', 'POST'])
+@login_required
+def requested_users():
+    if current_user.email not in ADMIN_USERS:
+        flash('Not allowed!')
+        return render_template(url_for('dashboard'))
+    user_requests = Users.query.filter_by(approved=False)
+    return "k"
