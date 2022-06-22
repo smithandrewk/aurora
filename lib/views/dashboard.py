@@ -33,12 +33,10 @@ def dashboard(edit_id=None):
     dash_logs = []
     num_logs = 0
     for log in logs:
-        print(type(log))
         dash_logs.append(DashboardLog(log))
         num_logs += 1
     if form.validate_on_submit():
         new_name = form.new_name.data
-        print(new_name, edit_id)
         log = ScoringLog.query.filter_by(id=edit_id).first()
         log.project_name = new_name
         db.session.commit()
