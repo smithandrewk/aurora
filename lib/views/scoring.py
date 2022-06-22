@@ -127,7 +127,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename)
 
         # Step 15: Email Result
-        yield score_wrapper(email_results, 15, total_steps, "Logging Scores", email)
+        yield score_wrapper(email_results, 15, total_steps, "Logging Scores", email, project_name)
 
         # Step 16: Logging Scores
         step = 16
