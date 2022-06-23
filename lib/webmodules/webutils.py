@@ -143,27 +143,6 @@ def remove_archives():
                 subprocess.run(args, check=True)
             except subprocess.CalledProcessError as e:
                 print(f'Error in remove_archive ({folder}) [{e}]')
-    # for file in os.listdir(FOLDERS['UPLOAD']):
-    #     args = ['rm', os.path.join(FOLDERS['UPLOAD'], file)]
-    #     try:
-    #         subprocess.run(args, check=True)
-    #     except subprocess.CalledProcessError as e:
-    #         print(f'Error in remove_archive (from-client) [{e}]')
-    # # if any files in 'to-client' folder
-    # for file in os.listdir(FOLDERS['DOWNLOAD']):
-    #     args = ['rm', os.path.join(FOLDERS['DOWNLOAD'], file)]
-    #     try:
-    #         subprocess.run(args, check=True)
-    #     except subprocess.CalledProcessError as e:
-    #         print(f'Error in remove_archive (to-client) [{e}]')
-    # # if any files in 'static/graphs' folder
-    # for file in os.listdir(FOLDERS['GRAPHS']):
-    #     args = ['rm', os.path.join(FOLDERS['GRAPHS'], file)]
-    #     try:
-    #         subprocess.run(args, check=True)
-    #     except subprocess.CalledProcessError as e:
-    #         print(f'Error in remove_archive (static/graphs) [{e}]')    
-    # if any files in 'data-archive' no longer have a dashboard entry, remove them
     for file in os.listdir(FOLDERS['ARCHIVE']):
         log = ScoringLog.query.filter_by(filename=file).first()
         if not log:
