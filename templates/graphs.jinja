@@ -22,12 +22,12 @@ nav-link link-dark
         </form>
     </div>
     <br>
-    <div class="container justify-content-center">
-        {% for file in files %}
+    {% for file in files %}
+        <div class="d-flex container justify-content-center">
             <img src="{{ url_for('static', filename='graphs/'+file) }}" style="border: 1px solid #000; padding:0;">
-            <br>
-        {% endfor %}
-    </div>
+        </div>
+        <br>
+    {% endfor %}
 </main>
 
 {% endblock body %}
