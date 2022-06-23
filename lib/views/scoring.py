@@ -124,7 +124,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         yield score_wrapper(generate_images, 11, total_steps, "Moving files")
         yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", filenames)        
         yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", filenames['ARCHIVE'])
-        yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename)
+        yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename, zdb_filename)
 
         # Step 15: Email Result
         yield score_wrapper(email_results, 15, total_steps, "Logging Scores", email, project_name)

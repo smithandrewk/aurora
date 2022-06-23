@@ -207,17 +207,21 @@ def archive_files(archive_name):
             f"{DATA_DIRS['GRAPHS']}")]
     subprocess.run(args, check=True)
 
-def clean_workspace(filename):
+def clean_workspace(data_filename, zdb_filename):
     """
     Once scroing completes, remove folders and files that are no longer needed
 
     Args:
-        filename (str): Name of file uploaded by client
+        data_filename (str): Name of data file uploaded by client
+        zdb_filename (str): Name of zdb file uploaded by client
     """    
 
     # Remove data directory and the uploaded file from 'to-client' directory
-    args = ['rm', '-rf', 'data', f'from-client/{filename}']
+    args = ['rm', '-rf', 'data', 
+            os.path.join(FOLDERS['UPLOAD'], data_filename),
+            os.path.join(FOLDERS['UPLOAD'], zdb_filename)]
     subprocess.run(args, check=True)
+
 
 def email_results(email, project_name):
     """
