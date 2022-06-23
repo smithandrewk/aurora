@@ -122,7 +122,7 @@ def check_files():
             raise Exception(f'ZDB file ({zdb}) is not formatted. '
                             'It must be scored once in NeuroScore')
 
-def generate_images():
+def generate_images(project_name):
     """
     Generates graphs based on scorings in 5_final_lstm
     Saved graphs in data/10_images, as well as static/graphs to be displayed
@@ -139,17 +139,22 @@ def generate_images():
     subprocess.run(['mkdir', '-p', os.path.join('data', DATA_DIRS['GRAPHS'])], 
                    check=True)
 
+    W = pd.DataFrame()    # Dataframe for KDE plot
+    i = 0
+
     # Generate graph for each file in data/5_final_lstm
     for file in os.listdir(f'data/{DATA_DIRS["FINAL"]}'):
-        new_filename = file.replace('.csv', '.png')
+        new_filename = file.replace('.csv', '.jpg')
         df = pd.read_csv(f'data/{DATA_DIRS["FINAL"]}/{file}')
-        df.columns = ['Classification']
 
+        W = pd.concat([W, df.value_counts()/len(df)], axis=1)
+
+        df.columns = ['Classification']
         df[df['Classification']=='P'] = 0
         df[df['Classification']=='S'] = 1
         df[df['Classification']=='W'] = 2
         df = df[df['Classification'] != 'X']
-        plt.subplots(figsize=(7, 5))
+        plt.subplots(figsize=(7.2, 4.45))
         sns.set_theme(style="ticks")
         sns.despine()
 
@@ -165,6 +170,25 @@ def generate_images():
         args = ['cp',
                  os.path.join('data', DATA_DIRS['GRAPHS'], new_filename),
                  FOLDERS['GRAPHS']]
+        subprocess.run(args, check=True)
+
+        i += 1
+    
+    # KDE plot for all data
+    if i > 1:       # Only create KDE plot if more than one file
+        new_filename = f'{project_name}_kde_plot.jpg'
+        plt.figure(figsize=(7.2,4.45))
+        sns.kdeplot(data=W.T[['P','S','W']],fill=True)
+        sns.despine()
+        plt.title('KDE for Proportion of Each Class of Sleep in All Data Scored by LSTM')
+        plt.xlabel('Proportion of Total Sleep')
+
+        # Save image in data/10_images
+        plt.savefig(os.path.join('data', DATA_DIRS['GRAPHS'], new_filename))
+        # Copy image to static/graphs for jinja template to display
+        args = ['cp',
+                os.path.join('data', DATA_DIRS['GRAPHS'], new_filename),
+                FOLDERS['GRAPHS']]
         subprocess.run(args, check=True)
 
 def move_to_download_folder(filenames):

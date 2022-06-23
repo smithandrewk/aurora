@@ -121,7 +121,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
         yield score_wrapper(remap_files_in_scored_zdb, 10, total_steps, "Generating Images", path_to_model)
 
         # Call helper modules
-        yield score_wrapper(generate_images, 11, total_steps, "Moving files")
+        yield score_wrapper(generate_images, 11, total_steps, "Moving files", project_name)
         yield score_wrapper(move_to_download_folder, 12, total_steps, "Archiving files", filenames)        
         yield score_wrapper(archive_files, 13, total_steps, "Cleaning Workspace", filenames['ARCHIVE'])
         yield score_wrapper(clean_workspace, 14, total_steps, "Emailing Results", data_filename, zdb_filename)
@@ -153,10 +153,15 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 @login_required
 def graphs(new_filename, graphs_filename):
     files = os.listdir(f'{FOLDERS["GRAPHS"]}')
+    kde_file = ''
+    for i,file in enumerate(files):
+        if "_kde_plot.jpg" in file:
+            kde_file = files.pop(i)
     return render_template('graphs.jinja', 
                             new_filename=new_filename,
                             graphs_filename=graphs_filename, 
                             files=files,
+                            kde_file = kde_file,
                             name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
