@@ -1,6 +1,9 @@
 import subprocess
+import os
 import json
+from lib.webmodels import ScoringLog
 from lib.webconfig import FOLDERS, ALLOWED_EXTENSIONS, MAIL_SENDER, MAIL_PASSWORD
+
 def score_wrapper(scoring_function, step, total_steps, msg, *args):
     """
     Wraps functions in order to generate progress steps in text event-stream 
@@ -107,6 +110,14 @@ def generate_filenames(project_name):
             'ARCHIVE': archive_name}
 
 def send_email(reciever, subject, body):
+    """
+    Sends an email from project email address
+
+    Args:
+        reciever (str): email address of reciever
+        subject (str): subject of email
+        body (str): body of email
+    """    
     import smtplib
 
     with smtplib.SMTP('smtp.gmail.com', 587) as s:
@@ -116,6 +127,29 @@ def send_email(reciever, subject, body):
         s.login(MAIL_SENDER, MAIL_PASSWORD)  # app password
         msg = f'Subject: {subject}\n\n{body}'
         s.sendmail(MAIL_SENDER, reciever, msg)
+
+def remove_archives():
+    """
+    Cleans the 'data-archive' and 'from-client' directories
+        Removed any files in 'from-client' that were left due to errors
+        Removed any files in 'data-archive' that no longer have a dashboard log'
+    """    
+    # if any files are left in "from-client", remove them
+    for file in os.listdir(FOLDERS['UPLOAD']):
+        args = ['rm', os.path.join(FOLDERS['UPLOAD'], file)]
+        try:
+            subprocess.run(args, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f'Error in remove_archive (from-client) [{e}]')
+    # if any files in 'data-archive' no longer have a dashboard entry, remove them
+    for file in os.listdir(FOLDERS['ARCHIVE']):
+        log = ScoringLog.query.filter_by(filename=file).first()
+        if not log:
+            args = ['rm', os.path.join(FOLDERS['ARCHIVE'], file)]
+            try:
+                subprocess.run(args, check=True)
+            except subprocess.CalledProcessError as e:
+                print(f'Error in remove_archive (data-archive) [{e}]')            
 
 class DashboardLog():
     """

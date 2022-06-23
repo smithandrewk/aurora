@@ -3,7 +3,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 import secrets
-from lib.webmodules.webutils import init_dir
+import subprocess
+# from lib.webmodules.webutils import init_dir
 from lib.webconfig import FOLDERS
 
 
@@ -21,7 +22,15 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.view ='login'
 
-init_dir()
+# init_dir()
+try:
+    subprocess.run(['mkdir', '-p', FOLDERS['UPLOAD']])
+    subprocess.run(['mkdir', '-p', FOLDERS['DOWNLOAD']])
+    subprocess.run(['mkdir', '-p', FOLDERS['ARCHIVE']])
+
+except subprocess.CalledProcessError as exc:
+    print(f'Error initializing directory: {exc}')
+    exit(1)
 
 from lib.views.accounts import *
 from lib.views.dashboard import *
