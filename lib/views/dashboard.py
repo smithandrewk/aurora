@@ -11,7 +11,7 @@ from app import app, db
 from lib.webmodels import ScoringLog, Users
 from lib.webconfig import FOLDERS, ADMIN_USERS
 from lib.webforms import EditProjectNameForm
-from lib.webmodules.webutils import DashboardLog, remove_archives
+from lib.webmodules.webutils import DashboardLog
 
 @app.route('/')
 def index():
