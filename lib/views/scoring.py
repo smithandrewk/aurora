@@ -150,12 +150,14 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
     return Response(generate(), mimetype='text/event-stream')
 
 @app.route("/graphs/<new_filename>/<graphs_filename>", methods=['GET', 'POST'])
+@login_required
 def graphs(new_filename, graphs_filename):
     files = os.listdir(f'{FOLDERS["GRAPHS"]}')
     return render_template('graphs.jinja', 
                             new_filename=new_filename,
                             graphs_filename=graphs_filename, 
-                            files=files)
+                            files=files,
+                            name=f'{current_user.first_name} {current_user.last_name}')
 
 @app.route("/download-zip/<filename>", methods=['GET', 'POST'])
 @login_required

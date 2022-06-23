@@ -130,8 +130,8 @@ def generate_images():
 
     import pandas as pd
     import seaborn as sns
-    import matplotlib
-    matplotlib.use('Agg')
+    import matplotlib as mpl
+    mpl.use('Agg')
     import matplotlib.pyplot as plt
 
     # Create new directories
@@ -143,19 +143,19 @@ def generate_images():
     for file in os.listdir(f'data/{DATA_DIRS["FINAL"]}'):
         new_filename = file.replace('.csv', '.png')
         df = pd.read_csv(f'data/{DATA_DIRS["FINAL"]}/{file}')
+        df.columns = ['Classification']
 
-        # TODO create better graphs ######################################
-        df[df['0']=='P'] = 0
-        df[df['0']=='S'] = 1
-        df[df['0']=='W'] = 2
-        df = df[df['0'] != 'X']
-        s = sns.lineplot(data=df, palette='tab10', linewidth=2.5)
-        s.set(xlabel="Time", ylabel=None)
-        s.set_xticks([])
-        s.set_yticks([0,1,2],['P', 'S', 'W'])
-        plt.title(new_filename.replace('.png', ''))
-        plt.legend([],[], frameon=False)
-        #################################################################
+        df[df['Classification']=='P'] = 0
+        df[df['Classification']=='S'] = 1
+        df[df['Classification']=='W'] = 2
+        df = df[df['Classification'] != 'X']
+        plt.subplots(figsize=(7, 5))
+        sns.set_theme(style="ticks")
+        sns.despine()
+
+        s = sns.histplot(df, x='Classification', bins=3, edgecolor=".3")
+        s.set_xticks([1/3, 1, 5/3],['P', 'S', 'W'])
+        s.set(title=file.replace('.csv',''))
 
         # Save image in data/10_images
         plt.savefig(os.path.join('data', DATA_DIRS['GRAPHS'], new_filename))
