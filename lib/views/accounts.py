@@ -54,6 +54,9 @@ def add_user():
             return redirect(url_for('login'))
         else:
             flash('User with that email already exists')
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(error)
     return render_template('add-user.jinja', form=form)
 
 @app.route('/logout')
