@@ -4,7 +4,8 @@ MAIL_PASSWORD = 'kxfiusttkwlwneii'
 FOLDERS = {'UPLOAD': 'from-client', 
            'DOWNLOAD': 'to-client', 
            'ARCHIVE': 'data-archive', 
-           'GRAPHS': 'static/graphs'}
+           'GRAPHS': 'static/graphs',
+           'KDEGRAPH': 'static/graphs/kde'}
 DATA_DIRS = {'RAW': '0_raw', 
              'RAW_ZDB':'6_raw_zdb', 
              'FINAL': '5_final_lstm', 

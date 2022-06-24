@@ -122,7 +122,7 @@ def check_files():
             raise Exception(f'ZDB file ({zdb}) is not formatted. '
                             'It must be scored once in NeuroScore')
 
-def generate_images(project_name):
+def generate_images(project_name, iszip):
     """
     Generates graphs based on scorings in 5_final_lstm
     Saved graphs in data/10_images, as well as static/graphs to be displayed
@@ -140,14 +140,14 @@ def generate_images(project_name):
                    check=True)
 
     W = pd.DataFrame()    # Dataframe for KDE plot
-    i = 0
 
     # Generate graph for each file in data/5_final_lstm
     for file in os.listdir(f'data/{DATA_DIRS["FINAL"]}'):
         new_filename = file.replace('.csv', '.jpg')
         df = pd.read_csv(f'data/{DATA_DIRS["FINAL"]}/{file}')
 
-        W = pd.concat([W, df.value_counts()/len(df)], axis=1)
+        if iszip:
+            W = pd.concat([W, df.value_counts()/len(df)], axis=1)
 
         df.columns = ['Classification']
         df[df['Classification']=='P'] = 0
@@ -172,10 +172,9 @@ def generate_images(project_name):
                  FOLDERS['GRAPHS']]
         subprocess.run(args, check=True)
 
-        i += 1
-    
     # KDE plot for all data
-    if i > 1:       # Only create KDE plot if more than one file
+    if iszip:       # Only create KDE plot if more than one file
+        subprocess.run(['mkdir', '-p', FOLDERS['KDEGRAPH']], check=True)
         new_filename = f'{project_name}_kde_plot.jpg'
         plt.figure(figsize=(7.2,4.45))
         sns.kdeplot(data=W.T[['P','S','W']],fill=True)
@@ -188,7 +187,7 @@ def generate_images(project_name):
         # Copy image to static/graphs for jinja template to display
         args = ['cp',
                 os.path.join('data', DATA_DIRS['GRAPHS'], new_filename),
-                FOLDERS['GRAPHS']]
+                FOLDERS['KDEGRAPH']]
         subprocess.run(args, check=True)
 
 def move_to_download_folder(filenames):

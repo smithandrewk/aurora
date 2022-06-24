@@ -11,23 +11,22 @@ nav-link link-dark
 {% block body %}
 
 <script>
-var slideIndex = 1;
-showDivs(slideIndex);
+    var slideIndex = 1;
 
-function plusDivs(n) {
-  showDivs(slideIndex += n);
-}
+    function plusDivs(n) {
+    showDivs(slideIndex += n);
+    }
 
-function showDivs(n) {
-  var i;
-  var x = document.getElementsByClassName("mySlides");
-  if (n > x.length) {slideIndex = 1}
-  if (n < 1) {slideIndex = x.length} ;
-  for (i = 0; i < x.length; i++) {
-    x[i].style.display = "none";
-  }
-  x[slideIndex-1].style.display = "block";
-}
+    function showDivs(n) {
+        var i;
+        var x = document.getElementsByClassName("mySlides");
+        if (n > x.length) {slideIndex = 1}
+        if (n < 1) {slideIndex = x.length} ;
+        for (i = 0; i < x.length; i++) {
+            x[i].style.display = "none";
+        }
+        x[slideIndex-1].style.display = "block";
+    }
 </script>
 
 <main>
@@ -43,22 +42,34 @@ function showDivs(n) {
         </form>
     </div>
     <br>
-    <div class="d-flex justify-content-center">
-        {% if kde_file %}
-            <div class="mySlides">
-                <img src="{{ url_for('static', filename='graphs/'+kde_file) }}" style="border: 1px solid #000; padding:0;">
-            </div>
-        {% endif %}
+    {% if iszip %}
+        <div class="d-flex justify-content-center">
+            <img src="{{ url_for('static', filename='graphs/kde/'+kde_file) }}" style="border: 1px solid #000; padding:0;">
+        </div>
         <br>
+    {% endif %}
+    <div class="d-flex justify-content-center">
+        {% if iszip %}
+            <button class="" onclick="plusDivs(-1)">&#10094;</button>
+        {% endif %}
         {% for file in files %}
-            <div class="mySlides">
-                <img src="{{ url_for('static', filename='graphs/'+file) }}" style="border: 1px solid #000; padding:0;">
+            <div>
+                {% if loop.index == 1 %}
+                    <img class="mySlides" src="{{ url_for('static', filename='graphs/'+file) }}" style="display: block; border: 1px solid #000; padding:0;">
+                {% else %}
+                    <img class="mySlides" src="{{ url_for('static', filename='graphs/'+file) }}" style="display: none; border: 1px solid #000; padding:0;">
+                {% endif %}
             </div>
             <br>
         {% endfor %}
-        <button class="d-flex justify-content-left" onclick="plusDivs(-1)">&#10094;</button>
-        <button class="d-flex justify-content-left" onclick="plusDivs(+1)">&#10095;</button>
+        {% if iszip %}
+            <button class="" onclick="plusDivs(+1)">&#10095;</button>
+        {% endif %}
     </div>
+
+    {% for i in range(10) %}
+        <br>
+    {% endfor %}
 </main>
 
 {% endblock body %}
