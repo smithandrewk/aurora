@@ -340,4 +340,4 @@ class Notes(db.Model):
     contents = db.Column(db.String(1000), nullable=False)      # json list of files
     is_deleted = db.Column(db.Boolean, default=False)
 if __name__=='__main__':
-    app.run(debug='True')
+    app.run(host='0.0.0.0',debug='True')
