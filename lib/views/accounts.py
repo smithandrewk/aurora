@@ -40,17 +40,26 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()     #query database - get all users with submitted email address - should be none
         if user is None:    # user does not already exist
-            user = Users(first_name=form.first_name.data, 
-                         last_name=form.last_name.data, 
-                         email=form.email.data, 
-                         password=form.password.data)
+            if form.email.data in ADMIN_USERS:
+                user = Users(first_name=form.first_name.data, 
+                             last_name=form.last_name.data, 
+                             email=form.email.data, 
+                             password=form.password.data,
+                             approved=True)
+                flash('User created Successfully.')
+                
+            else:
+                user = Users(first_name=form.first_name.data, 
+                             last_name=form.last_name.data, 
+                             email=form.email.data, 
+                             password=form.password.data)
+                flash('User created Successfully. Please wait for approval')
             db.session.add(user)
             db.session.commit()
             form.first_name.data = ''
             form.last_name.data = ''
             form.email.data = ''
             form.password = ''
-            flash('User created Successfully. Please wait for approval')
             return redirect(url_for('login'))
         else:
             flash('User with that email already exists')
