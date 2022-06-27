@@ -152,6 +152,7 @@ def main_score_zdb(project_name, model, iszip, data_filename, zdb_filename, emai
 @app.route("/graphs/<new_filename>/<graphs_filename>/<int:iszip>", methods=['GET', 'POST'])
 @login_required
 def graphs(new_filename, graphs_filename, iszip):
+    # get only the files in folder, not subfolders
     files = [ f for f in os.listdir(FOLDERS['GRAPHS']) 
                     if os.path.isfile(f"{FOLDERS['GRAPHS']}/{f}") ]
     kde_file = ''
