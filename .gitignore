@@ -17,3 +17,5 @@ data-archive
 archive
 .vscode
 Data.db
+static/graphs
+Aurora-Data.db

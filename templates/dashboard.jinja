@@ -10,25 +10,43 @@ nav-link link-dark
 {% endblock %}
 {% block body %}
     <main>
+    {% if show_user_requests %}
+        <div class="alert alert-warning fade show" role="alert">
+            <strong>
+                <a href="{{ url_for('requested_users') }}">
+                    <h5 class='text-center'> New User Requests </h5>
+                </a>
+            </strong>
+        </div>
+    {% endif %}
     <h4 class="text-center">Scoring History</h4>
     <br>
     <table class="table table-striped table-hover table-condensed">
         <thead>
             <tr>
                 <th scope="col"><p class="text-center">#</p></th>
+                {% if admin %}
+                    <th scope="col"><p class="text-center">User</p></th>
+                {% endif %}
                 <th scope="col"><p class="text-center">Project Name</p></th>
                 <th scope="col"><p class="text-center">Date Scored</p></th>
                 <th scope="col"><p class="text-center">Model Used</p></th>
                 <th scope="col"><p class="text-center">Files Scored</p></th>
                 <th scope="col"><p class="text-center">Download Archive</p></th>
+                {% if admin %}
+                    <th scope="col"><p class="text-center">Is Deleted</p></th>
+                {% endif %}
                 <th scope="col"><p class="text-center">Edit</p></th>
                 <th scope="col"><p class="text-center">Delete Log</p></th>
             </tr>
         </thead>
         {% for log in logs %}
             <tbody>
-                <tr >
+                <tr>
                     <th scope="row"><p class="text-center">{{ num_logs-loop.index+1 }}</p></th>
+                    {% if admin %}
+                        <td scope="row"><p class="text-center">{{ log.email }}</p></td>
+                    {% endif %}
                     {% if not edit_id or log.id != edit_id %}
                         <td><p class="text-center">{{ log.project_name }}</p></td>
                     {% else %}
@@ -63,6 +81,9 @@ nav-link link-dark
                             <p class="text-center">Download</p>
                         </a>
                     </td>
+                    {% if admin %}
+                        <td scope="row"><p class="text-center">{{ log.is_deleted }}</p></td>
+                    {% endif %}
                     <td>
                         <div class="text-center">
                             <a href="{{ url_for('dashboard', edit_id=log.id) }}" class="btn btn-sm">
