@@ -4,7 +4,6 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 import secrets
 import subprocess
-# from lib.webmodules.webutils import init_dir
 from lib.webconfig import FOLDERS
 
 
@@ -22,7 +21,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.view ='login'
 
-# init_dir()
 try:
     subprocess.run(['mkdir', '-p', FOLDERS['UPLOAD']])
     subprocess.run(['mkdir', '-p', FOLDERS['DOWNLOAD']])
