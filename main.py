@@ -11,7 +11,7 @@ args = create_and_check_args()
 rename_data_in_raw()
 preprocess_data_in_renamed()
 scale_features_in_preprocessed()
-window_and_score_files_in_scaled()
+window_and_score_files_in_scaled_with_LSTM()
 remap_names_lstm(args.ann_model)
 
 rename_files_in_raw_zdb()
