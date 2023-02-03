@@ -99,7 +99,7 @@ def generate_filenames(project_name):
                 for the future
     """    
     from datetime import datetime
-    date = datetime.now().strftime("%m.%d.%Y_%H:%M")
+    date = datetime.now().strftime("%m.%d.%Y_%H_%M")
     project_name = project_name.replace(' ', '_')
     new_filename = f"scored-lstm_{project_name}.zip"
     graphs_filename = f"{project_name}-graphs.zip"
