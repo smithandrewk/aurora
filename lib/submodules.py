@@ -7,15 +7,57 @@ def preprocess_file(dir, file):
     print(f'preprocessing {dir}/{file}')
     df = read_excel(f'{dir}/{file}')
     len_before = df.shape[0]
-    df = df.drop([0])  # remove first row with units
+    df = df.drop([0]).reset_index(drop=True)  # remove first row with units
+    from datetime import datetime
+    from pandas import Series
+    if(df.columns[1]=='Rodent Sleep'):
+        df = df.drop([df.columns[1]], axis=1)
+        print(f'{file} Removed Scoring')
+    def checkForGaps(df):
+        print('initial shape',df.shape)
+        for i, timestamp in enumerate(df[df.columns[0]]):
+            if i == 0:
+                continue
+            date1 = datetime.strptime(str(df[df.columns[0]][i]), "%Y-%m-%d %H:%M:%S")
+            date2 = datetime.strptime(str(df[df.columns[0]][i-1]), "%Y-%m-%d %H:%M:%S")
+
+            delta = (date1 - date2).seconds
+            import numpy as np
+            if(delta > 10):
+                print('found gap, fixing!')
+                df_before_gap = df[:i]
+                df_after_gap = df[i:]
+
+                print(date1,date1.timestamp(),datetime.fromtimestamp(date1.timestamp()))
+                print(date2,date2.timestamp(),datetime.fromtimestamp(date2.timestamp()))
+                
+                timestamps = []
+                for j in range(int(date2.timestamp())+10,int(date1.timestamp()),10):
+                    timestamps.append(datetime.fromtimestamp(j))
+                app = np.array([[np.nan]*42]*len(timestamps))
+                # app = np.zeros((len(timestamps),42))
+                app = DataFrame(app)
+                app = concat([DataFrame(timestamps),app],axis=1)
+                app.columns = df.columns
+                app = concat([df_before_gap,app]).reset_index(drop=True)
+                app['Time Stamp'] = app['Time Stamp'].astype('datetime64')
+                df = concat([app,df_after_gap]).reset_index(drop=True)
+                df['Time Stamp'] = df['Time Stamp'].astype('datetime64')
+                df = checkForGaps(df)
+                return df
+        return df
+    if(df.columns[0] == "Time Stamp"):
+        df['Time Stamp'] = df['Time Stamp'].astype('datetime64')
+        print('timestamp exists')
+        df = checkForGaps(df)
     # impute NaN values with mean of column
+    if(df.columns[0]=='Time Stamp'):
+        df = df.drop([df.columns[0]], axis=1)
+        print(f'{file} Removed TimeStamp')
     imp_mean = SimpleImputer()
     imp_mean.fit(df)
     df = DataFrame(imp_mean.transform(df))
     # remove time stamp column if it exists
-    if(df.columns[0]=='Time Stamp'):
-        df = df.drop([df.columns[0]], axis=1)
-        print(f'{file} Removed TimeStamp')
     new_column_names = ['0.0-0.5', '0.5-1.0', '1.0-1.5', '15-20',
                         '2.0-0.5', '2.5-3.0', '3.0-3.5', '3.5-4.0',
                         '4.0-4.5', '4.5-5.0', '5.0-5.5', '5.5-6.0',
@@ -36,7 +78,11 @@ def preprocess_file(dir, file):
     outfilename = file.replace(file.split('.')[1], 'csv')
 
     execute_command_line(f'mkdir data/2_preprocessed')
+    execute_command_line(f'mkdir data/-1_gaps')
+    
     df.to_csv(f'data/2_preprocessed/{outfilename}', index=False)
+    df.to_csv(f'data/2_preprocessed/{outfilename}', index=False)
+    
     print(f'Length Before: {len_before}\nLength After : {df.shape[0]}')
 
 @print_on_start_on_end
@@ -61,7 +107,9 @@ def window_and_score_data(dir, file,model):
         for j in range(len(pred_expert)-2):
             if((pred_expert[j:j+2]==np.array([2,0])).all()):
                 pred_expert[j+1] = 2
-
+        for j in range(len(pred_expert)-2):
+            if(pred_expert[j+1] != pred_expert[j] and pred_expert[j+1] != pred_expert[j+2]):
+                pred_expert[j+1] = pred_expert[j]
     final = np.concatenate([[-1,-1,-1,-1],pred_expert,[-1,-1,-1,-1,-1]])
     final = DataFrame(final)
     final[final==-1] = 'X'
